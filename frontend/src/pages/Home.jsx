@@ -1,18 +1,24 @@
-import { useEffect } from "react";
-import api from "../api/api";
+import { Link } from "react-router-dom";
 
 function Home() {
-    useEffect(() => {
-        api.get("/")
-            .then((res) => {
-                console.log(res.data);
-            })
-            .catch((err) => {
-                console.log(err);
-            });
-    }, []);
+    return (
+        <div
+            style={{
+                minHeight: "100vh",
+                display: "flex",
+                flexDirection: "column",
+                justifyContent: "center",
+                alignItems: "center",
+                gap: "20px",
+            }}
+        >
+            <h1>Interview Platform 🚀</h1>
 
-    return <h1>Home Page</h1>;
+            <Link to="/login">
+                <button>Get Started</button>
+            </Link>
+        </div>
+    );
 }
 
 export default Home;
