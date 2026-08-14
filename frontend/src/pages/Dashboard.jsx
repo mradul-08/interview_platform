@@ -1,32 +1,28 @@
-import {
-    SignedIn,
-    SignedOut,
-    RedirectToSignIn,
-    UserButton,
-} from "@clerk/clerk-react";
+import { Navigate } from "react-router-dom";
+import { logoutEverywhere } from "../utils/auth";
 
 function Dashboard() {
-    return (
-        <>
-            <SignedIn>
-                <div
-                    style={{
-                        padding: "40px",
-                    }}
-                >
-                    <h1>Dashboard 🚀</h1>
+  const token = localStorage.getItem("token");
 
-                    <p>Welcome to Interview Platform.</p>
+  if (!token) {
+    return <Navigate to="/login" replace />;
+  }
 
-                    <UserButton afterSignOutUrl="/" />
-                </div>
-            </SignedIn>
+  return (
+    <div className="p-10">
+      <h1 className="text-4xl font-bold">
+        Dashboard 🚀
+      </h1>
 
-            <SignedOut>
-                <RedirectToSignIn />
-            </SignedOut>
-        </>
-    );
+      <p>Welcome to Interview Platform.</p>
+
+      <button
+        onClick={logoutEverywhere}
+      >
+        Logout
+      </button>
+    </div>
+  );
 }
 
 export default Dashboard;

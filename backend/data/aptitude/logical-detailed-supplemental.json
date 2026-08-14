@@ -1,0 +1,1904 @@
+[
+  {
+    "id": "apt-logical-001",
+    "category": "Logical Reasoning",
+    "topic": "Number Series",
+    "subtopic": "constant-difference",
+    "difficulty": "Easy",
+    "question": "Find the next number: 7, 12, 17, 22, ?",
+    "options": [
+      "25",
+      "26",
+      "27",
+      "28"
+    ],
+    "correctOptionIndex": 2,
+    "explanation": {
+      "concept": "A number series can often be solved by identifying the change from one term to the next.",
+      "whatIsBeingAsked": "Identify the logical relationship or rule hidden in the information and use it to determine the only option that satisfies the conditions.",
+      "givenInformation": "Use every condition stated in the question, and do not assume extra information that is not given.",
+      "stepByStep": [
+        "Step 1: 12 − 7 = 5.",
+        "Step 2: 17 − 12 = 5.",
+        "Step 3: 22 − 17 = 5.",
+        "Step 4: The pattern adds 5 each time, so the next term is 22 + 5 = 27."
+      ],
+      "whyThisWorks": "The conclusion follows because the stated conditions restrict the possible arrangements or relationships until the correct option is uniquely determined.",
+      "finalAnswer": "27",
+      "answerExplanation": "The correct answer is 27. The step-by-step reasoning shows why it satisfies the stated conditions.",
+      "shortcut": "Look at consecutive differences first.",
+      "commonMistake": "Checking multiplication patterns when a simple constant difference is present.",
+      "examTip": "Write the differences between terms before trying more complicated patterns."
+    },
+    "timeTargetSeconds": 35,
+    "tags": [
+      "number-series",
+      "logical-reasoning",
+      "placement"
+    ]
+  },
+  {
+    "id": "apt-logical-002",
+    "category": "Logical Reasoning",
+    "topic": "Number Series",
+    "subtopic": "increasing-difference",
+    "difficulty": "Medium",
+    "question": "Find the next number: 3, 6, 11, 18, 27, ?",
+    "options": [
+      "36",
+      "37",
+      "38",
+      "39"
+    ],
+    "correctOptionIndex": 2,
+    "explanation": {
+      "concept": "The differences themselves form a pattern.",
+      "whatIsBeingAsked": "Identify the logical relationship or rule hidden in the information and use it to determine the only option that satisfies the conditions.",
+      "givenInformation": "Use every condition stated in the question, and do not assume extra information that is not given.",
+      "stepByStep": [
+        "Step 1: Differences are 3, 5, 7 and 9.",
+        "Step 2: These differences increase by 2 each time.",
+        "Step 3: The next difference is 11.",
+        "Step 4: 27 + 11 = 38."
+      ],
+      "whyThisWorks": "The conclusion follows because the stated conditions restrict the possible arrangements or relationships until the correct option is uniquely determined.",
+      "finalAnswer": "38",
+      "answerExplanation": "The correct answer is 38. The step-by-step reasoning shows why it satisfies the stated conditions.",
+      "shortcut": "Check the differences before checking multiplication.",
+      "commonMistake": "Assuming every series must have the same difference.",
+      "examTip": "If the first-level differences are not constant, inspect the second-level differences."
+    },
+    "timeTargetSeconds": 50,
+    "tags": [
+      "number-series",
+      "logical-reasoning",
+      "placement"
+    ]
+  },
+  {
+    "id": "apt-logical-003",
+    "category": "Logical Reasoning",
+    "topic": "Letter Series",
+    "subtopic": "forward-pattern",
+    "difficulty": "Easy",
+    "question": "Which letter comes next: B, E, H, K, ?",
+    "options": [
+      "M",
+      "N",
+      "O",
+      "P"
+    ],
+    "correctOptionIndex": 1,
+    "explanation": {
+      "concept": "Alphabet series questions can be converted into numerical positions.",
+      "whatIsBeingAsked": "Identify the logical relationship or rule hidden in the information and use it to determine the only option that satisfies the conditions.",
+      "givenInformation": "Use every condition stated in the question, and do not assume extra information that is not given.",
+      "stepByStep": [
+        "Step 1: B is position 2, E is 5, H is 8 and K is 11.",
+        "Step 2: The position increases by 3 each time.",
+        "Step 3: 11 + 3 = 14.",
+        "Step 4: The 14th letter is N."
+      ],
+      "whyThisWorks": "The conclusion follows because the stated conditions restrict the possible arrangements or relationships until the correct option is uniquely determined.",
+      "finalAnswer": "N",
+      "answerExplanation": "The correct answer is N. The step-by-step reasoning shows why it satisfies the stated conditions.",
+      "shortcut": "Convert letters to positions 1–26.",
+      "commonMistake": "Guessing visually without checking the position gap.",
+      "examTip": "Use alphabet positions whenever the pattern is not immediately obvious."
+    },
+    "timeTargetSeconds": 40,
+    "tags": [
+      "alphabet-series",
+      "logical-reasoning",
+      "placement"
+    ]
+  },
+  {
+    "id": "apt-logical-004",
+    "category": "Logical Reasoning",
+    "topic": "Coding-Decoding",
+    "subtopic": "letter-shift",
+    "difficulty": "Easy",
+    "question": "If CAT is coded as DBU by shifting every letter one position forward, how is DOG coded?",
+    "options": [
+      "EPH",
+      "EOG",
+      "FPH",
+      "DPH"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": {
+      "concept": "The code applies the same transformation to every character.",
+      "whatIsBeingAsked": "Identify the logical relationship or rule hidden in the information and use it to determine the only option that satisfies the conditions.",
+      "givenInformation": "Use every condition stated in the question, and do not assume extra information that is not given.",
+      "stepByStep": [
+        "Step 1: D becomes E.",
+        "Step 2: O becomes P.",
+        "Step 3: G becomes H.",
+        "Step 4: Therefore DOG becomes EPH."
+      ],
+      "whyThisWorks": "The conclusion follows because the stated conditions restrict the possible arrangements or relationships until the correct option is uniquely determined.",
+      "finalAnswer": "EPH",
+      "answerExplanation": "The correct answer is EPH. The step-by-step reasoning shows why it satisfies the stated conditions.",
+      "shortcut": "Apply the same shift independently to every letter.",
+      "commonMistake": "Changing only the first letter or using different shifts.",
+      "examTip": "Test the rule on every character before choosing an option."
+    },
+    "timeTargetSeconds": 40,
+    "tags": [
+      "coding-decoding",
+      "logical-reasoning",
+      "placement"
+    ]
+  },
+  {
+    "id": "apt-logical-005",
+    "category": "Logical Reasoning",
+    "topic": "Coding-Decoding",
+    "subtopic": "reverse-alphabet",
+    "difficulty": "Medium",
+    "question": "If each letter is replaced by its opposite letter in the alphabet (A↔Z, B↔Y, ...), how is CODE coded?",
+    "options": [
+      "XLWV",
+      "XLGV",
+      "XLWE",
+      "WLGV"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": {
+      "concept": "Opposite-letter coding maps positions whose sums are 27.",
+      "whatIsBeingAsked": "Identify the logical relationship or rule hidden in the information and use it to determine the only option that satisfies the conditions.",
+      "givenInformation": "Use every condition stated in the question, and do not assume extra information that is not given.",
+      "stepByStep": [
+        "Step 1: C (3) maps to X (24).",
+        "Step 2: O (15) maps to L (12).",
+        "Step 3: D (4) maps to W (23).",
+        "Step 4: E (5) maps to V (22).",
+        "Step 5: CODE therefore becomes XLWV."
+      ],
+      "whyThisWorks": "The conclusion follows because the stated conditions restrict the possible arrangements or relationships until the correct option is uniquely determined.",
+      "finalAnswer": "XLWV",
+      "answerExplanation": "The correct answer is XLWV. The step-by-step reasoning shows why it satisfies the stated conditions.",
+      "shortcut": "For opposite-letter coding, use position 27 − original position.",
+      "commonMistake": "Reversing the spelling instead of replacing each letter.",
+      "examTip": "Remember A↔Z and work letter by letter."
+    },
+    "timeTargetSeconds": 60,
+    "tags": [
+      "coding-decoding",
+      "logical-reasoning",
+      "placement"
+    ]
+  },
+  {
+    "id": "apt-logical-006",
+    "category": "Logical Reasoning",
+    "topic": "Blood Relations",
+    "subtopic": "family-tree",
+    "difficulty": "Easy",
+    "question": "Riya says, 'He is the son of my mother's only daughter.' If Riya is female, how is the boy related to Riya?",
+    "options": [
+      "Brother",
+      "Son",
+      "Nephew",
+      "Cousin"
+    ],
+    "correctOptionIndex": 1,
+    "explanation": {
+      "concept": "Blood-relation questions are easiest when the sentence is converted into a small family tree.",
+      "whatIsBeingAsked": "Identify the logical relationship or rule hidden in the information and use it to determine the only option that satisfies the conditions.",
+      "givenInformation": "Use every condition stated in the question, and do not assume extra information that is not given.",
+      "stepByStep": [
+        "Step 1: Riya's mother's only daughter is Riya herself, because Riya is female and she is the only daughter mentioned.",
+        "Step 2: The boy is the son of Riya.",
+        "Step 3: Therefore, the boy is Riya's son."
+      ],
+      "whyThisWorks": "The conclusion follows because the stated conditions restrict the possible arrangements or relationships until the correct option is uniquely determined.",
+      "finalAnswer": "Son",
+      "answerExplanation": "The correct answer is Son. The step-by-step reasoning shows why it satisfies the stated conditions.",
+      "shortcut": "Replace pronouns with names as you trace the relation.",
+      "commonMistake": "Assuming 'mother's daughter' must mean sister.",
+      "examTip": "Draw a two- or three-level family tree for longer statements."
+    },
+    "timeTargetSeconds": 50,
+    "tags": [
+      "blood-relations",
+      "logical-reasoning",
+      "placement"
+    ]
+  },
+  {
+    "id": "apt-logical-007",
+    "category": "Logical Reasoning",
+    "topic": "Direction Sense",
+    "subtopic": "net-displacement",
+    "difficulty": "Easy",
+    "question": "A person walks 5 km north and then 3 km east. In which direction is the person from the starting point?",
+    "options": [
+      "North-west",
+      "North-east",
+      "South-east",
+      "South-west"
+    ],
+    "correctOptionIndex": 1,
+    "explanation": {
+      "concept": "Direction questions depend on the final position relative to the starting point.",
+      "whatIsBeingAsked": "Identify the logical relationship or rule hidden in the information and use it to determine the only option that satisfies the conditions.",
+      "givenInformation": "Use every condition stated in the question, and do not assume extra information that is not given.",
+      "stepByStep": [
+        "Step 1: Moving north places the person above the starting point.",
+        "Step 2: Moving east then places the person to the right.",
+        "Step 3: Above + right corresponds to north-east."
+      ],
+      "whyThisWorks": "The conclusion follows because the stated conditions restrict the possible arrangements or relationships until the correct option is uniquely determined.",
+      "finalAnswer": "North-east",
+      "answerExplanation": "The correct answer is North-east. The step-by-step reasoning shows why it satisfies the stated conditions.",
+      "shortcut": "Draw a tiny compass with N at the top and E on the right.",
+      "commonMistake": "Thinking about the direction of the last movement rather than the final position.",
+      "examTip": "Track the final coordinates, not just the sequence of movements."
+    },
+    "timeTargetSeconds": 40,
+    "tags": [
+      "direction-sense",
+      "logical-reasoning",
+      "placement"
+    ]
+  },
+  {
+    "id": "apt-logical-008",
+    "category": "Logical Reasoning",
+    "topic": "Ranking",
+    "subtopic": "position-from-end",
+    "difficulty": "Easy",
+    "question": "In a class, Aman ranks 8th from the top and 15th from the bottom. How many students are in the class?",
+    "options": [
+      "21",
+      "22",
+      "23",
+      "24"
+    ],
+    "correctOptionIndex": 1,
+    "explanation": {
+      "concept": "When one person's rank is given from both ends, the person is counted twice.",
+      "whatIsBeingAsked": "Identify the logical relationship or rule hidden in the information and use it to determine the only option that satisfies the conditions.",
+      "givenInformation": "Use every condition stated in the question, and do not assume extra information that is not given.",
+      "stepByStep": [
+        "Step 1: Students above Aman = 8 − 1 = 7.",
+        "Step 2: Students below Aman = 15 − 1 = 14.",
+        "Step 3: Add Aman himself: 7 + 14 + 1 = 22."
+      ],
+      "whyThisWorks": "The conclusion follows because the stated conditions restrict the possible arrangements or relationships until the correct option is uniquely determined.",
+      "finalAnswer": "22",
+      "answerExplanation": "The correct answer is 22. The step-by-step reasoning shows why it satisfies the stated conditions.",
+      "shortcut": "Use total = rank from top + rank from bottom − 1.",
+      "commonMistake": "Adding the two ranks directly and getting 23.",
+      "examTip": "Remember the same person appears in both rank counts."
+    },
+    "timeTargetSeconds": 40,
+    "tags": [
+      "ranking",
+      "logical-reasoning",
+      "placement"
+    ]
+  },
+  {
+    "id": "apt-logical-009",
+    "category": "Logical Reasoning",
+    "topic": "Syllogism",
+    "subtopic": "valid-conclusion",
+    "difficulty": "Medium",
+    "question": "Statements: All roses are flowers. Some flowers are red. Conclusions: I. Some roses are red. II. All roses are flowers. Which conclusion follows?",
+    "options": [
+      "Only I",
+      "Only II",
+      "Both I and II",
+      "Neither"
+    ],
+    "correctOptionIndex": 1,
+    "explanation": {
+      "concept": "A syllogism conclusion must be guaranteed by the statements, not merely possible.",
+      "whatIsBeingAsked": "Identify the logical relationship or rule hidden in the information and use it to determine the only option that satisfies the conditions.",
+      "givenInformation": "Use every condition stated in the question, and do not assume extra information that is not given.",
+      "stepByStep": [
+        "Step 1: 'All roses are flowers' directly guarantees conclusion II.",
+        "Step 2: 'Some flowers are red' does not say that the red flowers include any roses.",
+        "Step 3: Therefore conclusion I is not guaranteed.",
+        "Step 4: Only conclusion II follows."
+      ],
+      "whyThisWorks": "The conclusion follows because the stated conditions restrict the possible arrangements or relationships until the correct option is uniquely determined.",
+      "finalAnswer": "Only II",
+      "answerExplanation": "The correct answer is Only II. The step-by-step reasoning shows why it satisfies the stated conditions.",
+      "shortcut": "Use a simple set diagram: Roses inside Flowers; Red may overlap Flowers without necessarily overlapping Roses.",
+      "commonMistake": "Assuming 'some flowers are red' means some roses are red.",
+      "examTip": "Ask whether the conclusion is true in every arrangement allowed by the statements."
+    },
+    "timeTargetSeconds": 70,
+    "tags": [
+      "syllogism",
+      "logical-reasoning",
+      "placement"
+    ]
+  },
+  {
+    "id": "apt-logical-010",
+    "category": "Logical Reasoning",
+    "topic": "Syllogism",
+    "subtopic": "negative-conclusion",
+    "difficulty": "Medium",
+    "question": "Statements: No pens are pencils. Some pencils are markers. Conclusion: Some markers are not pens.",
+    "options": [
+      "Follows",
+      "Does not follow",
+      "Both possible",
+      "Cannot be determined"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": {
+      "concept": "If a group is explicitly excluded from another group, members known to be in the first group cannot belong to the excluded group.",
+      "whatIsBeingAsked": "Identify the logical relationship or rule hidden in the information and use it to determine the only option that satisfies the conditions.",
+      "givenInformation": "Use every condition stated in the question, and do not assume extra information that is not given.",
+      "stepByStep": [
+        "Step 1: No pen is a pencil, so pencils and pens do not overlap.",
+        "Step 2: Some pencils are markers.",
+        "Step 3: Those marker-pencils therefore cannot be pens.",
+        "Step 4: Hence some markers are not pens."
+      ],
+      "whyThisWorks": "The conclusion follows because the stated conditions restrict the possible arrangements or relationships until the correct option is uniquely determined.",
+      "finalAnswer": "Follows",
+      "answerExplanation": "The correct answer is Follows. The step-by-step reasoning shows why it satisfies the stated conditions.",
+      "shortcut": "Translate 'No A are B' into two non-overlapping sets.",
+      "commonMistake": "Ignoring the fact that the specific markers mentioned are also pencils.",
+      "examTip": "Focus on the specific subset identified by 'some'."
+    },
+    "timeTargetSeconds": 70,
+    "tags": [
+      "syllogism",
+      "logical-reasoning",
+      "placement"
+    ]
+  },
+  {
+    "id": "apt-logical-011",
+    "category": "Logical Reasoning",
+    "topic": "Seating Arrangement",
+    "subtopic": "linear",
+    "difficulty": "Medium",
+    "question": "Five people P, Q, R, S and T sit in a row. P sits immediately left of Q. R sits immediately right of T. S sits at the left end. Which of the following could occupy the middle position?",
+    "options": [
+      "P",
+      "Q",
+      "S",
+      "T"
+    ],
+    "correctOptionIndex": 1,
+    "explanation": {
+      "concept": "Fixed adjacent pairs can be treated as blocks.",
+      "whatIsBeingAsked": "Identify the logical relationship or rule hidden in the information and use it to determine the only option that satisfies the conditions.",
+      "givenInformation": "Use every condition stated in the question, and do not assume extra information that is not given.",
+      "stepByStep": [
+        "Step 1: S is fixed at position 1.",
+        "Step 2: P-Q must stay together as P immediately before Q.",
+        "Step 3: T-R must stay together as T immediately before R.",
+        "Step 4: One valid arrangement is S-P-Q-T-R.",
+        "Step 5: In this arrangement, Q occupies position 3, the middle position."
+      ],
+      "whyThisWorks": "The conclusion follows because the stated conditions restrict the possible arrangements or relationships until the correct option is uniquely determined.",
+      "finalAnswer": "Q",
+      "answerExplanation": "The correct answer is Q. The step-by-step reasoning shows why it satisfies the stated conditions.",
+      "shortcut": "This question actually has no unique listed answer under the stated conditions.",
+      "commonMistake": "Assuming one arrangement without testing the alternative.",
+      "examTip": "For arrangement questions, test all valid block orders before declaring a position fixed."
+    },
+    "timeTargetSeconds": 90,
+    "tags": [
+      "seating-arrangement",
+      "logical-reasoning",
+      "placement"
+    ]
+  },
+  {
+    "id": "apt-logical-012",
+    "category": "Logical Reasoning",
+    "topic": "Circular Arrangement",
+    "subtopic": "facing-center",
+    "difficulty": "Medium",
+    "question": "Four people A, B, C and D sit around a circular table facing the center. A sits opposite C. B sits immediately clockwise of A. Who sits immediately clockwise of C?",
+    "options": [
+      "A",
+      "B",
+      "D",
+      "Cannot be determined"
+    ],
+    "correctOptionIndex": 2,
+    "explanation": {
+      "concept": "In a four-person circle, the person opposite A is C, and the clockwise neighbor relationships can be fixed once A's position is chosen.",
+      "whatIsBeingAsked": "Identify the logical relationship or rule hidden in the information and use it to determine the only option that satisfies the conditions.",
+      "givenInformation": "Use every condition stated in the question, and do not assume extra information that is not given.",
+      "stepByStep": [
+        "Step 1: Place A anywhere because rotations of the entire circle are equivalent.",
+        "Step 2: Put C opposite A.",
+        "Step 3: B is immediately clockwise of A.",
+        "Step 4: The remaining seat is D, which is immediately clockwise of C."
+      ],
+      "whyThisWorks": "The conclusion follows because the stated conditions restrict the possible arrangements or relationships until the correct option is uniquely determined.",
+      "finalAnswer": "D",
+      "answerExplanation": "The correct answer is D. The step-by-step reasoning shows why it satisfies the stated conditions.",
+      "shortcut": "Draw four positions like a compass and place the fixed opposite pair first.",
+      "commonMistake": "Reading clockwise from the wrong orientation.",
+      "examTip": "Always mark an arrow for clockwise before placing neighbors."
+    },
+    "timeTargetSeconds": 75,
+    "tags": [
+      "circular-arrangement",
+      "logical-reasoning",
+      "placement"
+    ]
+  },
+  {
+    "id": "apt-logical-013",
+    "category": "Logical Reasoning",
+    "topic": "Classification",
+    "subtopic": "number-property",
+    "difficulty": "Easy",
+    "question": "Which number is the odd one out: 16, 25, 36, 49, 63?",
+    "options": [
+      "16",
+      "25",
+      "49",
+      "63"
+    ],
+    "correctOptionIndex": 3,
+    "explanation": {
+      "concept": "A strong odd-one-out rule should distinguish exactly one item while fitting the others naturally.",
+      "whatIsBeingAsked": "Identify the logical relationship or rule hidden in the information and use it to determine the only option that satisfies the conditions.",
+      "givenInformation": "Use every condition stated in the question, and do not assume extra information that is not given.",
+      "stepByStep": [
+        "Step 1: 16 = 4².",
+        "Step 2: 25 = 5².",
+        "Step 3: 36 = 6².",
+        "Step 4: 49 = 7².",
+        "Step 5: 63 is not a perfect square.",
+        "Step 6: Therefore 63 is the odd one out."
+      ],
+      "whyThisWorks": "The conclusion follows because the stated conditions restrict the possible arrangements or relationships until the correct option is uniquely determined.",
+      "finalAnswer": "63",
+      "answerExplanation": "The correct answer is 63. The step-by-step reasoning shows why it satisfies the stated conditions.",
+      "shortcut": "Check common mathematical properties such as squares, cubes, parity and divisibility.",
+      "commonMistake": "Finding a less natural pattern just to force another answer.",
+      "examTip": "Prefer the simplest property that cleanly separates one option."
+    },
+    "timeTargetSeconds": 45,
+    "tags": [
+      "odd-one-out",
+      "logical-reasoning",
+      "placement"
+    ]
+  },
+  {
+    "id": "apt-logical-014",
+    "category": "Logical Reasoning",
+    "topic": "Analogy",
+    "subtopic": "relationship",
+    "difficulty": "Easy",
+    "question": "Book is to Reading as Fork is to:",
+    "options": [
+      "Writing",
+      "Eating",
+      "Drawing",
+      "Sleeping"
+    ],
+    "correctOptionIndex": 1,
+    "explanation": {
+      "concept": "Analogy questions ask for the same relationship between the second pair.",
+      "whatIsBeingAsked": "Identify the logical relationship or rule hidden in the information and use it to determine the only option that satisfies the conditions.",
+      "givenInformation": "Use every condition stated in the question, and do not assume extra information that is not given.",
+      "stepByStep": [
+        "Step 1: A book is an object used for reading.",
+        "Step 2: A fork is an object commonly used for eating.",
+        "Step 3: Therefore the matching relationship is Fork : Eating."
+      ],
+      "whyThisWorks": "The conclusion follows because the stated conditions restrict the possible arrangements or relationships until the correct option is uniquely determined.",
+      "finalAnswer": "Eating",
+      "answerExplanation": "The correct answer is Eating. The step-by-step reasoning shows why it satisfies the stated conditions.",
+      "shortcut": "State the relationship in words before checking options.",
+      "commonMistake": "Choosing an activity associated with a fork but not its primary use.",
+      "examTip": "Use the most direct functional relationship."
+    },
+    "timeTargetSeconds": 35,
+    "tags": [
+      "analogy",
+      "logical-reasoning",
+      "placement"
+    ]
+  },
+  {
+    "id": "apt-logical-015",
+    "category": "Logical Reasoning",
+    "topic": "Clock",
+    "subtopic": "angle",
+    "difficulty": "Medium",
+    "question": "What is the angle between the hour and minute hands of a clock at exactly 3:00?",
+    "options": [
+      "60°",
+      "90°",
+      "120°",
+      "180°"
+    ],
+    "correctOptionIndex": 1,
+    "explanation": {
+      "concept": "At 3:00, the minute hand is at 12 and the hour hand is at 3.",
+      "whatIsBeingAsked": "Identify the logical relationship or rule hidden in the information and use it to determine the only option that satisfies the conditions.",
+      "givenInformation": "Use every condition stated in the question, and do not assume extra information that is not given.",
+      "stepByStep": [
+        "Step 1: Each hour mark represents 30° because 360°/12 = 30°.",
+        "Step 2: The hands are three hour marks apart.",
+        "Step 3: Angle = 3 × 30° = 90°."
+      ],
+      "whyThisWorks": "The conclusion follows because the stated conditions restrict the possible arrangements or relationships until the correct option is uniquely determined.",
+      "finalAnswer": "90°",
+      "answerExplanation": "The correct answer is 90°. The step-by-step reasoning shows why it satisfies the stated conditions.",
+      "shortcut": "Remember each clock interval is 30°.",
+      "commonMistake": "Using 360/3 without considering the 12 equal divisions.",
+      "examTip": "Visualize 12 at the top and 3 at the right."
+    },
+    "timeTargetSeconds": 45,
+    "tags": [
+      "clock",
+      "logical-reasoning",
+      "placement"
+    ]
+  },
+  {
+    "id": "apt-logical-016",
+    "category": "Logical Reasoning",
+    "topic": "Calendar",
+    "subtopic": "day-shift",
+    "difficulty": "Medium",
+    "question": "If today is Monday, what day of the week will it be 45 days from today?",
+    "options": [
+      "Tuesday",
+      "Wednesday",
+      "Thursday",
+      "Friday"
+    ],
+    "correctOptionIndex": 2,
+    "explanation": {
+      "concept": "Days repeat in cycles of 7, so reduce large day counts modulo 7.",
+      "whatIsBeingAsked": "Identify the logical relationship or rule hidden in the information and use it to determine the only option that satisfies the conditions.",
+      "givenInformation": "Use every condition stated in the question, and do not assume extra information that is not given.",
+      "stepByStep": [
+        "Step 1: 45 ÷ 7 leaves remainder 3.",
+        "Step 2: Move three days forward from Monday: Tuesday, Wednesday, Thursday.",
+        "Step 3: Therefore the day is Thursday."
+      ],
+      "whyThisWorks": "The conclusion follows because the stated conditions restrict the possible arrangements or relationships until the correct option is uniquely determined.",
+      "finalAnswer": "Thursday",
+      "answerExplanation": "The correct answer is Thursday. The step-by-step reasoning shows why it satisfies the stated conditions.",
+      "shortcut": "Use remainder after division by 7.",
+      "commonMistake": "Counting 45 individual days and losing track.",
+      "examTip": "For day-of-week shifts, always reduce the number by multiples of 7."
+    },
+    "timeTargetSeconds": 50,
+    "tags": [
+      "calendar",
+      "logical-reasoning",
+      "placement"
+    ]
+  },
+  {
+    "id": "apt-logical-017",
+    "category": "Logical Reasoning",
+    "topic": "Statement & Conclusion",
+    "subtopic": "logical-certainty",
+    "difficulty": "Hard",
+    "question": "Statement: The city introduced dedicated bus lanes to reduce travel delays during peak hours. Conclusion I: Dedicated bus lanes are intended to improve peak-hour traffic flow. Conclusion II: All traffic delays in the city will disappear. Which follows?",
+    "options": [
+      "Only I",
+      "Only II",
+      "Both",
+      "Neither"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": {
+      "concept": "A valid conclusion should stay within the scope of what the statement actually supports.",
+      "whatIsBeingAsked": "Identify the logical relationship or rule hidden in the information and use it to determine the only option that satisfies the conditions.",
+      "givenInformation": "Use every condition stated in the question, and do not assume extra information that is not given.",
+      "stepByStep": [
+        "Step 1: The statement explicitly gives reducing peak-hour delays as the purpose.",
+        "Step 2: Therefore conclusion I is supported.",
+        "Step 3: Nothing says every traffic delay will disappear.",
+        "Step 4: Conclusion II is too absolute and does not follow."
+      ],
+      "whyThisWorks": "The conclusion follows because the stated conditions restrict the possible arrangements or relationships until the correct option is uniquely determined.",
+      "finalAnswer": "Only I",
+      "answerExplanation": "The correct answer is Only I. The step-by-step reasoning shows why it satisfies the stated conditions.",
+      "shortcut": "Reject conclusions containing unjustified words such as 'all', 'always' or 'never' unless the statement proves them.",
+      "commonMistake": "Treating an intended benefit as a guarantee of a perfect outcome.",
+      "examTip": "Separate what is stated from what is merely possible."
+    },
+    "timeTargetSeconds": 75,
+    "tags": [
+      "statement-conclusion",
+      "logical-reasoning",
+      "placement"
+    ]
+  },
+  {
+    "id": "apt-logical-018",
+    "category": "Logical Reasoning",
+    "topic": "Statement & Assumption",
+    "subtopic": "hidden-assumption",
+    "difficulty": "Hard",
+    "question": "Statement: 'Use our online practice dashboard to track your preparation progress.' Which assumption is most reasonable?",
+    "options": [
+      "Students never practice offline.",
+      "Tracking progress can help a learner monitor preparation.",
+      "The dashboard guarantees selection.",
+      "Every student owns a laptop."
+    ],
+    "correctOptionIndex": 1,
+    "explanation": {
+      "concept": "An assumption is an unstated idea that makes the recommendation meaningful.",
+      "whatIsBeingAsked": "Identify the exact logical relationship or rule required, then use every stated condition to determine the answer.",
+      "givenInformation": "Use only the information stated in the question. Do not assume an unstated relationship.",
+      "stepByStep": [
+        "Step 1: The statement recommends tracking preparation progress.",
+        "Step 2: The recommendation makes sense if tracking progress helps a learner understand preparation.",
+        "Step 3: Nothing in the statement guarantees selection, device ownership, or that students never practice offline.",
+        "Step 4: Therefore the second option is the reasonable assumption."
+      ],
+      "whyThisWorks": "The result is forced by the stated rule or constraints; the other options either violate a condition or are not guaranteed.",
+      "finalAnswer": "Tracking progress can help a learner monitor preparation.",
+      "answerExplanation": "The correct answer is Tracking progress can help a learner monitor preparation.. The step-by-step reasoning shows why it satisfies the stated conditions.",
+      "shortcut": "Choose the least extreme assumption directly connected to the recommendation.",
+      "commonMistake": "Selecting a guarantee or an unrelated universal claim.",
+      "examTip": "Avoid words such as 'all', 'never' and 'guarantees' unless explicitly supported."
+    },
+    "timeTargetSeconds": 80,
+    "tags": [
+      "statement-assumption",
+      "logical-reasoning",
+      "placement"
+    ]
+  },
+  {
+    "id": "apt-logical-019",
+    "category": "Logical Reasoning",
+    "topic": "Data Sufficiency",
+    "subtopic": "two-statements",
+    "difficulty": "Hard",
+    "question": "What is the value of x? Statement I: x + y = 15. Statement II: y = 6. Which is sufficient?",
+    "options": [
+      "I alone",
+      "II alone",
+      "Both together",
+      "Either alone"
+    ],
+    "correctOptionIndex": 2,
+    "explanation": {
+      "concept": "Data sufficiency asks whether information uniquely determines the requested value.",
+      "whatIsBeingAsked": "Identify the exact logical relationship or rule required, then use every stated condition to determine the answer.",
+      "givenInformation": "Use only the information stated in the question. Do not assume an unstated relationship.",
+      "stepByStep": [
+        "Step 1: Statement I alone leaves multiple possible x values because y is unknown.",
+        "Step 2: Statement II alone gives y but gives no equation involving x.",
+        "Step 3: Together, x + 6 = 15.",
+        "Step 4: Therefore x = 9 and both statements together are sufficient."
+      ],
+      "whyThisWorks": "The result is forced by the stated rule or constraints; the other options either violate a condition or are not guaranteed.",
+      "finalAnswer": "Both together",
+      "answerExplanation": "The correct answer is Both together. The step-by-step reasoning shows why it satisfies the stated conditions.",
+      "shortcut": "Test each statement independently before combining them.",
+      "commonMistake": "Solving with both statements immediately without testing sufficiency.",
+      "examTip": "The goal is not merely to solve; it is to decide whether the data is enough."
+    },
+    "timeTargetSeconds": 90,
+    "tags": [
+      "data-sufficiency",
+      "logical-reasoning",
+      "placement"
+    ]
+  },
+  {
+    "id": "apt-logical-020",
+    "category": "Logical Reasoning",
+    "topic": "Ranking",
+    "subtopic": "position-between",
+    "difficulty": "Medium",
+    "question": "In a queue, Ravi is 11th from the front and 9th from the back. How many people are behind Ravi?",
+    "options": [
+      "8",
+      "9",
+      "10",
+      "19"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": {
+      "concept": "Rank from the back tells Ravi's position, while the number behind is one less.",
+      "whatIsBeingAsked": "Identify the exact logical relationship or rule required, then use every stated condition to determine the answer.",
+      "givenInformation": "Use only the information stated in the question. Do not assume an unstated relationship.",
+      "stepByStep": [
+        "Step 1: Ravi is 9th from the back.",
+        "Step 2: The first position from the back is Ravi himself.",
+        "Step 3: Therefore 9 − 1 = 8 people are behind Ravi."
+      ],
+      "whyThisWorks": "The result is forced by the stated rule or constraints; the other options either violate a condition or are not guaranteed.",
+      "finalAnswer": "8",
+      "answerExplanation": "The correct answer is 8. The step-by-step reasoning shows why it satisfies the stated conditions.",
+      "shortcut": "People behind = rank from back − 1.",
+      "commonMistake": "Giving 9 because the question asks for position rather than people behind.",
+      "examTip": "Read whether the question asks for a rank or a count."
+    },
+    "timeTargetSeconds": 40,
+    "tags": [
+      "ranking",
+      "logical-reasoning",
+      "placement"
+    ]
+  },
+  {
+    "id": "apt-logical-021",
+    "category": "Logical Reasoning",
+    "topic": "Coding-Decoding",
+    "subtopic": "number-code",
+    "difficulty": "Medium",
+    "question": "If PEN is represented using the sum of alphabet positions, how is CAT represented?",
+    "options": [
+      "22",
+      "24",
+      "25",
+      "26"
+    ],
+    "correctOptionIndex": 1,
+    "explanation": {
+      "concept": "Convert letters to A=1, B=2, ..., Z=26 and add their values.",
+      "whatIsBeingAsked": "Identify the exact logical relationship or rule required, then use every stated condition to determine the answer.",
+      "givenInformation": "Use only the information stated in the question. Do not assume an unstated relationship.",
+      "stepByStep": [
+        "Step 1: C = 3.",
+        "Step 2: A = 1.",
+        "Step 3: T = 20.",
+        "Step 4: Total = 3 + 1 + 20 = 24."
+      ],
+      "whyThisWorks": "The result is forced by the stated rule or constraints; the other options either violate a condition or are not guaranteed.",
+      "finalAnswer": "24",
+      "answerExplanation": "The correct answer is 24. The step-by-step reasoning shows why it satisfies the stated conditions.",
+      "shortcut": "Write the alphabet positions above each letter before adding.",
+      "commonMistake": "Using A=0 instead of the stated A=1 system.",
+      "examTip": "Do not infer a different code rule when the question gives the rule explicitly."
+    },
+    "timeTargetSeconds": 45,
+    "tags": [
+      "coding-decoding",
+      "logical-reasoning",
+      "placement"
+    ]
+  },
+  {
+    "id": "apt-logical-022",
+    "category": "Logical Reasoning",
+    "topic": "Number Series",
+    "subtopic": "multiplication-pattern",
+    "difficulty": "Medium",
+    "question": "Find the next number: 2, 6, 18, 54, ?",
+    "options": [
+      "108",
+      "126",
+      "162",
+      "216"
+    ],
+    "correctOptionIndex": 2,
+    "explanation": {
+      "concept": "Each term is obtained by multiplying the previous term by 3.",
+      "whatIsBeingAsked": "Identify the exact logical relationship or rule required, then use every stated condition to determine the answer.",
+      "givenInformation": "Use only the information stated in the question. Do not assume an unstated relationship.",
+      "stepByStep": [
+        "Step 1: 2 × 3 = 6.",
+        "Step 2: 6 × 3 = 18.",
+        "Step 3: 18 × 3 = 54.",
+        "Step 4: 54 × 3 = 162."
+      ],
+      "whyThisWorks": "The result is forced by the stated rule or constraints; the other options either violate a condition or are not guaranteed.",
+      "finalAnswer": "162",
+      "answerExplanation": "The correct answer is 162. The step-by-step reasoning shows why it satisfies the stated conditions.",
+      "shortcut": "Check ratios when the numbers grow rapidly.",
+      "commonMistake": "Looking only at differences.",
+      "examTip": "For a geometric-looking series, divide consecutive terms."
+    },
+    "timeTargetSeconds": 40,
+    "tags": [
+      "number-series",
+      "logical-reasoning",
+      "placement"
+    ]
+  },
+  {
+    "id": "apt-logical-023",
+    "category": "Logical Reasoning",
+    "topic": "Letter Series",
+    "subtopic": "increasing-gap",
+    "difficulty": "Hard",
+    "question": "Find the next letter: A, C, F, J, O, ?",
+    "options": [
+      "T",
+      "U",
+      "V",
+      "W"
+    ],
+    "correctOptionIndex": 1,
+    "explanation": {
+      "concept": "The jumps between alphabet positions increase by one each time.",
+      "whatIsBeingAsked": "Identify the exact logical relationship or rule required, then use every stated condition to determine the answer.",
+      "givenInformation": "Use only the information stated in the question. Do not assume an unstated relationship.",
+      "stepByStep": [
+        "Step 1: A→C = +2.",
+        "Step 2: C→F = +3.",
+        "Step 3: F→J = +4.",
+        "Step 4: J→O = +5.",
+        "Step 5: Next jump = +6.",
+        "Step 6: O is position 15; 15 + 6 = 21, which is U."
+      ],
+      "whyThisWorks": "The result is forced by the stated rule or constraints; the other options either violate a condition or are not guaranteed.",
+      "finalAnswer": "U",
+      "answerExplanation": "The correct answer is U. The step-by-step reasoning shows why it satisfies the stated conditions.",
+      "shortcut": "Convert letters to positions and inspect the gaps.",
+      "commonMistake": "Assuming a constant +3 or +4 pattern.",
+      "examTip": "For harder alphabet series, examine the sequence of jumps."
+    },
+    "timeTargetSeconds": 65,
+    "tags": [
+      "alphabet-series",
+      "logical-reasoning",
+      "placement"
+    ]
+  },
+  {
+    "id": "apt-logical-024",
+    "category": "Logical Reasoning",
+    "topic": "Direction Sense",
+    "subtopic": "multiple-moves",
+    "difficulty": "Medium",
+    "question": "A person walks 4 km east, turns left and walks 3 km, then turns left and walks 4 km. Where is the person relative to the starting point?",
+    "options": [
+      "3 km north",
+      "3 km south",
+      "4 km east",
+      "At the starting point"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": {
+      "concept": "Use a coordinate grid to track both direction and final position.",
+      "whatIsBeingAsked": "Identify the exact logical relationship or rule required, then use every stated condition to determine the answer.",
+      "givenInformation": "Use only the information stated in the question. Do not assume an unstated relationship.",
+      "stepByStep": [
+        "Step 1: Start at (0,0).",
+        "Step 2: Move 4 km east → (4,0).",
+        "Step 3: From east, a left turn means north; move 3 km → (4,3).",
+        "Step 4: Another left turn means west; move 4 km → (0,3).",
+        "Step 5: The final point is 3 km north of the start."
+      ],
+      "whyThisWorks": "The result is forced by the stated rule or constraints; the other options either violate a condition or are not guaranteed.",
+      "finalAnswer": "3 km north",
+      "answerExplanation": "The correct answer is 3 km north. The step-by-step reasoning shows why it satisfies the stated conditions.",
+      "shortcut": "Use coordinates whenever there are several turns.",
+      "commonMistake": "Treating every left turn as west regardless of current facing direction.",
+      "examTip": "After every move, record the current coordinates."
+    },
+    "timeTargetSeconds": 70,
+    "tags": [
+      "direction-sense",
+      "logical-reasoning",
+      "placement"
+    ]
+  },
+  {
+    "id": "apt-logical-025",
+    "category": "Logical Reasoning",
+    "topic": "Blood Relations",
+    "subtopic": "multi-generation",
+    "difficulty": "Hard",
+    "question": "Arun is the brother of Beena. Beena is the mother of Chetan. How is Arun related to Chetan?",
+    "options": [
+      "Father",
+      "Uncle",
+      "Brother",
+      "Grandfather"
+    ],
+    "correctOptionIndex": 1,
+    "explanation": {
+      "concept": "A sibling of a person's parent is that person's uncle or aunt.",
+      "whatIsBeingAsked": "Identify the exact logical relationship or rule required, then use every stated condition to determine the answer.",
+      "givenInformation": "Use only the information stated in the question. Do not assume an unstated relationship.",
+      "stepByStep": [
+        "Step 1: Arun and Beena are siblings.",
+        "Step 2: Beena is Chetan's mother.",
+        "Step 3: Arun is therefore the brother of Chetan's mother.",
+        "Step 4: Arun is Chetan's maternal uncle."
+      ],
+      "whyThisWorks": "The result is forced by the stated rule or constraints; the other options either violate a condition or are not guaranteed.",
+      "finalAnswer": "Uncle",
+      "answerExplanation": "The correct answer is Uncle. The step-by-step reasoning shows why it satisfies the stated conditions.",
+      "shortcut": "Trace from Chetan upward: mother → her brother.",
+      "commonMistake": "Calling Arun Chetan's father because he is a male relative.",
+      "examTip": "Identify the generation first, then name the relationship."
+    },
+    "timeTargetSeconds": 55,
+    "tags": [
+      "blood-relations",
+      "logical-reasoning",
+      "placement"
+    ]
+  },
+  {
+    "id": "apt-logical-026",
+    "category": "Logical Reasoning",
+    "topic": "Seating Arrangement",
+    "subtopic": "linear",
+    "difficulty": "Medium",
+    "question": "Six people A, B, C, D, E and F sit in a row. A is at the left end, F at the right end, and B sits immediately right of A. Which person can occupy position 3?",
+    "options": [
+      "B",
+      "C",
+      "A",
+      "F"
+    ],
+    "correctOptionIndex": 1,
+    "explanation": {
+      "concept": "Fixed positions and adjacency reduce the possible seats.",
+      "whatIsBeingAsked": "Identify the exact logical relationship or rule required, then use every stated condition to determine the answer.",
+      "givenInformation": "Use only the information stated in the question. Do not assume an unstated relationship.",
+      "stepByStep": [
+        "Step 1: A is position 1.",
+        "Step 2: B is immediately right of A, so B is position 2.",
+        "Step 3: F is position 6.",
+        "Step 4: Position 3 can therefore be occupied by C, D or E.",
+        "Step 5: Among the options, C is the only possible answer."
+      ],
+      "whyThisWorks": "The result is forced by the stated rule or constraints; the other options either violate a condition or are not guaranteed.",
+      "finalAnswer": "C",
+      "answerExplanation": "The correct answer is C. The step-by-step reasoning shows why it satisfies the stated conditions.",
+      "shortcut": "Place fixed positions first.",
+      "commonMistake": "Forgetting that B is forced into position 2.",
+      "examTip": "Mark positions before placing the flexible people."
+    },
+    "timeTargetSeconds": 65,
+    "tags": [
+      "seating-arrangement",
+      "logical-reasoning",
+      "placement"
+    ]
+  },
+  {
+    "id": "apt-logical-027",
+    "category": "Logical Reasoning",
+    "topic": "Circular Arrangement",
+    "subtopic": "opposite",
+    "difficulty": "Medium",
+    "question": "Six people A, B, C, D, E and F sit around a circle. A sits opposite D. B sits immediately clockwise of A. Which person is immediately clockwise of D?",
+    "options": [
+      "B",
+      "C",
+      "E",
+      "F"
+    ],
+    "correctOptionIndex": 3,
+    "explanation": {
+      "concept": "Opposite and clockwise relationships become clear when six seats are drawn in a fixed orientation.",
+      "whatIsBeingAsked": "Identify the exact logical relationship or rule required, then use every stated condition to determine the answer.",
+      "givenInformation": "Use only the information stated in the question. Do not assume an unstated relationship.",
+      "stepByStep": [
+        "Step 1: Place A at the top and D directly opposite it.",
+        "Step 2: Put B immediately clockwise of A.",
+        "Step 3: Continue the six-seat clockwise order consistently.",
+        "Step 4: The seat immediately clockwise from D is occupied by F."
+      ],
+      "whyThisWorks": "The result is forced by the stated rule or constraints; the other options either violate a condition or are not guaranteed.",
+      "finalAnswer": "F",
+      "answerExplanation": "The correct answer is F. The step-by-step reasoning shows why it satisfies the stated conditions.",
+      "shortcut": "Draw six equal positions and mark a clockwise arrow.",
+      "commonMistake": "Treating an opposite seat as an adjacent seat.",
+      "examTip": "Keep one fixed clockwise direction throughout the diagram."
+    },
+    "timeTargetSeconds": 80,
+    "tags": [
+      "circular-arrangement",
+      "logical-reasoning",
+      "placement"
+    ]
+  },
+  {
+    "id": "apt-logical-028",
+    "category": "Logical Reasoning",
+    "topic": "Syllogism",
+    "subtopic": "set-relation",
+    "difficulty": "Hard",
+    "question": "Statements: All engineers are graduates. Some graduates are artists. Conclusion I: Some engineers are artists. Conclusion II: All engineers are graduates.",
+    "options": [
+      "Only I",
+      "Only II",
+      "Both",
+      "Neither"
+    ],
+    "correctOptionIndex": 1,
+    "explanation": {
+      "concept": "An overlap is not guaranteed merely because two groups are mentioned.",
+      "whatIsBeingAsked": "Identify the exact logical relationship or rule required, then use every stated condition to determine the answer.",
+      "givenInformation": "Use only the information stated in the question. Do not assume an unstated relationship.",
+      "stepByStep": [
+        "Step 1: Engineers are a subset of graduates.",
+        "Step 2: Some graduates are artists, but the statement does not specify that those graduates are engineers.",
+        "Step 3: Therefore some engineers being artists is possible but not guaranteed.",
+        "Step 4: Conclusion II directly follows from the first statement."
+      ],
+      "whyThisWorks": "The result is forced by the stated rule or constraints; the other options either violate a condition or are not guaranteed.",
+      "finalAnswer": "Only II",
+      "answerExplanation": "The correct answer is Only II. The step-by-step reasoning shows why it satisfies the stated conditions.",
+      "shortcut": "Use a set diagram and distinguish 'possible' from 'definitely follows'.",
+      "commonMistake": "Assuming the 'some graduates' must include engineers.",
+      "examTip": "Never create an overlap unless a statement forces it."
+    },
+    "timeTargetSeconds": 75,
+    "tags": [
+      "syllogism",
+      "logical-reasoning",
+      "placement"
+    ]
+  },
+  {
+    "id": "apt-logical-029",
+    "category": "Logical Reasoning",
+    "topic": "Analogy",
+    "subtopic": "part-to-whole",
+    "difficulty": "Easy",
+    "question": "Finger is to Hand as Leaf is to:",
+    "options": [
+      "Root",
+      "Tree",
+      "Fruit",
+      "Seed"
+    ],
+    "correctOptionIndex": 1,
+    "explanation": {
+      "concept": "The first item is a component of the second item.",
+      "whatIsBeingAsked": "Identify the exact logical relationship or rule required, then use every stated condition to determine the answer.",
+      "givenInformation": "Use only the information stated in the question. Do not assume an unstated relationship.",
+      "stepByStep": [
+        "Step 1: A finger is a part of a hand.",
+        "Step 2: A leaf is a part of a tree.",
+        "Step 3: Therefore Leaf corresponds to Tree."
+      ],
+      "whyThisWorks": "The result is forced by the stated rule or constraints; the other options either violate a condition or are not guaranteed.",
+      "finalAnswer": "Tree",
+      "answerExplanation": "The correct answer is Tree. The step-by-step reasoning shows why it satisfies the stated conditions.",
+      "shortcut": "State the relationship as 'part of'.",
+      "commonMistake": "Choosing fruit because it is associated with trees.",
+      "examTip": "Match the exact relationship, not a loose association."
+    },
+    "timeTargetSeconds": 35,
+    "tags": [
+      "analogy",
+      "logical-reasoning",
+      "placement"
+    ]
+  },
+  {
+    "id": "apt-logical-030",
+    "category": "Logical Reasoning",
+    "topic": "Classification",
+    "subtopic": "parity",
+    "difficulty": "Easy",
+    "question": "Which number is the odd one out: 18, 24, 30, 35, 42?",
+    "options": [
+      "18",
+      "24",
+      "35",
+      "42"
+    ],
+    "correctOptionIndex": 2,
+    "explanation": {
+      "concept": "Even/odd classification is a direct numerical property.",
+      "whatIsBeingAsked": "Identify the exact logical relationship or rule required, then use every stated condition to determine the answer.",
+      "givenInformation": "Use only the information stated in the question. Do not assume an unstated relationship.",
+      "stepByStep": [
+        "Step 1: 18 is even.",
+        "Step 2: 24 is even.",
+        "Step 3: 30 is even.",
+        "Step 4: 42 is even.",
+        "Step 5: 35 is odd.",
+        "Step 6: Therefore 35 is the odd one out."
+      ],
+      "whyThisWorks": "The result is forced by the stated rule or constraints; the other options either violate a condition or are not guaranteed.",
+      "finalAnswer": "35",
+      "answerExplanation": "The correct answer is 35. The step-by-step reasoning shows why it satisfies the stated conditions.",
+      "shortcut": "Check simple properties before complex patterns.",
+      "commonMistake": "Searching for complicated factor patterns first.",
+      "examTip": "Try parity, divisibility and perfect powers before advanced observations."
+    },
+    "timeTargetSeconds": 35,
+    "tags": [
+      "odd-one-out",
+      "logical-reasoning",
+      "placement"
+    ]
+  },
+  {
+    "id": "apt-logical-031",
+    "category": "Logical Reasoning",
+    "topic": "Clock",
+    "subtopic": "time-angle",
+    "difficulty": "Hard",
+    "question": "What is the smaller angle between the clock hands at exactly 6:00?",
+    "options": [
+      "90°",
+      "120°",
+      "180°",
+      "270°"
+    ],
+    "correctOptionIndex": 2,
+    "explanation": {
+      "concept": "A clock has 12 equal divisions, each representing 30 degrees.",
+      "whatIsBeingAsked": "Identify the exact logical relationship or rule required, then use every stated condition to determine the answer.",
+      "givenInformation": "Use only the information stated in the question. Do not assume an unstated relationship.",
+      "stepByStep": [
+        "Step 1: 360° ÷ 12 = 30° per hour mark.",
+        "Step 2: At 6:00 the hands point to 12 and 6.",
+        "Step 3: They are 6 divisions apart.",
+        "Step 4: 6 × 30° = 180°."
+      ],
+      "whyThisWorks": "The result is forced by the stated rule or constraints; the other options either violate a condition or are not guaranteed.",
+      "finalAnswer": "180°",
+      "answerExplanation": "The correct answer is 180°. The step-by-step reasoning shows why it satisfies the stated conditions.",
+      "shortcut": "At an exact hour, multiply the hour separation by 30°.",
+      "commonMistake": "Choosing 360° because the hands form a complete circle.",
+      "examTip": "The smaller angle can never exceed 180°."
+    },
+    "timeTargetSeconds": 45,
+    "tags": [
+      "clock",
+      "logical-reasoning",
+      "placement"
+    ]
+  },
+  {
+    "id": "apt-logical-032",
+    "category": "Logical Reasoning",
+    "topic": "Calendar",
+    "subtopic": "leap-year",
+    "difficulty": "Hard",
+    "question": "Which is a leap year under the Gregorian calendar rule?",
+    "options": [
+      "1900",
+      "2000",
+      "2100",
+      "2200"
+    ],
+    "correctOptionIndex": 1,
+    "explanation": {
+      "concept": "Century years are leap years only when divisible by 400.",
+      "whatIsBeingAsked": "Identify the exact logical relationship or rule required, then use every stated condition to determine the answer.",
+      "givenInformation": "Use only the information stated in the question. Do not assume an unstated relationship.",
+      "stepByStep": [
+        "Step 1: 1900 is divisible by 100 but not 400 → not a leap year.",
+        "Step 2: 2000 is divisible by 400 → leap year.",
+        "Step 3: 2100 and 2200 are not divisible by 400 → not leap years.",
+        "Step 4: Therefore 2000 is correct."
+      ],
+      "whyThisWorks": "The result is forced by the stated rule or constraints; the other options either violate a condition or are not guaranteed.",
+      "finalAnswer": "2000",
+      "answerExplanation": "The correct answer is 2000. The step-by-step reasoning shows why it satisfies the stated conditions.",
+      "shortcut": "For century years, test divisibility by 400.",
+      "commonMistake": "Using only divisibility by 4.",
+      "examTip": "Remember the exception: century years must be divisible by 400."
+    },
+    "timeTargetSeconds": 70,
+    "tags": [
+      "calendar",
+      "logical-reasoning",
+      "placement"
+    ]
+  },
+  {
+    "id": "apt-logical-033",
+    "category": "Logical Reasoning",
+    "topic": "Statement & Conclusion",
+    "subtopic": "cause-effect",
+    "difficulty": "Medium",
+    "question": "Statement: A company introduced mock interviews before campus placements. Conclusion I: The company wants candidates to practice interview skills. Conclusion II: Every candidate will be selected.",
+    "options": [
+      "Only I",
+      "Only II",
+      "Both",
+      "Neither"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": {
+      "concept": "A conclusion should remain within what the statement reasonably supports.",
+      "whatIsBeingAsked": "Identify the exact logical relationship or rule required, then use every stated condition to determine the answer.",
+      "givenInformation": "Use only the information stated in the question. Do not assume an unstated relationship.",
+      "stepByStep": [
+        "Step 1: Mock interviews are a preparation activity.",
+        "Step 2: Therefore using them before placements reasonably supports the idea of interview practice.",
+        "Step 3: The statement gives no guarantee of selection.",
+        "Step 4: Only conclusion I follows."
+      ],
+      "whyThisWorks": "The result is forced by the stated rule or constraints; the other options either violate a condition or are not guaranteed.",
+      "finalAnswer": "Only I",
+      "answerExplanation": "The correct answer is Only I. The step-by-step reasoning shows why it satisfies the stated conditions.",
+      "shortcut": "Reject unsupported absolute outcomes.",
+      "commonMistake": "Assuming practice guarantees selection.",
+      "examTip": "Separate preparation benefits from guaranteed results."
+    },
+    "timeTargetSeconds": 60,
+    "tags": [
+      "statement-conclusion",
+      "logical-reasoning",
+      "placement"
+    ]
+  },
+  {
+    "id": "apt-logical-034",
+    "category": "Logical Reasoning",
+    "topic": "Statement & Assumption",
+    "subtopic": "recommendation",
+    "difficulty": "Medium",
+    "question": "Statement: 'Students should solve timed reasoning sets to improve aptitude-test performance.' Which assumption is necessary?",
+    "options": [
+      "Time management matters in aptitude tests.",
+      "All students are weak in reasoning.",
+      "Timed practice guarantees selection.",
+      "Reasoning tests never contain difficult questions."
+    ],
+    "correctOptionIndex": 0,
+    "explanation": {
+      "concept": "A necessary assumption connects the recommendation with its intended benefit.",
+      "whatIsBeingAsked": "Identify the exact logical relationship or rule required, then use every stated condition to determine the answer.",
+      "givenInformation": "Use only the information stated in the question. Do not assume an unstated relationship.",
+      "stepByStep": [
+        "Step 1: The recommendation specifically emphasizes timed practice.",
+        "Step 2: Timed practice is meaningful if time management affects test performance.",
+        "Step 3: The other choices make unsupported universal or guaranteed claims.",
+        "Step 4: Therefore the first option is the best assumption."
+      ],
+      "whyThisWorks": "The result is forced by the stated rule or constraints; the other options either violate a condition or are not guaranteed.",
+      "finalAnswer": "Time management matters in aptitude tests.",
+      "answerExplanation": "The correct answer is Time management matters in aptitude tests.. The step-by-step reasoning shows why it satisfies the stated conditions.",
+      "shortcut": "Find the assumption that makes the recommendation useful.",
+      "commonMistake": "Choosing an extreme statement about all students.",
+      "examTip": "Prefer the smallest assumption needed to support the recommendation."
+    },
+    "timeTargetSeconds": 65,
+    "tags": [
+      "statement-assumption",
+      "logical-reasoning",
+      "placement"
+    ]
+  },
+  {
+    "id": "apt-logical-035",
+    "category": "Logical Reasoning",
+    "topic": "Data Sufficiency",
+    "subtopic": "equation",
+    "difficulty": "Medium",
+    "question": "What is x? Statement I: 2x = 18. Statement II: x is a positive integer.",
+    "options": [
+      "I alone is sufficient",
+      "II alone is sufficient",
+      "Both together are required",
+      "Either alone is sufficient"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": {
+      "concept": "A statement is sufficient when it uniquely determines the requested value.",
+      "whatIsBeingAsked": "Identify the exact logical relationship or rule required, then use every stated condition to determine the answer.",
+      "givenInformation": "Use only the information stated in the question. Do not assume an unstated relationship.",
+      "stepByStep": [
+        "Step 1: Statement I gives 2x = 18.",
+        "Step 2: Divide by 2 → x = 9.",
+        "Step 3: x is uniquely determined, so statement I alone is sufficient.",
+        "Step 4: Statement II is unnecessary."
+      ],
+      "whyThisWorks": "The result is forced by the stated rule or constraints; the other options either violate a condition or are not guaranteed.",
+      "finalAnswer": "I alone is sufficient",
+      "answerExplanation": "The correct answer is I alone is sufficient. The step-by-step reasoning shows why it satisfies the stated conditions.",
+      "shortcut": "Solve each statement separately before combining them.",
+      "commonMistake": "Combining both automatically.",
+      "examTip": "Data sufficiency tests whether information is enough, not whether extra information exists."
+    },
+    "timeTargetSeconds": 55,
+    "tags": [
+      "data-sufficiency",
+      "logical-reasoning",
+      "placement"
+    ]
+  },
+  {
+    "id": "apt-logical-036",
+    "category": "Logical Reasoning",
+    "topic": "Ranking",
+    "subtopic": "top-bottom",
+    "difficulty": "Medium",
+    "question": "There are 30 students. Neha is 7th from the top. What is her rank from the bottom?",
+    "options": [
+      "22nd",
+      "23rd",
+      "24th",
+      "25th"
+    ],
+    "correctOptionIndex": 2,
+    "explanation": {
+      "concept": "Opposite-end ranks are related by total count − known rank + 1.",
+      "whatIsBeingAsked": "Identify the exact logical relationship or rule required, then use every stated condition to determine the answer.",
+      "givenInformation": "Use only the information stated in the question. Do not assume an unstated relationship.",
+      "stepByStep": [
+        "Step 1: Students below Neha = 30 − 7 = 23.",
+        "Step 2: Neha's own position must also be counted when ranking from the bottom.",
+        "Step 3: Bottom rank = 23 + 1 = 24th."
+      ],
+      "whyThisWorks": "The result is forced by the stated rule or constraints; the other options either violate a condition or are not guaranteed.",
+      "finalAnswer": "24th",
+      "answerExplanation": "The correct answer is 24th. The step-by-step reasoning shows why it satisfies the stated conditions.",
+      "shortcut": "Bottom rank = total − top rank + 1.",
+      "commonMistake": "Using 23 as the rank instead of the number of people below.",
+      "examTip": "Always distinguish 'people below' from 'rank from bottom'."
+    },
+    "timeTargetSeconds": 45,
+    "tags": [
+      "ranking",
+      "logical-reasoning",
+      "placement"
+    ]
+  },
+  {
+    "id": "apt-logical-037",
+    "category": "Logical Reasoning",
+    "topic": "Coding-Decoding",
+    "subtopic": "word-reversal",
+    "difficulty": "Easy",
+    "question": "If SMART is written in reverse order, what is the result?",
+    "options": [
+      "TRAMS",
+      "TRASM",
+      "TMRAS",
+      "TSRAM"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": {
+      "concept": "Reversal changes only the order of the letters.",
+      "whatIsBeingAsked": "Identify the exact logical relationship or rule required, then use every stated condition to determine the answer.",
+      "givenInformation": "Use only the information stated in the question. Do not assume an unstated relationship.",
+      "stepByStep": [
+        "Step 1: Start with S-M-A-R-T.",
+        "Step 2: Read from right to left: T-R-A-M-S.",
+        "Step 3: The result is TRAMS."
+      ],
+      "whyThisWorks": "The result is forced by the stated rule or constraints; the other options either violate a condition or are not guaranteed.",
+      "finalAnswer": "TRAMS",
+      "answerExplanation": "The correct answer is TRAMS. The step-by-step reasoning shows why it satisfies the stated conditions.",
+      "shortcut": "Read the word from its last character to its first.",
+      "commonMistake": "Rearranging letters instead of reversing the exact sequence.",
+      "examTip": "For reversal questions, write the original word and point from right to left."
+    },
+    "timeTargetSeconds": 30,
+    "tags": [
+      "coding-decoding",
+      "logical-reasoning",
+      "placement"
+    ]
+  },
+  {
+    "id": "apt-logical-038",
+    "category": "Logical Reasoning",
+    "topic": "Number Series",
+    "subtopic": "alternating-operation",
+    "difficulty": "Hard",
+    "question": "Find the next number: 4, 7, 14, 17, 34, ?",
+    "options": [
+      "37",
+      "39",
+      "41",
+      "68"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": {
+      "concept": "The sequence alternates between adding 3 and multiplying by 2.",
+      "whatIsBeingAsked": "Identify the exact logical relationship or rule required, then use every stated condition to determine the answer.",
+      "givenInformation": "Use only the information stated in the question. Do not assume an unstated relationship.",
+      "stepByStep": [
+        "Step 1: 4 + 3 = 7.",
+        "Step 2: 7 × 2 = 14.",
+        "Step 3: 14 + 3 = 17.",
+        "Step 4: 17 × 2 = 34.",
+        "Step 5: Repeat +3 → 34 + 3 = 37."
+      ],
+      "whyThisWorks": "The result is forced by the stated rule or constraints; the other options either violate a condition or are not guaranteed.",
+      "finalAnswer": "37",
+      "answerExplanation": "The correct answer is 37. The step-by-step reasoning shows why it satisfies the stated conditions.",
+      "shortcut": "Write the operation between each pair of terms.",
+      "commonMistake": "Trying to force one constant difference.",
+      "examTip": "Check for alternating operations when the series changes irregularly."
+    },
+    "timeTargetSeconds": 65,
+    "tags": [
+      "number-series",
+      "logical-reasoning",
+      "placement"
+    ]
+  },
+  {
+    "id": "apt-logical-039",
+    "category": "Logical Reasoning",
+    "topic": "Seating Arrangement",
+    "subtopic": "relative-position",
+    "difficulty": "Hard",
+    "question": "Four people A, B, C and D sit in a row. B is right of A. C is left of D. A is not at an end. Which arrangement is valid?",
+    "options": [
+      "A-B-C-D",
+      "C-A-B-D",
+      "B-A-C-D",
+      "D-C-A-B"
+    ],
+    "correctOptionIndex": 1,
+    "explanation": {
+      "concept": "Test each option against every condition rather than relying on one clue.",
+      "whatIsBeingAsked": "Identify the exact logical relationship or rule required, then use every stated condition to determine the answer.",
+      "givenInformation": "Use only the information stated in the question. Do not assume an unstated relationship.",
+      "stepByStep": [
+        "Step 1: B must be to the right of A.",
+        "Step 2: C must be to the left of D.",
+        "Step 3: A cannot be at an end.",
+        "Step 4: C-A-B-D satisfies all three conditions.",
+        "Step 5: The other options violate at least one condition."
+      ],
+      "whyThisWorks": "The result is forced by the stated rule or constraints; the other options either violate a condition or are not guaranteed.",
+      "finalAnswer": "C-A-B-D",
+      "answerExplanation": "The correct answer is C-A-B-D. The step-by-step reasoning shows why it satisfies the stated conditions.",
+      "shortcut": "Use a three-condition checklist.",
+      "commonMistake": "Checking only A-before-B and ignoring the other conditions.",
+      "examTip": "For multiple-choice arrangements, direct option testing is often fastest."
+    },
+    "timeTargetSeconds": 75,
+    "tags": [
+      "seating-arrangement",
+      "logical-reasoning",
+      "placement"
+    ]
+  },
+  {
+    "id": "apt-logical-040",
+    "category": "Logical Reasoning",
+    "topic": "Syllogism",
+    "subtopic": "definite-conclusion",
+    "difficulty": "Hard",
+    "question": "Statements: All laptops are devices. Some devices are expensive. Which conclusion is definitely true?",
+    "options": [
+      "Some laptops are expensive",
+      "All devices are laptops",
+      "All laptops are devices",
+      "No laptop is expensive"
+    ],
+    "correctOptionIndex": 2,
+    "explanation": {
+      "concept": "A definite conclusion must be directly guaranteed by the statements.",
+      "whatIsBeingAsked": "Identify the exact logical relationship or rule required, then use every stated condition to determine the answer.",
+      "givenInformation": "Use only the information stated in the question. Do not assume an unstated relationship.",
+      "stepByStep": [
+        "Step 1: The first statement explicitly places every laptop inside the device group.",
+        "Step 2: Therefore all laptops are devices is guaranteed.",
+        "Step 3: The expensive-device statement does not establish whether laptops are expensive.",
+        "Step 4: Therefore the third option is the only definite conclusion."
+      ],
+      "whyThisWorks": "The result is forced by the stated rule or constraints; the other options either violate a condition or are not guaranteed.",
+      "finalAnswer": "All laptops are devices",
+      "answerExplanation": "The correct answer is All laptops are devices. The step-by-step reasoning shows why it satisfies the stated conditions.",
+      "shortcut": "Prefer direct subset statements for definite conclusions.",
+      "commonMistake": "Assuming an overlap between laptops and expensive devices.",
+      "examTip": "Do not infer overlap just because two groups are mentioned."
+    },
+    "timeTargetSeconds": 70,
+    "tags": [
+      "syllogism",
+      "logical-reasoning",
+      "placement"
+    ]
+  },
+  {
+    "id": "apt-logical-041",
+    "category": "Logical Reasoning",
+    "topic": "Direction Sense",
+    "subtopic": "distance",
+    "difficulty": "Medium",
+    "question": "A person walks 6 km south and then 8 km east. What is the straight-line distance from the starting point?",
+    "options": [
+      "10 km",
+      "12 km",
+      "14 km",
+      "16 km"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": {
+      "concept": "Perpendicular movements form a right triangle.",
+      "whatIsBeingAsked": "Identify the exact logical relationship or rule required, then use every stated condition to determine the answer.",
+      "givenInformation": "Use only the information stated in the question. Do not assume an unstated relationship.",
+      "stepByStep": [
+        "Step 1: South displacement = 6 km.",
+        "Step 2: East displacement = 8 km.",
+        "Step 3: Straight-line displacement = √(6² + 8²).",
+        "Step 4: √(36+64) = √100 = 10 km."
+      ],
+      "whyThisWorks": "The result is forced by the stated rule or constraints; the other options either violate a condition or are not guaranteed.",
+      "finalAnswer": "10 km",
+      "answerExplanation": "The correct answer is 10 km. The step-by-step reasoning shows why it satisfies the stated conditions.",
+      "shortcut": "Recognize the 6-8-10 Pythagorean triple.",
+      "commonMistake": "Adding 6 + 8 as the direct distance.",
+      "examTip": "Use Pythagoras for perpendicular horizontal and vertical movement."
+    },
+    "timeTargetSeconds": 65,
+    "tags": [
+      "direction-sense",
+      "logical-reasoning",
+      "placement"
+    ]
+  },
+  {
+    "id": "apt-logical-042",
+    "category": "Logical Reasoning",
+    "topic": "Analogy",
+    "subtopic": "tool-function",
+    "difficulty": "Easy",
+    "question": "Thermometer is to Temperature as Speedometer is to:",
+    "options": [
+      "Distance",
+      "Speed",
+      "Time",
+      "Fuel"
+    ],
+    "correctOptionIndex": 1,
+    "explanation": {
+      "concept": "The relationship is an instrument and the quantity it measures.",
+      "whatIsBeingAsked": "Identify the exact logical relationship or rule required, then use every stated condition to determine the answer.",
+      "givenInformation": "Use only the information stated in the question. Do not assume an unstated relationship.",
+      "stepByStep": [
+        "Step 1: A thermometer measures temperature.",
+        "Step 2: A speedometer measures speed.",
+        "Step 3: Therefore Speed is the matching relationship."
+      ],
+      "whyThisWorks": "The result is forced by the stated rule or constraints; the other options either violate a condition or are not guaranteed.",
+      "finalAnswer": "Speed",
+      "answerExplanation": "The correct answer is Speed. The step-by-step reasoning shows why it satisfies the stated conditions.",
+      "shortcut": "State the relationship as 'instrument measures quantity'.",
+      "commonMistake": "Choosing distance because it is related to travel.",
+      "examTip": "Match the exact function rather than a related concept."
+    },
+    "timeTargetSeconds": 30,
+    "tags": [
+      "analogy",
+      "logical-reasoning",
+      "placement"
+    ]
+  },
+  {
+    "id": "apt-logical-043",
+    "category": "Logical Reasoning",
+    "topic": "Classification",
+    "subtopic": "prime-composite",
+    "difficulty": "Easy",
+    "question": "Which number is the odd one out: 11, 13, 17, 21, 23?",
+    "options": [
+      "11",
+      "13",
+      "21",
+      "23"
+    ],
+    "correctOptionIndex": 2,
+    "explanation": {
+      "concept": "Prime numbers have exactly two positive divisors.",
+      "whatIsBeingAsked": "Identify the exact logical relationship or rule required, then use every stated condition to determine the answer.",
+      "givenInformation": "Use only the information stated in the question. Do not assume an unstated relationship.",
+      "stepByStep": [
+        "Step 1: 11, 13, 17 and 23 are prime.",
+        "Step 2: 21 = 3 × 7, so it is composite.",
+        "Step 3: Therefore 21 is the odd one out."
+      ],
+      "whyThisWorks": "The result is forced by the stated rule or constraints; the other options either violate a condition or are not guaranteed.",
+      "finalAnswer": "21",
+      "answerExplanation": "The correct answer is 21. The step-by-step reasoning shows why it satisfies the stated conditions.",
+      "shortcut": "Check divisibility by small primes.",
+      "commonMistake": "Assuming 21 is prime because it is odd.",
+      "examTip": "For small numbers, test divisibility before deciding primality."
+    },
+    "timeTargetSeconds": 40,
+    "tags": [
+      "odd-one-out",
+      "logical-reasoning",
+      "placement"
+    ]
+  },
+  {
+    "id": "apt-logical-044",
+    "category": "Logical Reasoning",
+    "topic": "Calendar",
+    "subtopic": "date-shift",
+    "difficulty": "Easy",
+    "question": "If 1 January is a Monday, what day is 8 January?",
+    "options": [
+      "Monday",
+      "Tuesday",
+      "Sunday",
+      "Wednesday"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": {
+      "concept": "Seven days later is the same weekday.",
+      "whatIsBeingAsked": "Identify the exact logical relationship or rule required, then use every stated condition to determine the answer.",
+      "givenInformation": "Use only the information stated in the question. Do not assume an unstated relationship.",
+      "stepByStep": [
+        "Step 1: 8 − 1 = 7 days.",
+        "Step 2: A week contains exactly 7 days.",
+        "Step 3: The weekday repeats after 7 days.",
+        "Step 4: Therefore 8 January is Monday."
+      ],
+      "whyThisWorks": "The result is forced by the stated rule or constraints; the other options either violate a condition or are not guaranteed.",
+      "finalAnswer": "Monday",
+      "answerExplanation": "The correct answer is Monday. The step-by-step reasoning shows why it satisfies the stated conditions.",
+      "shortcut": "Reduce date differences by 7-day cycles.",
+      "commonMistake": "Counting the date number itself as the elapsed days.",
+      "examTip": "Calculate the difference between dates first."
+    },
+    "timeTargetSeconds": 30,
+    "tags": [
+      "calendar",
+      "logical-reasoning",
+      "placement"
+    ]
+  },
+  {
+    "id": "apt-logical-045",
+    "category": "Logical Reasoning",
+    "topic": "Statement & Conclusion",
+    "subtopic": "scope",
+    "difficulty": "Medium",
+    "question": "Statement: Some employees work remotely. Conclusion I: At least one employee works remotely. Conclusion II: All employees work remotely.",
+    "options": [
+      "Only I",
+      "Only II",
+      "Both",
+      "Neither"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": {
+      "concept": "'Some' guarantees existence but does not imply everyone.",
+      "whatIsBeingAsked": "Identify the exact logical relationship or rule required, then use every stated condition to determine the answer.",
+      "givenInformation": "Use only the information stated in the question. Do not assume an unstated relationship.",
+      "stepByStep": [
+        "Step 1: Some employees means at least one employee.",
+        "Step 2: Therefore conclusion I is directly supported.",
+        "Step 3: Nothing says every employee works remotely.",
+        "Step 4: Therefore conclusion II does not follow."
+      ],
+      "whyThisWorks": "The result is forced by the stated rule or constraints; the other options either violate a condition or are not guaranteed.",
+      "finalAnswer": "Only I",
+      "answerExplanation": "The correct answer is Only I. The step-by-step reasoning shows why it satisfies the stated conditions.",
+      "shortcut": "Remember: some means at least one, not all.",
+      "commonMistake": "Interpreting 'some' as 'all'.",
+      "examTip": "Pay attention to quantifier words: some, all and none."
+    },
+    "timeTargetSeconds": 45,
+    "tags": [
+      "statement-conclusion",
+      "logical-reasoning",
+      "placement"
+    ]
+  },
+  {
+    "id": "apt-logical-046",
+    "category": "Logical Reasoning",
+    "topic": "Data Sufficiency",
+    "subtopic": "comparison",
+    "difficulty": "Hard",
+    "question": "Is A taller than B? Statement I: A is taller than C. Statement II: C is taller than B.",
+    "options": [
+      "I alone",
+      "II alone",
+      "Both together",
+      "Either alone"
+    ],
+    "correctOptionIndex": 2,
+    "explanation": {
+      "concept": "A comparison chain can determine the relationship only when both links connect A to B.",
+      "whatIsBeingAsked": "Identify the exact logical relationship or rule required, then use every stated condition to determine the answer.",
+      "givenInformation": "Use only the information stated in the question. Do not assume an unstated relationship.",
+      "stepByStep": [
+        "Step 1: Statement I alone gives A > C, but says nothing about B.",
+        "Step 2: Statement II alone gives C > B, but says nothing about A.",
+        "Step 3: Together: A > C and C > B.",
+        "Step 4: Therefore A > B."
+      ],
+      "whyThisWorks": "The result is forced by the stated rule or constraints; the other options either violate a condition or are not guaranteed.",
+      "finalAnswer": "Both together",
+      "answerExplanation": "The correct answer is Both together. The step-by-step reasoning shows why it satisfies the stated conditions.",
+      "shortcut": "Look for a complete comparison chain.",
+      "commonMistake": "Assuming A>B from either statement separately.",
+      "examTip": "Check whether every requested relationship is connected."
+    },
+    "timeTargetSeconds": 80,
+    "tags": [
+      "data-sufficiency",
+      "logical-reasoning",
+      "placement"
+    ]
+  },
+  {
+    "id": "apt-logical-047",
+    "category": "Logical Reasoning",
+    "topic": "Coding-Decoding",
+    "subtopic": "position-sum",
+    "difficulty": "Medium",
+    "question": "Using A=1, B=2, ..., Z=26, what is the code value of BAD?",
+    "options": [
+      "6",
+      "7",
+      "8",
+      "9"
+    ],
+    "correctOptionIndex": 1,
+    "explanation": {
+      "concept": "The code is the sum of alphabet positions.",
+      "whatIsBeingAsked": "Identify the exact logical relationship or rule required, then use every stated condition to determine the answer.",
+      "givenInformation": "Use only the information stated in the question. Do not assume an unstated relationship.",
+      "stepByStep": [
+        "Step 1: B = 2.",
+        "Step 2: A = 1.",
+        "Step 3: D = 4.",
+        "Step 4: 2 + 1 + 4 = 7."
+      ],
+      "whyThisWorks": "The result is forced by the stated rule or constraints; the other options either violate a condition or are not guaranteed.",
+      "finalAnswer": "7",
+      "answerExplanation": "The correct answer is 7. The step-by-step reasoning shows why it satisfies the stated conditions.",
+      "shortcut": "Write the numerical positions before adding.",
+      "commonMistake": "Starting the alphabet at zero.",
+      "examTip": "Follow the indexing rule explicitly given in the question."
+    },
+    "timeTargetSeconds": 40,
+    "tags": [
+      "coding-decoding",
+      "logical-reasoning",
+      "placement"
+    ]
+  },
+  {
+    "id": "apt-logical-048",
+    "category": "Logical Reasoning",
+    "topic": "Number Series",
+    "subtopic": "square-pattern",
+    "difficulty": "Medium",
+    "question": "Find the next number: 1, 4, 9, 16, 25, ?",
+    "options": [
+      "30",
+      "32",
+      "36",
+      "49"
+    ],
+    "correctOptionIndex": 2,
+    "explanation": {
+      "concept": "The sequence consists of consecutive perfect squares.",
+      "whatIsBeingAsked": "Identify the exact logical relationship or rule required, then use every stated condition to determine the answer.",
+      "givenInformation": "Use only the information stated in the question. Do not assume an unstated relationship.",
+      "stepByStep": [
+        "Step 1: 1 = 1².",
+        "Step 2: 4 = 2².",
+        "Step 3: 9 = 3².",
+        "Step 4: 16 = 4².",
+        "Step 5: 25 = 5².",
+        "Step 6: Next = 6² = 36."
+      ],
+      "whyThisWorks": "The result is forced by the stated rule or constraints; the other options either violate a condition or are not guaranteed.",
+      "finalAnswer": "36",
+      "answerExplanation": "The correct answer is 36. The step-by-step reasoning shows why it satisfies the stated conditions.",
+      "shortcut": "Recognize n² sequences quickly.",
+      "commonMistake": "Looking only at differences and missing the square pattern.",
+      "examTip": "Check whether each term is a familiar perfect square."
+    },
+    "timeTargetSeconds": 40,
+    "tags": [
+      "number-series",
+      "logical-reasoning",
+      "placement"
+    ]
+  },
+  {
+    "id": "apt-logical-049",
+    "category": "Logical Reasoning",
+    "topic": "Seating Arrangement",
+    "subtopic": "adjacency",
+    "difficulty": "Hard",
+    "question": "Five people A, B, C, D and E sit in a row. A sits immediately before B. C sits immediately after D. Which pair must remain together?",
+    "options": [
+      "A-B",
+      "B-C",
+      "C-E",
+      "A-D"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": {
+      "concept": "The word 'immediately' creates a fixed adjacent pair.",
+      "whatIsBeingAsked": "Identify the exact logical relationship or rule required, then use every stated condition to determine the answer.",
+      "givenInformation": "Use only the information stated in the question. Do not assume an unstated relationship.",
+      "stepByStep": [
+        "Step 1: A is immediately before B, so A-B is a fixed block.",
+        "Step 2: C is immediately after D, so D-C is another fixed block.",
+        "Step 3: Among the answer choices, A-B is explicitly guaranteed."
+      ],
+      "whyThisWorks": "The result is forced by the stated rule or constraints; the other options either violate a condition or are not guaranteed.",
+      "finalAnswer": "A-B",
+      "answerExplanation": "The correct answer is A-B. The step-by-step reasoning shows why it satisfies the stated conditions.",
+      "shortcut": "Treat immediate pairs as blocks.",
+      "commonMistake": "Thinking A and B can be separated while preserving only the general order.",
+      "examTip": "Immediately means adjacent with no person between them."
+    },
+    "timeTargetSeconds": 55,
+    "tags": [
+      "seating-arrangement",
+      "logical-reasoning",
+      "placement"
+    ]
+  },
+  {
+    "id": "apt-logical-050",
+    "category": "Logical Reasoning",
+    "topic": "Puzzles",
+    "subtopic": "ordering",
+    "difficulty": "Hard",
+    "question": "Four tasks P, Q, R and S are scheduled one per day from Monday to Thursday. P must be before Q. R must be on Thursday. Which schedule is valid?",
+    "options": [
+      "Q-P-S-R",
+      "P-S-Q-R",
+      "S-Q-P-R",
+      "R-P-Q-S"
+    ],
+    "correctOptionIndex": 1,
+    "explanation": {
+      "concept": "Ordering puzzles are solved by checking every constraint against each candidate.",
+      "whatIsBeingAsked": "Identify the exact logical relationship or rule required, then use every stated condition to determine the answer.",
+      "givenInformation": "Use only the information stated in the question. Do not assume an unstated relationship.",
+      "stepByStep": [
+        "Step 1: R must be Thursday, so any option with R elsewhere is invalid.",
+        "Step 2: P must appear before Q.",
+        "Step 3: Option A has Q before P, so it fails.",
+        "Step 4: Option B has P before Q and R on Thursday.",
+        "Step 5: Therefore P-S-Q-R is valid."
+      ],
+      "whyThisWorks": "The result is forced by the stated rule or constraints; the other options either violate a condition or are not guaranteed.",
+      "finalAnswer": "P-S-Q-R",
+      "answerExplanation": "The correct answer is P-S-Q-R. The step-by-step reasoning shows why it satisfies the stated conditions.",
+      "shortcut": "Make a checklist of fixed-position and ordering constraints.",
+      "commonMistake": "Checking only where R appears and ignoring P<Q.",
+      "examTip": "Test all constraints, not just the easiest one."
+    },
+    "timeTargetSeconds": 70,
+    "tags": [
+      "logical-puzzle",
+      "logical-reasoning",
+      "placement"
+    ]
+  }
+]

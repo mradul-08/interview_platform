@@ -1,0 +1,6 @@
+import { useEffect, useState } from "react";
+import { Building2 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import aptitudeApi from "../lib/api";
+import { Card, EmptyState, PageLoading, SectionHeader } from "../lib/ui";
+export default function CompanyPrepPage() { const [companies, setCompanies] = useState(null); const navigate = useNavigate(); useEffect(() => { aptitudeApi.companies().then((r) => setCompanies(r.data.companies || [])).catch(() => setCompanies([])); }, []); if (companies === null) return <PageLoading />; return <Card><SectionHeader icon={<Building2 size={16} />} title="Company prep" sub="Practice company-tagged aptitude questions" />{!companies.length ? <EmptyState icon={<Building2 size={20} />} title="No company patterns yet" description="Company-tagged questions will appear here when available." /> : <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(220px,1fr))", gap: 12 }}>{companies.map((company) => <button key={company.company} className="cv-button-secondary" style={{ textAlign: "left", padding: 16 }} onClick={() => navigate("/dashboard/aptitude/practice", { state: { companyTag: company.company } })}><strong>{company.company}</strong><br /><small>{company.totalQuestions} questions · {company.categories.join(" · ")}</small></button>)}</div>}</Card>; }

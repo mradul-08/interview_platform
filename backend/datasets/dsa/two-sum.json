@@ -1,0 +1,64 @@
+{
+  "title": "Two Sum",
+  "slug": "two-sum",
+  "description": "Given an array of integers nums and an integer target, return indices of the two numbers such that they add up to target.",
+  "difficulty": "Easy",
+  "inputFormat": "[2,7,11,15]\\n9",
+  "outputFormat": "[0,1]",
+  "constraints": [
+    "2 <= nums.length <= 10^4",
+    "-10^9 <= nums[i] <= 10^9",
+    "-10^9 <= target <= 10^9",
+    "Only one valid answer exists."
+  ],
+  "examples": [
+    {
+      "input": "[2,7,11,15]\\n9",
+      "output": "[0,1]",
+      "explanation": "Because nums[0] + nums[1] = 9."
+    }
+  ],
+  "starterCodes": [
+    {
+      "language": "cpp",
+      "starterCode": "class Solution { public: vector<int> twoSum(vector<int>& nums, int target) { } };",
+      "functionSignature": "vector<int> twoSum(vector<int>& nums, int target)"
+    },
+    {
+      "language": "java",
+      "starterCode": "class Solution { public int[] twoSum(int[] nums, int target) { } }",
+      "functionSignature": "int[] twoSum(int[] nums, int target)"
+    },
+    {
+      "language": "python",
+      "starterCode": "class Solution:\n    def twoSum(self, nums: List[int], target: int) -> List[int]:\n        pass",
+      "functionSignature": "def twoSum(self, nums: List[int], target: int) -> List[int]"
+    },
+    {
+      "language": "javascript",
+      "starterCode": "var twoSum = function(nums, target) { }",
+      "functionSignature": "var twoSum = function(nums, target)"
+    }
+  ],
+  "testCases": [
+    {
+      "input": "[2,7,11,15]\\n9",
+      "expectedOutput": "[0,1]",
+      "isHidden": false,
+      "weight": 1
+    },
+    {
+      "input": "[3,2,4]\\n6",
+      "expectedOutput": "[1,2]",
+      "isHidden": true,
+      "weight": 1
+    }
+  ],
+  "hints": [
+    "Use a hash map to store seen values."
+  ],
+  "editorial": "Store each value and its index while scanning the array once.",
+  "tags": ["Array", "Hashing"],
+  "companies": ["Amazon", "Google", "Microsoft"],
+  "sheets": ["Blind75", "Striver"]
+}
