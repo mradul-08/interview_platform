@@ -110,9 +110,9 @@ async function redeemSheet(userId, sheetName) {
     const exists = await Problem.exists({ sheet: normalized });
     if (!exists) throw Object.assign(new Error("DSA sheet not found"), { status: 404 });
     if (await UserSheetUnlock.exists({ user: userId, sheetName: normalized })) throw Object.assign(new Error("DSA sheet is already unlocked"), { status: 409 });
-    const ticket = await RewardTicket.findOneAndUpdate({ user: userId, type: "DSA_SHEET_UNLOCK", status: "AVAILABLE" }, { $set: { status: "REDEEMED", redeemedAt: new Date(), rewardId: normalized } }, { new: true });
+    const ticket = await RewardTicket.findOneAndUpdate({ user: userId, type: "DSA_SHEET_UNLOCK", status: "AVAILABLE" }, { $set: { status: "REDEEMED", redeemedAt: new Date(), rewardId: normalized } }, { returnDocument: "after" });
     if (!ticket) throw Object.assign(new Error("No reward ticket is available"), { status: 409 });
-    const user = await User.findOneAndUpdate({ _id: userId, points: { $gte: REWARD_COST } }, { $inc: { points: -REWARD_COST } }, { new: true }).select("points");
+    const user = await User.findOneAndUpdate({ _id: userId, points: { $gte: REWARD_COST } }, { $inc: { points: -REWARD_COST } }, { returnDocument: "after" }).select("points");
     if (!user) {
         await RewardTicket.updateOne({ _id: ticket._id }, { $set: { status: "AVAILABLE", redeemedAt: null, rewardId: "" } });
         throw Object.assign(new Error("Insufficient points"), { status: 400 });

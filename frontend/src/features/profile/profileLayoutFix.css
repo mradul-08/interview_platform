@@ -1,0 +1,250 @@
+/* Keep profile content full-width instead of leaving an empty desktop column. */
+html:has(.profile-page),
+body:has(.profile-page) {
+  overflow-x: hidden;
+}
+
+.profile-page {
+  width: 100%;
+  max-width: none;
+  box-sizing: border-box;
+  overflow-x: clip;
+}
+
+.profile-page::before {
+  left: 0;
+  right: 0;
+  width: auto;
+}
+
+/* Visitor profile order: identity first, then recruiter context and skills. */
+.public-profile-page {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.public-profile-page > .profile-back-link { order: 0; }
+.public-profile-page > .profile-hero { order: 1; }
+.public-profile-page > .recruiter-snapshot { order: 2; }
+.public-profile-page > .public-skill-strip { order: 3; }
+.public-profile-page > .profile-layout { order: 4; }
+.public-profile-page > .profile-heatmap-card { order: 5; }
+
+.public-profile-page > .profile-hero,
+.public-profile-page > .recruiter-snapshot,
+.public-profile-page > .public-skill-strip,
+.public-profile-page > .profile-layout,
+.public-profile-page > .profile-heatmap-card {
+  flex: 0 0 auto;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+.public-profile-page > .profile-layout {
+  overflow: visible;
+  margin-top: 0;
+}
+
+.public-profile-page > .recruiter-snapshot,
+.public-profile-page > .public-skill-strip,
+.public-profile-page > .profile-heatmap-card {
+  margin-bottom: 0;
+}
+
+.public-profile-page > .profile-hero {
+  margin-bottom: 0;
+}
+
+.public-profile-page .profile-hero-content,
+.public-profile-page .recruiter-snapshot,
+.public-profile-page .public-skill-strip {
+  min-width: 0;
+}
+
+.public-profile-page .profile-identity,
+.public-profile-page .recruiter-snapshot > div,
+.public-profile-page .public-skill-strip > div {
+  min-width: 0;
+}
+
+.public-profile-page .recruiter-snapshot-meta {
+  flex: 0 1 auto;
+}
+
+.public-profile-page .profile-heatmap-card {
+  margin-top: 0;
+}
+
+.public-profile-page .profile-back-link:focus-visible,
+.public-profile-page .profile-hero-links a:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 3px;
+}
+
+/* Public analytics cards: polished, readable and kept in sync by the page refresh loop. */
+.public-profile-page .profile-completion {
+  position: relative;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 100% 0, color-mix(in srgb, var(--accent) 18%, transparent), transparent 38%),
+    linear-gradient(145deg, var(--bg-surface), color-mix(in srgb, var(--accent-soft) 24%, var(--bg-surface)));
+  border-color: color-mix(in srgb, var(--accent) 55%, var(--border-default));
+}
+
+.public-profile-page .profile-completion::after {
+  content: "";
+  position: absolute;
+  right: -42px;
+  bottom: -52px;
+  width: 145px;
+  height: 145px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  pointer-events: none;
+}
+
+.public-profile-page .profile-completion h2 {
+  font-size: 28px;
+}
+
+.public-profile-page .profile-progress {
+  position: relative;
+  z-index: 1;
+  height: 11px;
+  margin-top: 24px;
+  box-shadow: inset 0 1px 2px rgba(0,0,0,.25);
+}
+
+.public-profile-page .profile-progress span {
+  box-shadow: 0 0 18px color-mix(in srgb, var(--accent) 45%, transparent);
+}
+
+.public-profile-page .profile-sidebar > .profile-section {
+  background: linear-gradient(145deg, var(--bg-surface), color-mix(in srgb, var(--cyan-soft) 12%, var(--bg-surface)));
+}
+
+.public-profile-page .profile-sidebar .profile-stat-grid {
+  margin-top: 18px;
+}
+
+.public-profile-page .profile-sidebar .profile-stat-card {
+  min-height: 82px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  transition: transform .2s ease, border-color .2s ease, box-shadow .2s ease;
+}
+
+.public-profile-page .profile-sidebar .profile-stat-card:hover {
+  transform: translateY(-3px);
+  border-color: color-mix(in srgb, var(--accent) 60%, var(--border-default));
+  box-shadow: var(--shadow-glow);
+}
+
+.public-profile-page .profile-sidebar .profile-stat-card strong {
+  color: var(--text-primary);
+}
+
+.public-profile-page .profile-sidebar .profile-stat-card span {
+  line-height: 1.35;
+}
+
+@media (max-width: 900px) {
+  .public-profile-page { padding-left: 14px; padding-right: 14px; }
+  .public-profile-page .recruiter-snapshot,
+  .public-profile-page .public-skill-strip { display: block; }
+  .public-profile-page .recruiter-snapshot-meta,
+  .public-profile-page .public-skill-strip .profile-skill-list { justify-content: flex-start; max-width: none; margin-top: 16px; }
+  .public-profile-page .profile-hero-content { align-items: flex-start; flex-wrap: wrap; }
+  .public-profile-page .profile-hero-links { margin-left: 0; }
+}
+
+@media (max-width: 560px) {
+  .public-profile-page { padding: 12px 10px 44px; gap: 14px; }
+  .public-profile-page > .profile-hero,
+  .public-profile-page > .recruiter-snapshot,
+  .public-profile-page > .public-skill-strip,
+  .public-profile-page > .profile-heatmap-card { border-radius: 16px; }
+  .public-profile-page .profile-hero { padding: 22px 18px 18px; }
+  .public-profile-page .profile-identity h1 { font-size: 28px; overflow-wrap: anywhere; }
+  .public-profile-page .profile-heatmap-card { padding: 18px; }
+  .public-profile-page .profile-heatmap-metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+/* Recruiter snapshot and skill signal already cover these two visitor sections. */
+.public-profile-page > .profile-layout > .profile-content > section:nth-child(1),
+.public-profile-page > .profile-layout > .profile-content > section:nth-child(2) {
+  display: none;
+}
+
+.public-profile-page .profile-content > .profile-section:nth-child(4),
+.public-profile-page .profile-content > .profile-section:last-child {
+  display: block;
+}
+
+.profile-layout {
+  display: block;
+  width: 100%;
+  margin-top: 22px;
+}
+
+.profile-content {
+  display: grid;
+  width: 100%;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 22px;
+}
+
+.profile-content > .profile-section,
+.profile-content > .profile-heatmap-card {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+.submission-activity-graph { margin-top: 2px; }
+.submission-graph-summary { display: flex; flex-wrap: wrap; gap: 18px; color: var(--text-tertiary); font-size: 11px; }
+.submission-graph-summary b { margin-right: 4px; color: var(--text-primary); font-family: var(--font-display); font-size: 18px; }
+.submission-chart { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); align-items: end; gap: 12px; height: 170px; margin-top: 24px; padding: 16px 14px 10px; border: 1px solid var(--border-subtle); border-radius: 16px; background: linear-gradient(180deg, color-mix(in srgb, var(--accent-soft) 15%, var(--bg-elevated)), var(--bg-elevated)); }
+.submission-chart-day { display: grid; grid-template-rows: 1fr auto auto; align-items: end; height: 100%; min-width: 0; text-align: center; }
+.submission-chart-bars { display: flex; align-items: end; justify-content: center; gap: 4px; height: 100%; min-height: 80px; border-bottom: 1px solid var(--border-subtle); }
+.submission-chart-bars span { display: block; width: 11px; min-height: 3px; border-radius: 5px 5px 2px 2px; transition: height .45s ease; }
+.submission-bar-total { background: color-mix(in srgb, var(--accent) 48%, var(--bg-elevated)); }
+.submission-bar-accepted { background: linear-gradient(180deg, #6ee7b7, #22c55e); box-shadow: 0 0 12px color-mix(in srgb, #22c55e 30%, transparent); }
+.submission-chart-day strong { margin-top: 7px; color: var(--text-primary); font-size: 12px; }
+.submission-chart-day small { margin-top: 4px; color: var(--text-tertiary); font-family: var(--font-mono); font-size: 9px; }
+.submission-chart-legend { display: flex; align-items: center; flex-wrap: wrap; gap: 14px; margin-top: 12px; color: var(--text-tertiary); font-size: 10px; }
+.submission-chart-legend span { display: inline-flex; align-items: center; gap: 5px; }
+.submission-chart-legend i { width: 8px; height: 8px; border-radius: 3px; }
+.legend-total { background: var(--accent); opacity: .55; }.legend-accepted { background: #34d399; }.submission-chart-legend em { margin-left: auto; font-style: normal; }
+.profile-live-badge { display: inline-flex; align-items: center; gap: 6px; padding: 6px 9px; border: 1px solid color-mix(in srgb, #34d399 35%, var(--border-subtle)); border-radius: 999px; color: #6ee7b7; font-family: var(--font-mono); font-size: 10px; }
+.profile-live-badge i { width: 6px; height: 6px; border-radius: 50%; background: #34d399; box-shadow: 0 0 0 4px color-mix(in srgb, #34d399 12%, transparent); }
+.profile-activity-graph-card { margin-top: 22px; }
+.profile-activity-graph-card .profile-section-heading { margin-bottom: 16px; }
+.profile-content > section.profile-section:has(.profile-activity-list) { display: none; }
+.profile-language-editor { margin-top: 22px; padding: 16px 18px; border: 1px solid color-mix(in srgb, var(--accent) 70%, var(--border-default)); border-radius: 14px; background: var(--bg-elevated); }
+.profile-language-editor .profile-field { gap: 6px; }
+.profile-language-editor .profile-field input { padding: 10px 12px; background: var(--bg-elevated); }
+.profile-language-editor small { display: block; margin-top: 8px; color: var(--text-tertiary); font-size: 11px; }
+.profile-sidebar {
+  display: grid;
+  width: 100%;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 22px;
+  margin-top: 22px;
+}
+
+.profile-sidebar > .profile-section,
+.profile-sidebar > .profile-completion {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+@media (max-width: 800px) {
+  .profile-page { padding-left: 10px; padding-right: 10px; }
+  .profile-sidebar { grid-template-columns: 1fr; }
+}

@@ -48,6 +48,7 @@ function SessionCard({ session, isCurrent, onRevoke, revoking }) {
         </div>
         {!isCurrent && (
           <button
+            type="button"
             onClick={() => onRevoke(session.sessionId)}
             disabled={revoking}
             style={{
@@ -73,6 +74,7 @@ export default function SecuritySettings() {
   const [sessions, setSessions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState("");
+  const [messageTone, setMessageTone] = useState("info");
   const [revokingId, setRevokingId] = useState("");
 
   const currentSessionId = useMemo(() => decodeJwt(localStorage.getItem("token"))?.sid || "", []);
@@ -80,10 +82,12 @@ export default function SecuritySettings() {
   const loadSessions = async () => {
     setLoading(true);
     setMessage("");
+    setMessageTone("info");
     try {
       const res = await api.get("/api/auth/sessions");
       setSessions(res.data?.sessions || []);
     } catch (error) {
+      setMessageTone("error");
       setMessage(error.response?.data?.message || "Failed to load sessions");
     } finally {
       setLoading(false);
@@ -96,12 +100,15 @@ export default function SecuritySettings() {
 
   const revoke = async (sessionId) => {
     setMessage("");
+    setMessageTone("info");
     setRevokingId(sessionId);
     try {
       await api.post(`/api/auth/sessions/${sessionId}/revoke`);
       await loadSessions();
+      setMessageTone("success");
       setMessage("Session revoked.");
     } catch (error) {
+      setMessageTone("error");
       setMessage(error.response?.data?.message || "Failed to revoke session");
     } finally {
       setRevokingId("");
@@ -118,7 +125,7 @@ export default function SecuritySettings() {
       </div>
 
       {message && (
-        <div style={{ padding: 12, borderRadius: 14, background: "var(--accent-soft)", color: "var(--accent-strong)", border: "1px solid var(--border-default)" }}>
+        <div role={messageTone === "error" ? "alert" : "status"} style={{ padding: 12, borderRadius: 14, background: messageTone === "error" ? "var(--red-soft)" : messageTone === "success" ? "var(--green-soft)" : "var(--accent-soft)", color: messageTone === "error" ? "var(--red)" : messageTone === "success" ? "var(--green)" : "var(--accent-strong)", border: "1px solid var(--border-default)" }}>
           {message}
         </div>
       )}
@@ -130,6 +137,7 @@ export default function SecuritySettings() {
             <p style={{ margin: "5px 0 0", color: "var(--text-tertiary)", fontSize: 12.5 }}>The current device is marked so you can spot it instantly.</p>
           </div>
           <button
+            type="button"
             onClick={loadSessions}
             style={{
               padding: "8px 12px",

@@ -88,10 +88,10 @@ export default function Overview({ data }) {
   const { user, stats, resumeLearning, todaysRoadmap, dailyChallenge, dsaProgress, companySheets, leaderboard } = data;
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+    <div className="cv-dashboard-overview">
 
       {/* ── Hero greeting ── */}
-      <div className="cv-card" style={{ borderRadius: "var(--radius-xl)", padding: "24px 28px" }}>
+      <div className="cv-card cv-dashboard-hero" style={{ borderRadius: "var(--radius-xl)", padding: "24px 28px" }}>
         {/* Accent bar */}
         <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 3, background: "var(--accent-grad)" }} />
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: 16 }}>
@@ -131,7 +131,7 @@ export default function Overview({ data }) {
       </div>
 
       {/* ── Stat cards ── */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))", gap: 12 }}>
+      <div className="cv-dashboard-stat-grid">
         <StatCard label="Problems Solved" value={stats.problemsSolved} color="var(--accent)" />
         <StatCard label="Current Streak" value={`${stats.currentStreak}d`} sub={`Longest: ${stats.longestStreak}d`} color="var(--amber)" />
         <StatCard label="Total Points" value={stats.points.toLocaleString()} color="var(--cyan)" />
@@ -142,10 +142,10 @@ export default function Overview({ data }) {
       <DashboardStreakCard />
 
       {/* ── Main 2-col grid ── */}
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 320px", gap: 16 }}>
+      <div className="cv-dashboard-content-grid">
 
         {/* LEFT column */}
-        <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+        <div className="cv-dashboard-column">
 
           {/* Resume Learning */}
           {resumeLearning?.isReady ? (
@@ -184,7 +184,7 @@ export default function Overview({ data }) {
             {todaysRoadmap?.isReady ? (
               <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
                 {(todaysRoadmap.tasks || []).map((t, i) => (
-                  <div key={t.id || i} style={{ display: "flex", alignItems: "center", gap: 10, padding: "9px 10px", borderRadius: "var(--radius-sm)", border: "1px solid var(--border-subtle)", cursor: "pointer", transition: "background 0.12s" }}
+                  <button type="button" key={t.id || i} className="cv-dashboard-list-action" style={{ display: "flex", alignItems: "center", gap: 10, padding: "9px 10px", borderRadius: "var(--radius-sm)", border: "1px solid var(--border-subtle)", cursor: "pointer", transition: "background 0.12s" }}
                     onClick={() => navigate(`/dashboard/problems/${t.slug}`)}
                     onMouseEnter={e => e.currentTarget.style.background = "var(--bg-elevated)"}
                     onMouseLeave={e => e.currentTarget.style.background = "transparent"}
@@ -194,7 +194,7 @@ export default function Overview({ data }) {
                     </div>
                     <span style={{ fontSize: 13, color: "var(--text-primary)", flex: 1 }}>{t.label}</span>
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--text-tertiary)" strokeWidth="2"><polyline points="9 18 15 12 9 6" /></svg>
-                  </div>
+                  </button>
                 ))}
               </div>
             ) : (
@@ -268,7 +268,7 @@ export default function Overview({ data }) {
         </div>
 
         {/* RIGHT column */}
-        <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+        <div className="cv-dashboard-column">
 
           {/* DSA Progress */}
           <Card>
@@ -300,7 +300,7 @@ export default function Overview({ data }) {
                 {(companySheets.sheets || []).map(s => {
                   const color = s.name === "Blind75" ? "var(--accent)" : "var(--cyan)";
                   return (
-                    <div key={s.name} onClick={() => navigate(`/dashboard/sheets?sheet=${s.name}`)}
+                    <button type="button" key={s.name} className="cv-dashboard-sheet-action" onClick={() => navigate(`/dashboard/sheets?sheet=${s.name}`)}
                       style={{ padding: "12px 14px", background: "var(--bg-elevated)", border: "1px solid var(--border-subtle)", borderRadius: "var(--radius-md)", cursor: "pointer" }}
                       onMouseEnter={e => e.currentTarget.style.borderColor = "var(--accent)"}
                       onMouseLeave={e => e.currentTarget.style.borderColor = "var(--border-subtle)"}
@@ -313,7 +313,7 @@ export default function Overview({ data }) {
                         <div style={{ width: `${s.pct}%`, height: "100%", background: color, borderRadius: 100 }} />
                       </div>
                       <span style={{ fontSize: 11, fontWeight: 700, fontFamily: "var(--font-mono)", color }}>{s.pct}%</span>
-                    </div>
+                    </button>
                   );
                 })}
               </div>
@@ -352,13 +352,13 @@ export default function Overview({ data }) {
             { title: "Aptitude Progress", path: "/dashboard/aptitude" },
             { title: "Upcoming Interviews", path: "/dashboard/mock" },
           ].map(it => (
-            <div key={it.title} onClick={() => navigate(it.path)} style={{ padding: "14px 16px", background: "var(--bg-surface)", border: "1px dashed var(--border-default)", borderRadius: "var(--radius-lg)", cursor: "pointer", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <button type="button" key={it.title} className="cv-dashboard-placeholder-action" onClick={() => navigate(it.path)} style={{ padding: "14px 16px", background: "var(--bg-surface)", border: "1px dashed var(--border-default)", borderRadius: "var(--radius-lg)", cursor: "pointer", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
               <div>
                 <p style={{ fontSize: 13, fontWeight: 700, color: "var(--text-primary)", margin: "0 0 2px" }}>{it.title}</p>
                 <p style={{ fontSize: 11.5, color: "var(--text-tertiary)", margin: 0 }}>Coming soon — click to learn more</p>
               </div>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--text-tertiary)" strokeWidth="2"><polyline points="9 18 15 12 9 6" /></svg>
-            </div>
+            </button>
           ))}
         </div>
       </div>

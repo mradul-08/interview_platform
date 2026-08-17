@@ -52,7 +52,7 @@ async function saveProblem(normalized) {
     const existing = await Problem.findOne({ source: normalized.source, sourceId: normalized.sourceId });
     if (existing) {
         const update = mergeImportedFields(existing, normalized);
-        return Problem.findByIdAndUpdate(existing._id, update, { new: true });
+        return Problem.findByIdAndUpdate(existing._id, update, { returnDocument: "after" });
     }
 
     const slugTaken = await Problem.findOne({ slug: normalized.slug });
@@ -160,7 +160,7 @@ async function createOrUpdateProblem(payload, currentUserId) {
         return Problem.findByIdAndUpdate(
             existing._id,
             { $set: { ...normalized, isOriginal: true, isImported: false } },
-            { new: true, runValidators: true }
+            { returnDocument: "after", runValidators: true }
         );
     }
 

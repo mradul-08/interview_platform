@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import { useParams, Link } from "react-router-dom";
 import Editor from "@monaco-editor/react";
 import api from "../../api/api";
+import "./problemDetailFixes.css";
 
 // ── Diff badge ────────────────────────────────────────────────────
 const DiffBadge = ({ d }) => {
@@ -133,7 +134,7 @@ function TestcasePanel({ testcases, runResult, running }) {
             {running ? (
               <div style={{ color: "var(--text-tertiary)", fontSize: 13 }}>Running your code…</div>
             ) : runResult ? (
-              <div>
+              <div role={runResult.verdict === "Accepted" ? "status" : "alert"} aria-live="polite">
                 <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
                   <span style={{ fontSize: 16, fontWeight: 800, color: runResult.verdict === "Accepted" ? "var(--green)" : "var(--red)" }}>
                     {runResult.verdict === "Accepted" ? "✓ Accepted" : `✗ ${runResult.verdict}`}
@@ -416,9 +417,9 @@ function ProblemPanel({ problem, userSubmissions }) {
   return (
     <div style={{ display: "flex", flexDirection: "column", height: "100%" }}>
       {/* Tab bar */}
-      <div style={{ display: "flex", borderBottom: "1px solid var(--border-subtle)", paddingLeft: 20, flexShrink: 0 }}>
+      <div role="tablist" aria-label="Problem information" style={{ display: "flex", borderBottom: "1px solid var(--border-subtle)", paddingLeft: 20, flexShrink: 0 }}>
         {tabs.map(t => (
-          <button key={t} onClick={() => setActiveTab(t.toLowerCase())}
+          <button type="button" role="tab" aria-selected={activeTab === t.toLowerCase()} key={t} onClick={() => setActiveTab(t.toLowerCase())}
             style={{ padding: "12px 16px", background: "none", border: "none", borderBottom: activeTab === t.toLowerCase() ? "2px solid var(--accent)" : "2px solid transparent", color: activeTab === t.toLowerCase() ? "var(--accent-strong)" : "var(--text-secondary)", fontSize: 13, fontWeight: activeTab === t.toLowerCase() ? 600 : 500, cursor: "pointer", marginBottom: -1 }}>
             {t}
           </button>
@@ -637,6 +638,7 @@ export default function ProblemDetailPage() {
   const { slug } = useParams();
   const [problem, setProblem]   = useState(null);
   const [loading, setLoading]   = useState(true);
+  const [loadError, setLoadError] = useState("");
   const [lang, setLang]         = useState("cpp");
   const [code, setCode]         = useState(DEFAULT_CODE.cpp);
   const [fontSize, setFontSize] = useState(14);
@@ -665,11 +667,15 @@ export default function ProblemDetailPage() {
 
   useEffect(() => {
     setLoading(true);
+    setLoadError("");
+    setProblem(null);
     api.get(`/api/problems/slug/${slug}`).then(res => {
       setProblem(res.data);
-      setCode(DEFAULT_CODE[lang]);
       setLoading(false);
-    }).catch(() => setLoading(false));
+    }).catch((error) => {
+      setLoadError(error.response?.data?.message || "Problem could not be loaded. Please try again.");
+      setLoading(false);
+    });
   }, [slug]);
 
   // Update code when language changes
@@ -724,6 +730,7 @@ export default function ProblemDetailPage() {
   }, [dragging]);
 
   const handleRun = async () => {
+    if (running || submitting || !problem) return;
     setRunning(true);
     setRunResult(null);
     try {
@@ -761,8 +768,9 @@ export default function ProblemDetailPage() {
   };
 
   const handleSubmit = async () => {
-    if (!problem) return;
+    if (!problem || running || submitting) return;
     setSubmitting(true);
+    setRunResult(null);
     try {
       const res = await api.post("/api/execution/submit", {
         problemId: problem._id,
@@ -797,15 +805,22 @@ export default function ProblemDetailPage() {
   if (loading) return (
     <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: 400, color: "var(--text-tertiary)", fontSize: 13 }}>Loading problem…</div>
   );
+  if (loadError) return (
+    <div role="alert" style={{ display: "grid", justifyItems: "center", gap: 10, padding: "80px 20px", textAlign: "center" }}>
+      <strong style={{ color: "var(--text-primary)", fontSize: 18 }}>Problem unavailable</strong>
+      <span style={{ color: "var(--text-secondary)", fontSize: 13 }}>{loadError}</span>
+      <button type="button" onClick={() => window.location.reload()} style={{ padding: "8px 14px", borderRadius: 8, border: "1px solid var(--border-default)", background: "var(--bg-elevated)", color: "var(--text-primary)", cursor: "pointer", fontSize: 13 }}>Try again</button>
+    </div>
+  );
   if (!problem) return (
     <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: 400, color: "var(--red)", fontSize: 13 }}>Problem not found.</div>
   );
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", height: "calc(100vh - 68px)", overflow: "hidden" }}>
+    <div className="problem-detail-page" style={{ display: "flex", flexDirection: "column", height: "calc(100vh - 68px)", overflow: "hidden" }}>
 
       {/* ── Top bar ── */}
-      <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "0 16px", height: 44, background: "var(--bg-surface)", borderBottom: "1px solid var(--border-subtle)", flexShrink: 0 }}>
+      <div className="problem-detail-toolbar" style={{ display: "flex", alignItems: "center", gap: 12, padding: "0 16px", height: 44, background: "var(--bg-surface)", borderBottom: "1px solid var(--border-subtle)", flexShrink: 0 }}>
         {/* Breadcrumb */}
         <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12.5, color: "var(--text-tertiary)" }}>
           <Link to="/dashboard/problems" style={{ color: "var(--text-tertiary)", textDecoration: "none" }}>Problems</Link>
@@ -819,7 +834,7 @@ export default function ProblemDetailPage() {
         {/* Lang selector */}
         <div style={{ display: "flex", gap: 2, background: "var(--bg-elevated)", borderRadius: 8, padding: 3 }}>
           {LANGS.map(l => (
-            <button key={l} onClick={() => setLang(l)}
+            <button type="button" key={l} aria-pressed={lang === l} onClick={() => setLang(l)}
               style={{ padding: "4px 10px", borderRadius: 6, border: "none", background: lang === l ? "var(--bg-elevated-3)" : "transparent", color: lang === l ? "var(--text-primary)" : "var(--text-tertiary)", fontSize: 12, fontWeight: lang === l ? 600 : 400, cursor: "pointer", fontFamily: "var(--font-mono)" }}>
               {LANG_LABELS[l]}
             </button>
@@ -834,6 +849,8 @@ export default function ProblemDetailPage() {
           <span style={{ fontSize: 11.5, color: "var(--text-tertiary)", fontFamily: "var(--font-mono)", padding: "0 6px" }}>A</span>
           {[12, 14, 16, 18].map((size) => (
             <button
+              type="button"
+              aria-pressed={fontSize === size}
               key={size}
               onClick={() => setFontSize(size)}
               style={{
@@ -854,6 +871,7 @@ export default function ProblemDetailPage() {
         </div>
 
         <button
+          type="button"
           onClick={resetStarterTemplate}
           style={{ padding: "6px 12px", borderRadius: 8, border: "1px solid var(--border-default)", background: "var(--bg-elevated)", color: "var(--text-primary)", fontSize: 12.5, fontWeight: 600, cursor: "pointer" }}
         >
@@ -864,30 +882,32 @@ export default function ProblemDetailPage() {
         <span style={{ fontSize: 11, color: "var(--text-disabled)", fontFamily: "var(--font-mono)" }}>Auto Save</span>
 
         {/* Run / Submit */}
-        <button onClick={handleRun} disabled={running}
-          style={{ padding: "6px 16px", borderRadius: 8, border: "1px solid var(--border-default)", background: "var(--bg-elevated)", color: "var(--text-primary)", fontSize: 13, fontWeight: 600, cursor: running ? "not-allowed" : "pointer", opacity: running ? 0.6 : 1, fontFamily: "var(--font-sans)" }}>
-          ▶ Run
+        <button type="button" onClick={handleRun} disabled={running || submitting}
+          aria-label={running ? "Running code" : "Run code"}
+          style={{ padding: "6px 16px", borderRadius: 8, border: "1px solid var(--border-default)", background: "var(--bg-elevated)", color: "var(--text-primary)", fontSize: 13, fontWeight: 600, cursor: running || submitting ? "not-allowed" : "pointer", opacity: running || submitting ? 0.6 : 1, fontFamily: "var(--font-sans)" }}>
+          {running ? "Running..." : "▶ Run"}
         </button>
-        <button onClick={handleSubmit} disabled={submitting}
-          style={{ padding: "6px 16px", borderRadius: 8, border: "none", background: "var(--accent)", color: "white", fontSize: 13, fontWeight: 700, cursor: submitting ? "not-allowed" : "pointer", opacity: submitting ? 0.6 : 1, fontFamily: "var(--font-sans)" }}>
-          + Submit
+        <button type="button" onClick={handleSubmit} disabled={submitting || running}
+          aria-label={submitting ? "Submitting solution" : "Submit solution"}
+          style={{ padding: "6px 16px", borderRadius: 8, border: "none", background: "var(--accent)", color: "white", fontSize: 13, fontWeight: 700, cursor: submitting || running ? "not-allowed" : "pointer", opacity: submitting || running ? 0.6 : 1, fontFamily: "var(--font-sans)" }}>
+          {submitting ? "Submitting..." : "+ Submit"}
         </button>
       </div>
 
       {/* ── Split panels ── */}
-      <div ref={containerRef} style={{ display: "flex", flex: 1, overflow: "hidden", userSelect: dragging ? "none" : "auto" }}>
+      <div ref={containerRef} className="problem-detail-workspace" style={{ display: "flex", flex: 1, overflow: "hidden", userSelect: dragging ? "none" : "auto" }}>
 
         {/* LEFT: Problem description */}
-        <div style={{ width: `${splitPct}%`, background: "var(--bg-surface)", display: "flex", flexDirection: "column", overflow: "hidden", flexShrink: 0 }}>
+        <div className="problem-detail-description" style={{ width: `${splitPct}%`, background: "var(--bg-surface)", display: "flex", flexDirection: "column", overflow: "hidden", flexShrink: 0 }}>
           <ProblemPanel problem={problem} userSubmissions={problem.userSubmissions || []} />
         </div>
 
         {/* Drag handle */}
-        <div onMouseDown={startDrag}
+        <div className="problem-detail-divider" onMouseDown={startDrag}
           style={{ width: 5, background: dragging ? "var(--accent)" : "var(--border-subtle)", cursor: "col-resize", flexShrink: 0, transition: "background 0.15s" }} />
 
         {/* RIGHT: Editor + testcase */}
-        <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden", background: "var(--bg-canvas)" }}>
+        <div className="problem-detail-editor" style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden", background: "var(--bg-canvas)" }}>
           <CodeEditor value={code} onChange={setCode} language={lang} fontSize={fontSize} />
           <DebugTestcasePanel testcases={(problem.testCases || []).filter((testCase) => !(testCase.hidden || testCase.isHidden))} runResult={runResult} running={running} />
         </div>
@@ -930,9 +950,9 @@ function DebugTestcasePanel({ testcases, runResult, running }) {
 
   return (
     <div style={{ height: 220, background: "var(--bg-surface)", borderTop: "1px solid var(--border-subtle)", display: "flex", flexDirection: "column" }}>
-      <div style={{ display: "flex", gap: 0, borderBottom: "1px solid var(--border-subtle)", paddingLeft: 16 }}>
+      <div role="tablist" aria-label="Execution panel" style={{ display: "flex", gap: 0, borderBottom: "1px solid var(--border-subtle)", paddingLeft: 16 }}>
         {[{ id: "testcase", label: "Testcase" }, { id: "result", label: "Run Code Result" }].map((t) => (
-          <button key={t.id} onClick={() => setActiveTab(t.id)} style={{ padding: "10px 16px", background: "none", border: "none", borderBottom: activeTab === t.id ? "2px solid var(--accent)" : "2px solid transparent", color: activeTab === t.id ? "var(--accent-strong)" : "var(--text-secondary)", fontSize: 12.5, fontWeight: activeTab === t.id ? 600 : 500, cursor: "pointer", marginBottom: -1 }}>
+          <button type="button" role="tab" aria-selected={activeTab === t.id} key={t.id} onClick={() => setActiveTab(t.id)} style={{ padding: "10px 16px", background: "none", border: "none", borderBottom: activeTab === t.id ? "2px solid var(--accent)" : "2px solid transparent", color: activeTab === t.id ? "var(--accent-strong)" : "var(--text-secondary)", fontSize: 12.5, fontWeight: activeTab === t.id ? 600 : 500, cursor: "pointer", marginBottom: -1 }}>
             {t.label}
           </button>
         ))}
@@ -954,6 +974,7 @@ function DebugTestcasePanel({ testcases, runResult, running }) {
                 <div style={{ flex: 1 }}>{block("Expected", testcases[activeTC].expectedOutput)}</div>
               </div>
             )}
+            {!testcases?.length && <div className="problem-detail-empty-result" role="status">No public testcases are available for this problem.</div>}
           </div>
         )}
         {activeTab === "result" && (
@@ -961,9 +982,9 @@ function DebugTestcasePanel({ testcases, runResult, running }) {
             {running ? (
               <div style={{ color: "var(--text-tertiary)", fontSize: 13 }}>Running your code…</div>
             ) : runResult ? (
-              <div>
+              <div role={runResult.verdict === "Accepted" ? "status" : "alert"} aria-live="polite">
                 <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12, flexWrap: "wrap" }}>
-                  <span style={{ fontSize: 16, fontWeight: 800, color: runResult.verdict === "Accepted" ? "var(--green)" : "var(--red)" }}>{runResult.verdict === "Accepted" ? "✓ Accepted" : `✗ ${runResult.verdict}`}</span>
+                  <span className={`problem-detail-verdict ${runResult.verdict === "Accepted" ? "is-success" : "is-failure"}`} style={{ fontSize: 16, fontWeight: 800, color: runResult.verdict === "Accepted" ? "var(--green)" : "var(--red)" }}>{runResult.verdict === "Accepted" ? "✓ Accepted" : `✗ ${runResult.verdict}`}</span>
                   {runResult.executionId && <span style={{ fontSize: 11.5, color: "var(--text-tertiary)", fontFamily: "var(--font-mono)" }}>Execution ID: {runResult.executionId}</span>}
                   {runResult.runtime && <span style={{ fontSize: 12, color: "var(--text-tertiary)", fontFamily: "var(--font-mono)" }}>Runtime: {runResult.runtime}</span>}
                   {runResult.memory && <span style={{ fontSize: 12, color: "var(--text-tertiary)", fontFamily: "var(--font-mono)" }}>Memory: {runResult.memory}</span>}
@@ -1045,7 +1066,7 @@ function DebugTestcasePanel({ testcases, runResult, running }) {
                 )}
               </div>
             ) : (
-              <div style={{ color: "var(--text-tertiary)", fontSize: 13 }}>Run your code to see results.</div>
+              <div className="problem-detail-empty-result" role="status">Run your code to see the execution result here.</div>
             )}
           </div>
         )}

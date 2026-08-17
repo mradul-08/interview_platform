@@ -17,6 +17,11 @@ export default function MessagesPage() {
   const [draft, setDraft] = useState("");
   const [attachment, setAttachment] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [conversationError, setConversationError] = useState("");
+  const [messageError, setMessageError] = useState("");
+  const [sending, setSending] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [sendError, setSendError] = useState("");
   const [search, setSearch] = useState("");
   const [results, setResults] = useState([]);
   const [typing, setTyping] = useState(false);
@@ -29,10 +34,11 @@ export default function MessagesPage() {
   const active = useMemo(() => conversations.find((item) => item.id === activeId) || null, [conversations, activeId]);
 
   const loadConversations = useCallback(async () => {
+    setConversationError("");
     try {
       const response = await api.get("/api/messages/conversations");
       setConversations(response.data?.conversations || []);
-    } catch { /* left blank on failure — retry button covers it */ }
+    } catch (error) { setConversationError(error.response?.data?.message || "Conversations could not be loaded."); }
     finally { setLoading(false); }
   }, []);
 
@@ -44,7 +50,6 @@ export default function MessagesPage() {
     const targetUserId = searchParams.get("userId");
     if (!targetUserId || loading) return;
     const shouldCall = searchParams.get("call") === "1";
-    const groupId = searchParams.get("groupId") || undefined;
     openConversation(targetUserId, shouldCall);
     setSearchParams({}, { replace: true });
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -61,12 +66,13 @@ export default function MessagesPage() {
 
   const loadMessages = useCallback(async (conversationId) => {
     if (!conversationId) return;
+    setMessageError("");
     try {
       const response = await api.get(`/api/messages/conversations/${conversationId}/messages`);
       setMessages(response.data?.messages || []);
       await api.post(`/api/messages/conversations/${conversationId}/read`);
       setConversations((current) => current.map((item) => item.id === conversationId ? { ...item, unreadCount: 0 } : item));
-    } catch { setMessages([]); }
+    } catch (error) { setMessages([]); setMessageError(error.response?.data?.message || "Messages could not be loaded."); }
   }, []);
 
   useEffect(() => {
@@ -118,22 +124,27 @@ export default function MessagesPage() {
 
   const sendMessage = async (event) => {
     event.preventDefault();
-    if (!activeId || (!draft.trim() && !attachment)) return;
+    if (sending || !activeId || (!draft.trim() && !attachment)) return;
     const content = draft.trim();
-    setDraft(""); const pendingAttachment = attachment; setAttachment(null);
+    const pendingAttachment = attachment;
+    setSending(true); setSendError("");
     try {
       const response = await api.post(`/api/messages/conversations/${activeId}/messages`, { content: content || (pendingAttachment?.name || ""), attachments: pendingAttachment ? [pendingAttachment] : [] });
       setMessages((current) => current.some((item) => item.id === response.data.message.id) ? current : [...current, response.data.message]);
-    } catch { /* socket delivers on success; failures are silent-retry candidates */ }
+      setDraft(""); setAttachment(null);
+    } catch (error) { setSendError(error.response?.data?.message || "Message could not be sent. Try again."); }
+    finally { setSending(false); }
   };
 
   const uploadAttachment = async (event) => {
     const file = event.target.files?.[0];
     event.target.value = "";
     if (!file || !activeId) return;
+    setUploading(true); setSendError("");
     const form = new FormData(); form.append("file", file);
     try { const response = await api.post(`/api/messages/conversations/${activeId}/attachments`, form, { headers: { "Content-Type": "multipart/form-data" } }); setAttachment(response.data?.attachment || null); }
-    catch { /* upload failures surface as a disabled send button */ }
+    catch (error) { setSendError(error.response?.data?.message || "Attachment could not be uploaded. Try again."); }
+    finally { setUploading(false); }
   };
 
   const deleteMessage = async (messageId) => {
@@ -162,10 +173,10 @@ export default function MessagesPage() {
   return (
     <div className="dm-shell">
       <aside className="dm-sidebar" aria-label="Conversations">
-        <div className="dm-search"><Search size={14} /><input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Message a member…" /></div>
-        {results.length > 0 && <div className="dm-search-results">{results.map((user) => <button type="button" key={user.id} onClick={() => openConversation(user.id)}><span className="dm-avatar">{initials(user.name)}</span><span>{user.name}</span></button>)}</div>}
-        {loading ? <div className="dm-empty">Loading conversations…</div> : conversations.length ? conversations.map((conversation) => (
-          <button type="button" key={conversation.id} className={conversation.id === activeId ? "dm-conversation active" : "dm-conversation"} onClick={() => setActiveId(conversation.id)}>
+        <div className="dm-search"><Search size={14} aria-hidden="true" /><input aria-label="Search members to message" value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Message a member…" /></div>
+        {results.length > 0 && <div className="dm-search-results" role="listbox" aria-label="Member search results">{results.map((user) => <button type="button" role="option" key={user.id} onClick={() => openConversation(user.id)}><span className="dm-avatar">{initials(user.name)}</span><span>{user.name}</span></button>)}</div>}
+        {loading ? <div className="dm-empty" role="status">Loading conversations…</div> : conversationError ? <div className="dm-empty dm-error" role="alert"><span>{conversationError}</span><button type="button" onClick={loadConversations}>Try again</button></div> : conversations.length ? conversations.map((conversation) => (
+          <button type="button" key={conversation.id} aria-pressed={conversation.id === activeId} className={conversation.id === activeId ? "dm-conversation active" : "dm-conversation"} onClick={() => setActiveId(conversation.id)}>
             <span className="dm-avatar">{initials(conversation.with.name)}</span>
             <span className="dm-conversation-meta">
               <strong>{conversation.with.name}</strong>
@@ -176,7 +187,7 @@ export default function MessagesPage() {
         )) : <div className="dm-empty">No conversations yet — search a member above to start a private chat.</div>}
       </aside>
 
-      <section className="dm-panel">
+      <section className="dm-panel" aria-label="Direct messages">
         {!active ? (
           <div className="dm-placeholder">Select a conversation, or search for someone to message privately.</div>
         ) : (
@@ -186,7 +197,8 @@ export default function MessagesPage() {
               <div><strong>{active.with.name}</strong>{typing && <small className="dm-typing">typing…</small>}</div>
               <button type="button" className="dm-call-btn" onClick={startCall} aria-label={`Call ${active.with.name}`}><Phone size={16} /></button>
             </header>
-            <div className="dm-messages">
+            <div className="dm-messages" role="log" aria-live="polite" aria-label={`Messages with ${active.with.name}`}>
+              {messageError && <div className="dm-inline-error" role="alert"><span>{messageError}</span><button type="button" onClick={() => loadMessages(activeId)}>Try again</button></div>}
               {messages.map((message) => (
                 <div key={message.id} className={message.deleted ? "dm-bubble deleted" : message.senderId === active.with.id ? "dm-bubble" : "dm-bubble mine"}>
                   {message.deleted ? <em>Message deleted</em> : (
@@ -201,11 +213,12 @@ export default function MessagesPage() {
               <div ref={bottomRef} />
             </div>
             {attachment && <div className="dm-attachment-preview">{attachment.name}<button type="button" onClick={() => setAttachment(null)}><X size={12} /></button></div>}
+            {sendError && <div className="dm-inline-error dm-send-error" role="alert"><span>{sendError}</span><button type="button" onClick={() => setSendError("")}>Dismiss</button></div>}
             <form className="dm-composer" onSubmit={sendMessage}>
-              <button type="button" onClick={() => fileInputRef.current?.click()} aria-label="Attach a file"><Paperclip size={16} /></button>
-              <input type="file" ref={fileInputRef} hidden onChange={uploadAttachment} />
-              <input value={draft} onChange={(event) => onDraftChange(event.target.value)} placeholder="Type a private message…" />
-              <button type="submit" aria-label="Send" disabled={!draft.trim() && !attachment}><Send size={16} /></button>
+              <button type="button" onClick={() => fileInputRef.current?.click()} aria-label="Attach a file" disabled={sending || uploading}><Paperclip size={16} /></button>
+              <input type="file" ref={fileInputRef} hidden onChange={uploadAttachment} disabled={sending || uploading} />
+              <input aria-label="Message text" value={draft} onChange={(event) => onDraftChange(event.target.value)} placeholder={uploading ? "Uploading attachment…" : sending ? "Sending message…" : "Type a private message…"} disabled={sending || uploading} />
+              <button type="submit" aria-label={sending ? "Sending message" : "Send"} disabled={sending || uploading || (!draft.trim() && !attachment)}><Send size={16} /></button>
             </form>
           </>
         )}
@@ -223,4 +236,3 @@ export default function MessagesPage() {
     </div>
   );
 }
-

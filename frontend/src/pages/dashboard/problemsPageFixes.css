@@ -1,0 +1,61 @@
+.problems-page {
+  width: 100%;
+}
+
+.problems-table-row {
+  transition: background-color 0.16s ease, box-shadow 0.16s ease;
+}
+
+.problems-table-row:hover,
+.problems-table-row:focus-visible {
+  background: var(--bg-elevated);
+  outline: none;
+}
+
+.problems-table-row:focus-visible {
+  box-shadow: inset 3px 0 0 var(--accent);
+}
+
+.problems-toolbar > div:first-child:focus-within {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+
+.problems-toolbar button:focus-visible,
+.problems-stats button:focus-visible,
+.problems-table button:focus-visible,
+.problems-page > div > div:last-child button:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
+@media (max-width: 900px) {
+  .problems-table {
+    overflow-x: auto !important;
+  }
+
+  .problems-table-head,
+  .problems-table-row {
+    min-width: 760px;
+  }
+}
+
+@media (max-width: 620px) {
+  .problems-page {
+    gap: 16px !important;
+  }
+
+  .problems-toolbar > div:first-child {
+    min-width: 100% !important;
+    flex-basis: 100%;
+  }
+
+  .problems-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  .problems-table-head,
+  .problems-table-row {
+    min-width: 700px;
+  }
+}

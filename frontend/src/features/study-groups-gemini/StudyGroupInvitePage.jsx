@@ -1,0 +1,8 @@
+import { useEffect, useState } from "react";
+import { Link, useNavigate, useParams } from "react-router-dom";
+import { acceptInvite, getInvite } from "./api";
+import "./studyGroups.css";
+import "./studyGroupsApp.css";
+import "./studyGroupsWorkspace.css";
+
+export default function StudyGroupInvitePage() { const { token } = useParams(); const navigate = useNavigate(); const [invite, setInvite] = useState(null); const [error, setError] = useState(""); const [joining, setJoining] = useState(false); useEffect(() => { getInvite(token).then(setInvite).catch((err) => setError(err.response?.data?.message || "This invite link is invalid or expired.")); }, [token]); const join = async () => { setJoining(true); try { const result = await acceptInvite(token); navigate(`/dashboard/groups/${result.group._id}`); } catch (err) { setError(err.response?.data?.message || "Could not join this group."); } finally { setJoining(false); } }; return <main className="sg-app"><div className="sg-main"><section className="sg-card sg-invite-card"><span className="sg-eyebrow">GROUP INVITATION</span>{invite ? <><h1 className="sg-title">Join {invite.group.name}</h1><p className="sg-sub">{invite.group.description || "You have been invited to learn with this study group."}</p><span className="sg-chip">{invite.group.topic || "Study group"}</span><div className="sg-actions"><button className="sg-btn accent" onClick={join} disabled={joining}>{joining ? "Joining…" : "Accept invitation"}</button><Link className="sg-btn" to="/dashboard/groups">Browse groups</Link></div></> : <><h1 className="sg-title">{error ? "Invite unavailable" : "Loading invitation…"}</h1>{error && <p className="sg-sub">{error}</p>}</>}</section></div></main>; }

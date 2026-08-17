@@ -14,7 +14,7 @@ async function createRun({ source, mode, requestedBy = "", requestMeta = {} }) {
     await ImportState.findOneAndUpdate(
         { source },
         { $set: { status: "queued", currentRunId: run._id, updatedAt: new Date() } },
-        { upsert: true, new: true }
+        { upsert: true, returnDocument: "after" }
     );
     return run;
 }
@@ -24,14 +24,14 @@ async function appendLog({ runId, source, level = "info", step = "", message, de
 }
 
 async function updateRun(runId, updates) {
-    return ImportRun.findByIdAndUpdate(runId, { $set: updates }, { new: true });
+    return ImportRun.findByIdAndUpdate(runId, { $set: updates }, { returnDocument: "after" });
 }
 
 async function updateState(source, updates) {
     return ImportState.findOneAndUpdate(
         { source },
         { $set: { ...updates, updatedAt: new Date() } },
-        { upsert: true, new: true }
+        { upsert: true, returnDocument: "after" }
     );
 }
 

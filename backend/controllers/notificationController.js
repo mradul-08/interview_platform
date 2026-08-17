@@ -21,3 +21,11 @@ exports.markAllRead = async (req, res) => {
     res.json({ success: true });
   } catch (error) { console.error(error); res.status(500).json({ success: false, message: "Failed to update notifications" }); }
 };
+
+exports.markGroupMessagesRead = async (req, res) => {
+  try {
+    const result = await Notification.updateMany({ userId: req.user._id, groupId: req.params.groupId, type: "study_group_message", readAt: null }, { $set: { readAt: new Date() } });
+    req.app.locals.io?.to(`user:${req.user._id}`).emit("notifications:updated", { reason: "study-group-chat-opened" });
+    res.json({ success: true, updated: result.modifiedCount });
+  } catch (error) { console.error(error); res.status(500).json({ success: false, message: "Failed to update group chat notifications" }); }
+};

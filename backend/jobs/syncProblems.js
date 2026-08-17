@@ -26,7 +26,7 @@ async function scheduleNightlySync() {
             await ImportState.findOneAndUpdate(
                 { source: "sync" },
                 { $set: { status: "completed", lastMessage: "scheduled sync complete", updatedAt: new Date() } },
-                { upsert: true, new: true }
+                { upsert: true, returnDocument: "after" }
             );
             console.log("[syncProblems] Nightly sync completed");
         } catch (error) {

@@ -1,0 +1,45 @@
+.sg-notification-panel article:focus-visible,
+.sg-notification-trigger:focus-visible,
+.sg-notification-header button:focus-visible,
+.sg-notification-error button:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
+.sg-notification-error {
+  display: grid;
+  justify-items: center;
+  gap: 9px;
+  padding: 24px 16px;
+  color: var(--red);
+  font-size: 12px;
+  text-align: center;
+}
+
+.sg-notification-error button {
+  padding: 7px 11px;
+  border: 1px solid var(--border-default);
+  border-radius: 8px;
+  background: var(--bg-elevated);
+  color: var(--text-primary);
+  font: 700 11px var(--font-sans);
+  cursor: pointer;
+}
+
+.sg-notification-header button:disabled {
+  cursor: not-allowed;
+}
+
+@media (max-width: 520px) {
+  .sg-notification-panel {
+    position: fixed;
+    top: 62px;
+    right: 12px;
+    left: 12px;
+    width: auto;
+  }
+
+  .sg-notification-list {
+    max-height: min(62vh, 430px);
+  }
+}

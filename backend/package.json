@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "start": "node server-entry.js",
-    "dev": "nodemon server-entry.js",
+    "dev": "node scripts/freeDevPort.js 5001 && nodemon server-entry.js",
     "bootstrap:problems": "node scripts/bootstrapProblems.js",
     "seed:1000-problems": "node scripts/seed1000Problems.js",
     "export:bundled-problems": "node scripts/exportBundledProblems.js",
@@ -33,6 +33,7 @@
     "import:aptitude": "node scripts/importAptitudeBank.js",
     "fix:user-index": "node scripts/fixUserUsernameIndex.js",
     "backfill:streaks": "node scripts/backfillStreakAchievements.js",
+    "backfill:developer-profiles": "node scripts/backfillDeveloperProfiles.js",
     "docker:build": "docker build -t codeverse-executor:latest ./docker"
   },
   "keywords": [],

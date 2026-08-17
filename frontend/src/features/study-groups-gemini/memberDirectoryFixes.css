@@ -1,0 +1,29 @@
+.sg-members-panel .sg-member-item {
+  min-height: 64px;
+}
+
+.sg-members-panel .sg-member-item:focus-visible {
+  outline: 3px solid var(--focus-ring);
+  outline-offset: 3px;
+}
+
+.sg-members-panel .sg-member-remove:focus-visible,
+.sg-members-panel .sg-request-item .sg-btn:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
+@media (max-width: 620px) {
+  .sg-request-item {
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+
+  .sg-request-item .sg-member-copy {
+    min-width: calc(100% - 50px);
+  }
+
+  .sg-request-item .sg-btn {
+    flex: 1;
+  }
+}

@@ -65,7 +65,7 @@ async function markDiscussionAsSolution(req, res) {
     const discussion = await Discussion.findOneAndUpdate(
       { _id: discussionId, problem: problemId },
       { $set: { isSolution: true } },
-      { new: true }
+      { returnDocument: "after" }
     ).populate("user", "name username avatarUrl role");
 
     if (!discussion) return res.status(404).json({ message: "Discussion not found" });

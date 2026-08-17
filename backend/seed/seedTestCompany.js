@@ -39,7 +39,7 @@ async function main() {
         hrEmail: "hr@codeverse.dev",
       },
     },
-    { upsert: true, new: true }
+    { upsert: true, returnDocument: "after" }
   );
 
   await CompanyProfile.updateOne(

@@ -3,6 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import { useTheme } from "../hooks/useTheme";
 import api from "../api/api";
+import StudyGroupNotificationBell from "../components/StudyGroupNotificationBell";
+import { connectRealtimeSocket } from "../realtime/socket";
 
 const normalizeSearch = (value) => String(value || "").toLowerCase().trim();
 
@@ -66,8 +68,26 @@ export default function Topbar({ user, stats, onMenuClick, pageTitle }) {
   const [searchLoading, setSearchLoading] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
+  const [avatarUrl, setAvatarUrl] = useState(user?.avatarUrl || "");
   const searchRef = useRef(null);
   const searchInputRef = useRef(null);
+
+  useEffect(() => {
+    setAvatarUrl(user?.avatarUrl || "");
+    api.get("/api/profile/me").then((response) => {
+      const nextAvatar = response.data?.profile?.avatar?.url || "";
+      setAvatarUrl(nextAvatar);
+      window.dispatchEvent(new CustomEvent("profile-avatar-updated", { detail: { avatarUrl: nextAvatar } }));
+    }).catch(() => {});
+    const socket = connectRealtimeSocket();
+    const onProfileUpdated = (event) => {
+      if (event?.avatarUrl !== undefined) setAvatarUrl(event.avatarUrl || "");
+    };
+    const onLocalAvatarUpdated = (event) => setAvatarUrl(event.detail?.avatarUrl || "");
+    socket.on("profile:updated", onProfileUpdated);
+    window.addEventListener("profile-avatar-updated", onLocalAvatarUpdated);
+    return () => { socket.off("profile:updated", onProfileUpdated); window.removeEventListener("profile-avatar-updated", onLocalAvatarUpdated); };
+  }, [user?.avatarUrl]);
 
   useEffect(() => {
     const closeSearch = (event) => {
@@ -181,7 +201,8 @@ export default function Topbar({ user, stats, onMenuClick, pageTitle }) {
       <button className="cv-theme-toggle" onClick={toggleTheme} aria-label={`Switch to ${theme === "dark" ? "light" : "dark"} mode`} aria-pressed={theme === "dark"} title={`Switch to ${theme === "dark" ? "light" : "dark"} mode`} style={{ width: 40, height: 40, borderRadius: 10, boxShadow: "none" }}>
         {theme === "dark" ? <SunIcon /> : <MoonIcon />}
       </button>
-      <button onClick={() => navigate("/dashboard/profile")} aria-label="Open profile" style={avatarStyle}>{user?.name?.[0]?.toUpperCase() || "U"}</button>
+      <StudyGroupNotificationBell />
+      <button onClick={() => navigate("/dashboard/profile")} aria-label="Open profile" style={avatarStyle}>{avatarUrl ? <img src={avatarUrl} alt="" style={avatarImageStyle} /> : (user?.name?.[0]?.toUpperCase() || "U")}</button>
 
       <AnimatePresence>
       {mobileSearchOpen && <motion.div className="cv-mobile-search-panel" initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }}>
@@ -219,4 +240,5 @@ const streakStyle = { display: "flex", alignItems: "center", gap: 8, padding: "5
 const pointsButtonStyle = { display: "flex", alignItems: "center", gap: 8, padding: "5px 10px", borderRadius: 8, background: "var(--accent-soft)", color: "var(--accent-strong)", fontSize: 12.5, fontWeight: 700, border: 0, cursor: "pointer", whiteSpace: "nowrap" };
 const pointsPanelStyle = { position: "fixed", top: 60, right: 82, zIndex: 60, width: "min(360px, calc(100vw - 24px))", background: "var(--bg-surface)", border: "1px solid var(--border-default)", borderRadius: 14, padding: 16, boxShadow: "var(--shadow-lg)", color: "var(--text-tertiary)", fontSize: 11, lineHeight: 1.7 };
 const panelHeader = { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }; const closeButton = { border: 0, background: "none", color: "var(--text-tertiary)", fontSize: 18, cursor: "pointer" }; const panelLabel = { color: "var(--text-primary)", fontWeight: 800, marginBottom: 5 }; const ruleBox = { background: "var(--bg-elevated)", border: "1px solid var(--border-subtle)", borderRadius: 9, padding: "9px 10px" }; const muted = { color: "var(--text-tertiary)", fontSize: 11 }; const transactionRow = { display: "flex", alignItems: "center", gap: 8, padding: "6px 0", borderBottom: "1px solid var(--border-subtle)" };
-const avatarStyle = { width: 36, height: 36, borderRadius: "50%", background: "var(--accent-grad)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 700, color: "white", flexShrink: 0, cursor: "pointer" };
+const avatarStyle = { width: 40, height: 40, padding: 0, overflow: "hidden", border: "2px solid color-mix(in srgb,var(--accent) 72%,white 12%)", borderRadius: 10, background: "var(--accent-grad)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 700, color: "white", flexShrink: 0, cursor: "pointer", boxShadow: "0 4px 14px color-mix(in srgb,var(--accent) 18%,transparent)" };
+const avatarImageStyle = { width: "100%", height: "100%", objectFit: "cover", objectPosition: "center center", borderRadius: 8, display: "block" };

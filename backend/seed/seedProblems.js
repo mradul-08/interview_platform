@@ -680,7 +680,7 @@ if (require.main === module) {
             const result = await Problem.findOneAndUpdate(
                 { slug: p.slug },
                 { $set: p },
-                { upsert: true, new: true, rawResult: true }
+                { upsert: true, returnDocument: "after", rawResult: true }
             );
             if (result.lastErrorObject?.updatedExisting) updated++;
             else inserted++;

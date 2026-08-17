@@ -1,0 +1,14 @@
+.sg-group-card:focus-visible {
+  outline: 3px solid var(--focus-ring);
+  outline-offset: 3px;
+}
+
+.sg-btn,
+.sg-pagination button {
+  min-height: 40px;
+}
+
+.sg-pagination button:focus-visible {
+  outline: 3px solid var(--focus-ring);
+  outline-offset: 2px;
+}

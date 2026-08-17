@@ -279,16 +279,8 @@ function Navbar({ goApp }) {
     >
       <div className="mx-auto max-w-7xl px-6 lg:px-8 h-[68px] flex items-center gap-8">
         <a href="#top" className="flex items-center gap-2.5 shrink-0">
-          <span className="grid h-8 w-8 place-items-center rounded-[10px] bg-gradient-to-br from-indigo-500 to-cyan-400 shadow-[0_0_20px_rgba(34,211,238,0.35)]">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none">
-              <path
-                d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"
-                stroke="#05070D"
-                strokeWidth="2.4"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
+          <span className="h-8 w-8 overflow-hidden rounded-[10px] shadow-[0_0_20px_rgba(34,211,238,0.35)]">
+            <img src="/branding/codeverse-logo-reference.png" alt="CodeVerse" className="h-full w-full object-cover object-center" />
           </span>
           <span className="font-display text-[15px] font-semibold tracking-tight text-slate-50">
             CodeVerse
@@ -772,10 +764,8 @@ function Footer({ goApp }) {
     <footer className="relative bg-[#05070D] border-t border-white/[0.06]">
       <div className="mx-auto max-w-7xl px-6 lg:px-8 py-12 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
         <div className="flex items-center gap-2.5">
-          <span className="grid h-7 w-7 place-items-center rounded-[9px] bg-gradient-to-br from-indigo-500 to-cyan-400">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none">
-              <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" stroke="#05070D" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
+          <span className="h-7 w-7 overflow-hidden rounded-[9px]">
+            <img src="/branding/codeverse-logo-reference.png" alt="CodeVerse" className="h-full w-full object-cover object-center" />
           </span>
           <span className="font-display text-[14px] font-semibold text-slate-200">CodeVerse</span>
           <span className="font-mono text-[11px] text-slate-600 ml-2">Built solo. Still shipping.</span>

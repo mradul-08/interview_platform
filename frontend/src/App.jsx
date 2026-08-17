@@ -7,6 +7,7 @@ const StudentDashboard = lazy(() => import("./pages/StudentDashboard"));
 const CompanyDashboard = lazy(() => import("./pages/CompanyDashboard"));
 const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
 const Home = lazy(() => import("./pages/Home"));
+const PublicProfilePage = lazy(() => import("./features/profile/PublicProfilePage"));
 
 function PrivateRoute({ children, allowedRoles }) {
   const token = localStorage.getItem("token");
@@ -27,6 +28,7 @@ function App() {
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<AuthPage />} />
         <Route path="/auth-success" element={<AuthSuccess />} />
+        <Route path="/profile/:username" element={<PublicProfilePage />} />
 
         <Route path="/dashboard/student" element={<Navigate to="/dashboard" replace />} />
         <Route path="/dashboard/student/*" element={<Navigate to="/dashboard" replace />} />

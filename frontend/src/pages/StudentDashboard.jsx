@@ -1,7 +1,7 @@
 // src/pages/StudentDashboard.jsx
 // Proper nested routing — all sub-pages work, problems navigate correctly
 import { useState, useEffect } from "react";
-import { useNavigate, Routes, Route, useLocation } from "react-router-dom";
+import { useNavigate, Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { useDashboard } from "../hooks/useDashboard";
 import api from "../api/api";
 import Sidebar from "../layout/Sidebar";
@@ -17,6 +17,14 @@ import MessagesPage from "./dashboard/MessagesPage";
 import LeaderboardPage from "./dashboard/LeaderboardPage";
 import AptitudeRoutes from "../features/aptitude/AptitudeRoutes";
 import ErrorBoundary from "../components/ErrorBoundary";
+import GeminiStudyGroups from "../features/study-groups-gemini/StudyGroupsPage";
+import GeminiStudyGroupDetailsEntry from "../features/study-groups-gemini/StudyGroupDetailsEntry";
+import MemberProfilePage from "../features/study-groups-gemini/MemberProfilePage";
+import GeminiStudyGroupCreate from "../features/study-groups-gemini/StudyGroupCreatePage";
+import GeminiStudyGroupJoin from "../features/study-groups-gemini/StudyGroupJoinPage";
+import GeminiStudyGroupInvite from "../features/study-groups-gemini/StudyGroupInvitePage";
+import ProfilePage from "../features/profile/ProfilePage";
+import PublicProfilePage from "../features/profile/PublicProfilePage";
 
 // â”€â”€ Generic placeholder for pages not yet built â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function ComingSoonPage({ title, description }) {
@@ -49,6 +57,7 @@ const PAGE_TITLES = {
   "/dashboard/contests": "Contests",
   "/dashboard/leaderboard": "Leaderboard",
   "/dashboard/network": "Network",
+  "/dashboard/groups": "Study Groups",
   "/dashboard/messages": "Messages",
   "/dashboard/bookmarks": "Bookmarks",
   "/dashboard/profile": "Profile",
@@ -90,7 +99,11 @@ export default function StudentDashboard() {
   const isProblemDetail = path.match(/^\/dashboard\/problems\/.+/);
   const pageTitle = isProblemDetail
     ? "Problems"
-    : PAGE_TITLES[path] || "CodeVerse";
+    : PAGE_TITLES[path]
+      || (path.startsWith("/dashboard/aptitude/") ? "Aptitude" : null)
+      || (path.startsWith("/dashboard/groups/") ? "Study Groups" : null)
+      || (path.startsWith("/dashboard/profile/") ? "Profile" : null)
+      || "CodeVerse";
 
   // Problem detail gets full-height layout (no inner padding)
   const isFullHeight = isProblemDetail;
@@ -113,25 +126,27 @@ export default function StudentDashboard() {
           onMenuClick={() => isMobile ? setMobileSidebarOpen(o => !o) : setSidebarCollapsed(c => !c)}
         />
         {profile && (
-          <div className="cv-card" style={{ margin: "0 28px 16px", padding: "12px 16px", borderRadius: 14, color: "var(--text-secondary)", fontSize: 13 }}>
+          <div className="cv-card cv-dashboard-profile-strip">
             Signed in as <strong>{profile.fullName || profile.companyName || profile.email || data?.user?.name}</strong>
           </div>
         )}
 
         {/* Loading / error state */}
         {loading && isOverviewRoute && (
-          <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center" }}>
-            <div style={{ textAlign: "center" }}>
+          <div className="cv-dashboard-state" role="status" aria-live="polite">
+            <div className="cv-dashboard-state-content">
               <div style={{ width: 32, height: 32, borderRadius: "50%", border: "2px solid var(--border-strong)", borderTop: "2px solid var(--accent)", animation: "cv-spin 0.7s linear infinite", margin: "0 auto 12px" }} />
-              <p style={{ color: "var(--text-tertiary)", fontSize: 13, margin: 0 }}>Loading your dashboard…</p>
+              <strong>Loading your dashboard</strong>
+              <p>Preparing your progress and recommendations.</p>
             </div>
             <style>{`@keyframes cv-spin { to { transform: rotate(360deg); } }`}</style>
           </div>
         )}
         {error && isOverviewRoute && (
-          <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center" }}>
-            <div style={{ textAlign: "center" }}>
-              <p style={{ color: "var(--red)", fontSize: 13, marginBottom: 12 }}>{error}</p>
+          <div className="cv-dashboard-state" role="alert">
+            <div className="cv-dashboard-state-content">
+              <strong>Dashboard unavailable</strong>
+              <p>{error}</p>
               <button type="button" className="study-secondary" onClick={() => refetch()}>Try again</button>
             </div>
           </div>
@@ -139,7 +154,7 @@ export default function StudentDashboard() {
 
         {/* Routes — only render when data is ready (or not needed) */}
         {(!isOverviewRoute || (!loading && !error)) && (
-          <main style={{ flex: 1, overflowY: isFullHeight ? "hidden" : "auto", padding: isFullHeight ? 0 : "24px 28px" }}>
+          <main className={`cv-dashboard-main${isFullHeight ? " cv-dashboard-main-full-height" : ""}`}>
             <ErrorBoundary key={path} title="This section hit an error" description="Something failed to render on this page. Try again, or go back and reopen it.">
             <Routes>
               {/* Overview needs dashboard data */}
@@ -167,6 +182,15 @@ export default function StudentDashboard() {
               {/* Network */}
               <Route path="network" element={<ComingSoonPage title="Network" description="Connect with peers, seniors, and company recruiters. Expand your placement network." />} />
 
+              {/* Gemini Study Groups */}
+              <Route path="study-groups-gemini/*" element={<Navigate to="/dashboard/groups" replace />} />
+              <Route path="groups" element={<GeminiStudyGroups />} />
+              <Route path="groups/create" element={<GeminiStudyGroupCreate />} />
+              <Route path="groups/join" element={<GeminiStudyGroupJoin />} />
+              <Route path="groups/invite/:token" element={<GeminiStudyGroupInvite />} />
+              <Route path="groups/:groupId" element={<GeminiStudyGroupDetailsEntry />} />
+              <Route path="groups/:groupId/members/:memberId" element={<MemberProfilePage />} />
+
               {/* Messages */}
               <Route path="messages" element={<MessagesPage />} />
 
@@ -174,7 +198,8 @@ export default function StudentDashboard() {
               <Route path="bookmarks" element={<ComingSoonPage title="Bookmarks" description="All problems you've saved for later, organized by difficulty and topic." />} />
 
               {/* Profile */}
-              <Route path="profile" element={<ComingSoonPage title="Profile" description="Your public coding profile — submissions, stats, achievements, and resume." />} />
+              <Route path="profile/:username" element={<PublicProfilePage />} />
+              <Route path="profile" element={<ProfilePage />} />
 
               {/* Settings */}
               <Route path="settings" element={<SecuritySettings />} />

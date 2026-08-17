@@ -50,7 +50,7 @@ const POINTS_BY_DIFFICULTY = { Easy: 10, Medium: 20, Hard: 30 };
             const result = await Problem.findOneAndUpdate(
                 { slug: doc.slug },
                 { $set: doc },
-                { upsert: true, new: true, rawResult: true }
+                { upsert: true, returnDocument: "after", rawResult: true }
             );
 
             if (result.lastErrorObject?.updatedExisting) updated++;

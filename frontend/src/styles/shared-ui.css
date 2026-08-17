@@ -11,6 +11,9 @@
   border: 1px solid var(--border-default);
   font: 600 12px/1 var(--font-sans);
   cursor: pointer;
+  transition: background-color var(--motion-fast) ease, border-color var(--motion-fast) ease,
+    color var(--motion-fast) ease, box-shadow var(--motion-fast) ease, transform var(--motion-fast) ease,
+    filter var(--motion-fast) ease;
 }
 
 .study-primary {
@@ -25,10 +28,31 @@
 }
 
 .study-primary:hover,
-.study-secondary:hover { filter: brightness(1.08); }
+.study-secondary:hover { filter: brightness(1.08); transform: translateY(-1px); }
+
+.study-primary:active,
+.study-secondary:active { transform: translateY(0); }
+
+.study-primary:focus-visible,
+.study-secondary:focus-visible {
+  outline: 3px solid var(--focus-ring);
+  outline-offset: 2px;
+}
 
 .study-primary:disabled,
-.study-secondary:disabled { opacity: .55; cursor: not-allowed; }
+.study-secondary:disabled { opacity: .55; cursor: not-allowed; transform: none; filter: none; }
+
+.study-error {
+  display: grid;
+  gap: 10px;
+  min-height: 180px;
+  place-items: center;
+  padding: 24px;
+  color: var(--text-secondary);
+  text-align: center;
+}
+
+.study-error strong { color: var(--red); }
 
 .study-empty,
 .study-loading {

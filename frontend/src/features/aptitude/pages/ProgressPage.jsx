@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Radar, Gauge, BrainCircuit, History, CheckCircle2, XCircle } from "lucide-react";
 import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid } from "recharts";
 import aptitudeApi from "../lib/api";
@@ -24,11 +24,14 @@ export default function ProgressPage() {
   const [analytics, setAnalytics] = useState(null);
   const [mistakes, setMistakes] = useState(null);
   const [topicIndex, setTopicIndex] = useState(0);
+  const loadingRef = useRef(false);
   const focusTopics = mistakes?.focusTopics || (mistakes?.focusTopic ? [mistakes.focusTopic] : []);
   const activeTopic = focusTopics.length ? focusTopics[topicIndex % focusTopics.length]?.topic : null;
 
-  const load = () => {
-    setState({ loading: true, error: "" });
+  const load = ({ background = false } = {}) => {
+    if (loadingRef.current) return null;
+    loadingRef.current = true;
+    if (!background) setState({ loading: true, error: "" });
     const controller = new AbortController();
     Promise.all([
       aptitudeApi.dashboard(controller.signal),
@@ -49,14 +52,17 @@ export default function ProgressPage() {
       })
       .catch((e) => {
         if (e.name === "CanceledError") return;
-        setState({ loading: false, error: "Couldn't load your progress data." });
+        if (!background) setState({ loading: false, error: "Couldn't load your progress data." });
+      })
+      .finally(() => {
+        loadingRef.current = false;
       });
     return controller;
   };
 
   useEffect(() => {
     const controller = load();
-    return () => controller.abort();
+    return () => controller?.abort();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeTopic]);
 
@@ -68,9 +74,9 @@ export default function ProgressPage() {
   }, [focusTopics.length]);
 
   useRealtimeSocket({
-    "realtime:ready": load,
-    "aptitude:analytics-updated": load,
-    "gamification:updated": load,
+    "realtime:ready": () => load({ background: true }),
+    "aptitude:analytics-updated": () => load({ background: true }),
+    "gamification:updated": () => load({ background: true }),
   });
 
   if (state.loading) return <PageLoading />;

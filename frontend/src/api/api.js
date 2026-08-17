@@ -3,7 +3,7 @@ import axios from "axios";
 import { getRealtimeSocket } from "../realtime/socket";
 
 const api = axios.create({
-    baseURL: import.meta.env.VITE_API_URL || "http://localhost:5001",
+    baseURL: import.meta.env.VITE_API_URL || "http://127.0.0.1:5001",
     withCredentials: true,
     timeout: 15000,
 });
@@ -36,7 +36,7 @@ api.interceptors.response.use(
             try {
                 if (!refreshPromise) {
                     refreshPromise = axios.post(
-                        `${import.meta.env.VITE_API_URL || "http://localhost:5001"}/api/auth/refresh`,
+                        `${import.meta.env.VITE_API_URL || "http://127.0.0.1:5001"}/api/auth/refresh`,
                         {},
                         { withCredentials: true }
                     ).finally(() => { refreshPromise = null; });

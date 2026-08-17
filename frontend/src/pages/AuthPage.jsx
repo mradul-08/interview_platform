@@ -632,6 +632,10 @@ export default function AuthPage() {
       <div className="relative mx-auto grid min-h-screen max-w-7xl lg:grid-cols-[1.15fr_0.85fr]">
         <section className="flex items-center px-6 py-12 sm:px-10 lg:px-16">
           <div className="max-w-2xl">
+            <div className="mb-7 flex items-center gap-3" aria-label="CodeVerse">
+              <img src="/branding/codeverse-logo-reference.png" alt="CodeVerse" className="h-12 w-12 rounded-2xl object-cover object-center shadow-[0_0_28px_rgba(37,99,235,0.35)]" />
+              <span className="text-lg font-extrabold tracking-[-0.03em] text-white">CodeVerse</span>
+            </div>
             <TerminalEyebrow role={role} />
 
             <h1 className="mt-6 text-5xl font-black tracking-[-0.06em] text-white sm:text-6xl">

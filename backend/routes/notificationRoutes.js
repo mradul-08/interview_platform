@@ -6,6 +6,7 @@ const router = express.Router();
 router.use(protect, requireRole("student"));
 router.get("/", controller.listNotifications);
 router.post("/read-all", controller.markAllRead);
+router.post("/group/:groupId/messages/read", controller.markGroupMessagesRead);
 router.post("/:id/read", controller.markRead);
 
 module.exports = router;

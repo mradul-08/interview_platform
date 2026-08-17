@@ -26,12 +26,12 @@ export default function OverviewPage() {
   const [weakTopicIndex, setWeakTopicIndex] = useState(0);
   const loadingRef = useRef(false);
 
-  const load = () => {
+  const load = ({ background = false } = {}) => {
     if (loadingRef.current) return null;
     loadingRef.current = true;
     // Render the page shell immediately. Individual cards own their loading
     // shells, so one slow endpoint cannot blank the entire overview.
-    setState((current) => ({ ...current, loading: false, error: "" }));
+    if (!background) setState((current) => ({ ...current, loading: false, error: "" }));
     const controller = new AbortController();
     const fast = (request) => Promise.race([
       request.catch(() => null),
@@ -44,15 +44,20 @@ export default function OverviewPage() {
       fast(aptitudeApi.recommendations(controller.signal)),
       fast(aptitudeApi.analytics(controller.signal)),
     ]).then(([d, s, r, rec, a]) => {
+      const overviewUnavailable = [d, s, r, rec, a].every((response) => !response);
       if (d) setDashboard(d.data?.data || null);
       if (s) setActiveSession(s.data?.session || null);
       if (r) setRevision(r.data?.data || null);
       if (rec) setRecommendations(rec.data?.questions || []);
       if (a) setAnalytics(a.data?.data || null);
-      setDashboardReady(true);
+      setDashboardReady(!overviewUnavailable);
       // Overview is a composed page. One unavailable endpoint must not replace
       // the whole page with an error screen; independent cards can still load.
-      setState({ loading: false, error: "" });
+      if (!background) {
+        setState({ loading: false, error: overviewUnavailable ? "Aptitude overview could not be loaded. Check your connection and try again." : "" });
+      } else if (!overviewUnavailable) {
+        setState((current) => ({ ...current, error: "" }));
+      }
     }).finally(() => {
       loadingRef.current = false;
     });
@@ -65,13 +70,13 @@ export default function OverviewPage() {
   }, []);
 
   useRealtimeSocket({
-    "realtime:ready": () => { setRefreshKey((value) => value + 1); load(); },
-    "aptitude:analytics-updated": () => { setRefreshKey((value) => value + 1); load(); },
+    "realtime:ready": () => { setRefreshKey((value) => value + 1); load({ background: true }); },
+    "aptitude:analytics-updated": () => { setRefreshKey((value) => value + 1); load({ background: true }); },
     "aptitude:revision-updated": (payload) => {
       if (payload?.revision) setRevision(payload.revision);
       setRefreshKey((value) => value + 1);
     },
-    "gamification:updated": () => { setRefreshKey((value) => value + 1); load(); },
+    "gamification:updated": () => { setRefreshKey((value) => value + 1); load({ background: true }); },
   });
 
   const weakTopics = dashboard?.weakTopics?.length ? dashboard.weakTopics : (analytics?.topicPerformance || []).map((item) => ({

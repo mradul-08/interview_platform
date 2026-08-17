@@ -1,0 +1,25 @@
+{
+  "watch": [
+    "server-entry.js",
+    "config",
+    "controllers",
+    "jobs",
+    "middleware",
+    "models",
+    "modules",
+    "routes",
+    "services",
+    "socket.js"
+  ],
+  "ext": "js,mjs,cjs,json",
+  "ignore": [
+    "data/**",
+    "datasets/**",
+    "docker/**",
+    "scripts/**",
+    "seed/**",
+    "uploads/**",
+    "*.log"
+  ],
+  "delay": 800
+}

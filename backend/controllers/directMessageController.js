@@ -91,7 +91,7 @@ exports.startConversation = async (req, res) => {
           participants: [{ userId: req.user._id }, { userId: targetUserId }],
         },
       },
-      { upsert: true, new: true, setDefaultsOnInsert: true },
+      { upsert: true, returnDocument: "after", setDefaultsOnInsert: true },
     );
     res.status(201).json({ success: true, conversation: await publicConversation(conversation, req.user._id) });
   } catch (error) { console.error(error); fail(res, "Failed to start a conversation"); }
@@ -221,4 +221,3 @@ exports.declineCall = async (req, res) => {
     res.json({ success: true });
   } catch (error) { console.error(error); fail(res, "Failed to decline call"); }
 };
-

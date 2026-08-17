@@ -1,0 +1,192 @@
+.sg-workspace-head {
+  margin-bottom: var(--space-5) !important;
+}
+
+.sg-workspace-info .sg-actions {
+  flex-wrap: wrap;
+}
+
+.sg-tabs button {
+  min-height: 40px;
+}
+
+.sg-tabs button:focus-visible {
+  outline: 3px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
+@media (max-width: 620px) {
+  .sg-workspace-info .sg-actions {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    width: 100%;
+  }
+
+  .sg-workspace-info .sg-actions .sg-btn {
+    width: 100%;
+  }
+
+  .sg-tabs {
+    padding-right: 10px !important;
+    padding-left: 10px !important;
+  }
+}
+
+.sg-session-form {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin: 18px 0 20px;
+  padding: 16px;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  background: var(--bg-elevated);
+}
+
+.sg-session-form .sg-field span {
+  color: var(--text-tertiary);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: .06em;
+}
+
+.sg-session-form .sg-field span small {
+  font-weight: 500;
+  letter-spacing: 0;
+}
+
+.sg-session-form > .sg-btn {
+  justify-self: start;
+}
+
+.sg-session-row {
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.sg-session-copy {
+  min-width: 0;
+  flex: 1;
+}
+
+.sg-session-title-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.sg-session-title-row strong {
+  color: var(--text-primary);
+}
+
+.sg-session-status {
+  padding: 4px 7px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 999px;
+  color: var(--text-tertiary);
+  font: 700 10px var(--font-mono);
+  text-transform: capitalize;
+}
+
+.sg-session-status.is-active {
+  border-color: var(--green);
+  background: var(--green-soft);
+  color: var(--green);
+}
+
+.sg-session-status.is-completed {
+  background: var(--bg-elevated-2);
+}
+
+.sg-session-dot.is-active {
+  background: var(--green);
+  box-shadow: 0 0 0 4px var(--green-soft);
+}
+
+.sg-session-actions {
+  justify-content: flex-end;
+}
+
+.sg-session-state {
+  display: grid;
+  justify-items: start;
+  gap: 7px;
+  margin-top: 16px;
+  padding: 20px;
+  border: 1px dashed var(--border-default);
+  border-radius: var(--radius-md);
+  background: var(--bg-elevated);
+}
+
+.sg-session-state p {
+  margin: 0 0 6px;
+  color: var(--text-tertiary);
+  font-size: 12px;
+}
+
+@media (max-width: 620px) {
+  .sg-session-form {
+    grid-template-columns: 1fr;
+  }
+
+  .sg-session-form > .sg-btn {
+    width: 100%;
+  }
+
+  .sg-session-row {
+    flex-wrap: wrap;
+  }
+
+  .sg-session-actions {
+    width: 100%;
+    justify-content: stretch;
+  }
+
+  .sg-session-actions .sg-btn {
+    flex: 1;
+  }
+}
+
+.sg-discussion-layout {
+  grid-template-columns: minmax(280px, .8fr) minmax(0, 1.2fr);
+  gap: var(--space-4);
+}
+
+.sg-discussion-layout .sg-field span {
+  color: var(--text-tertiary);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: .06em;
+}
+
+.sg-discussion-feed {
+  min-width: 0;
+}
+
+.sg-discussion-item {
+  align-items: flex-start;
+}
+
+.sg-discussion-copy {
+  min-width: 0;
+}
+
+.sg-discussion-copy strong {
+  color: var(--text-primary);
+}
+
+.sg-discussion-copy p {
+  margin: 5px 0;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.sg-discussion-copy small {
+  color: var(--text-tertiary);
+  font-size: 11px;
+}
+
+@media (max-width: 760px) {
+  .sg-discussion-layout {
+    grid-template-columns: 1fr;
+  }
+}

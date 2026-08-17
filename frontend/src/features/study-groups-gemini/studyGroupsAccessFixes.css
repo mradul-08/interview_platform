@@ -1,0 +1,41 @@
+.sg-access-state {
+  min-height: 260px;
+}
+
+.sg-access-state .sg-eyebrow {
+  margin-bottom: 2px;
+}
+
+.sg-access-state .sg-btn {
+  min-width: 150px;
+  min-height: 42px;
+}
+
+.sg-access-state.is-pending {
+  border-color: color-mix(in srgb, var(--accent) 45%, var(--border-default));
+}
+
+.sg-access-pending {
+  display: inline-flex;
+  align-items: center;
+  min-height: 32px;
+  padding: 6px 10px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 999px;
+  background: var(--accent-soft);
+  color: var(--accent-strong);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+@media (max-width: 620px) {
+  .sg-access-state {
+    min-height: 230px;
+    margin-top: 28px !important;
+    padding: 34px 20px !important;
+  }
+
+  .sg-access-state .sg-btn {
+    width: min(100%, 280px);
+  }
+}

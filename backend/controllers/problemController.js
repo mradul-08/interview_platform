@@ -469,7 +469,7 @@ const updateProblem = async (req, res) => {
         const problem = await Problem.findByIdAndUpdate(
             req.params.id,
             { $set: req.body },
-            { new: true, runValidators: true }
+            { returnDocument: "after", runValidators: true }
         );
         if (!problem) return res.status(404).json({ message: "Problem not found" });
         clearCache("problems:");

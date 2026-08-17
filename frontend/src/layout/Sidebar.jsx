@@ -1,5 +1,8 @@
+import { useEffect, useState } from "react";
 import { useNavigate, NavLink } from "react-router-dom";
 import { logoutEverywhere } from "../utils/auth";
+import { connectRealtimeSocket } from "../realtime/socket";
+import api from "../api/api";
 
 const NAV_SECTIONS = [
   {
@@ -12,6 +15,7 @@ const NAV_SECTIONS = [
       { label: "Contests", path: "/dashboard/contests", icon: "flag" },
       { label: "Leaderboard", path: "/dashboard/leaderboard", icon: "trophy" },
       { label: "Network", path: "/dashboard/network", icon: "share2" },
+      { label: "Study Groups", path: "/dashboard/groups", icon: "users2" },
       { label: "Messages", path: "/dashboard/messages", icon: "mail" },
     ],
   },
@@ -36,11 +40,25 @@ const ICONS = {
 
 export default function Sidebar({ user, collapsed, setCollapsed, mobile, onClose }) {
   const navigate = useNavigate();
+  const [avatarUrl, setAvatarUrl] = useState(user?.avatarUrl || "");
   const handleLogout = () => logoutEverywhere();
+
+  useEffect(() => {
+    setAvatarUrl(user?.avatarUrl || "");
+    api.get("/api/profile/me").then((response) => setAvatarUrl(response.data?.profile?.avatar?.url || "")).catch(() => {});
+    const socket = connectRealtimeSocket();
+    const onProfileUpdated = (event) => {
+      if (event?.avatarUrl !== undefined) setAvatarUrl(event.avatarUrl || "");
+    };
+    const onLocalAvatarUpdated = (event) => setAvatarUrl(event.detail?.avatarUrl || "");
+    socket.on("profile:updated", onProfileUpdated);
+    window.addEventListener("profile-avatar-updated", onLocalAvatarUpdated);
+    return () => { socket.off("profile:updated", onProfileUpdated); window.removeEventListener("profile-avatar-updated", onLocalAvatarUpdated); };
+  }, [user?.avatarUrl]);
 
   return (
     <>
-      {mobile && <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.6)", zIndex: 49 }} />}
+      {mobile && <button type="button" className="cv-sidebar-backdrop" onClick={onClose} aria-label="Close navigation" />}
       <div className="cv-sidebar" style={{
         width: collapsed ? 76 : 248, minHeight: "100vh",
         background: "var(--bg-surface)", borderRight: "1px solid var(--border-subtle)",
@@ -50,12 +68,12 @@ export default function Sidebar({ user, collapsed, setCollapsed, mobile, onClose
         overflow: "hidden", flexShrink: 0,
       }}>
         <div style={{ padding: collapsed ? "22px 0" : "22px 22px", display: "flex", alignItems: "center", gap: 10, minHeight: 70, flexShrink: 0 }}>
-          <div style={{ width: 30, height: 30, borderRadius: 9, background: "var(--accent-grad)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, margin: collapsed ? "0 auto" : 0, boxShadow: "var(--shadow-glow-accent)" }}>
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" stroke="white" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" /></svg>
+          <div style={{ width: 30, height: 30, borderRadius: 9, overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, margin: collapsed ? "0 auto" : 0, boxShadow: "var(--shadow-glow-accent)" }}>
+            <img src="/branding/codeverse-logo-reference.png" alt="CodeVerse" style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "center", display: "block" }} />
           </div>
           {!collapsed && <span style={{ fontSize: 16, fontWeight: 800, color: "var(--text-primary)", letterSpacing: "-0.02em" }}>CodeVerse</span>}
           {!mobile && !collapsed && (
-            <button onClick={() => setCollapsed(true)} style={{ marginLeft: "auto", background: "none", border: "none", color: "var(--text-tertiary)", cursor: "pointer", display: "flex", padding: 4 }}>
+            <button type="button" onClick={() => setCollapsed(true)} aria-label="Collapse navigation" title="Collapse navigation" style={{ marginLeft: "auto", background: "none", border: "none", color: "var(--text-tertiary)", cursor: "pointer", display: "flex", padding: 4 }}>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="15 18 9 12 15 6" /></svg>
             </button>
           )}
@@ -63,7 +81,7 @@ export default function Sidebar({ user, collapsed, setCollapsed, mobile, onClose
 
         <nav style={{ flex: 1, padding: "8px 12px", overflowY: "auto" }}>
           {NAV_SECTIONS[0].items.map((item) => (
-            <NavLink key={item.path} to={item.path} end={item.path === "/dashboard"}
+            <NavLink key={item.path} to={item.path} end={item.path === "/dashboard"} className="cv-sidebar-link" title={collapsed ? item.label : undefined}
               style={({ isActive }) => ({
                 display: "flex", alignItems: "center", gap: 11,
                 padding: collapsed ? "10px 0" : "9px 12px",
@@ -79,30 +97,30 @@ export default function Sidebar({ user, collapsed, setCollapsed, mobile, onClose
             </NavLink>
           ))}
           <div style={{ height: 1, background: "var(--border-subtle)", margin: "10px 4px" }} />
-          <NavLink to="/dashboard/bookmarks" style={({ isActive }) => ({ display: "flex", alignItems: "center", gap: 11, padding: collapsed ? "10px 0" : "9px 12px", justifyContent: collapsed ? "center" : "flex-start", borderRadius: 10, marginBottom: 2, textDecoration: "none", color: isActive ? "var(--accent-strong)" : "var(--text-secondary)", background: isActive ? "var(--accent-soft)" : "transparent", fontSize: 13.5, fontWeight: 500 })}>
+          <NavLink to="/dashboard/bookmarks" className="cv-sidebar-link" title={collapsed ? "Bookmarks" : undefined} style={({ isActive }) => ({ display: "flex", alignItems: "center", gap: 11, padding: collapsed ? "10px 0" : "9px 12px", justifyContent: collapsed ? "center" : "flex-start", borderRadius: 10, marginBottom: 2, textDecoration: "none", color: isActive ? "var(--accent-strong)" : "var(--text-secondary)", background: isActive ? "var(--accent-soft)" : "transparent", fontSize: 13.5, fontWeight: 500 })}>
             {ICONS.bookmark}{!collapsed && <span>Bookmarks</span>}
           </NavLink>
-          <NavLink to="/dashboard/profile" style={({ isActive }) => ({ display: "flex", alignItems: "center", gap: 11, padding: collapsed ? "10px 0" : "9px 12px", justifyContent: collapsed ? "center" : "flex-start", borderRadius: 10, marginBottom: 2, textDecoration: "none", color: isActive ? "var(--accent-strong)" : "var(--text-secondary)", background: isActive ? "var(--accent-soft)" : "transparent", fontSize: 13.5, fontWeight: 500 })}>
+          <NavLink to="/dashboard/profile" className="cv-sidebar-link" title={collapsed ? "Profile" : undefined} style={({ isActive }) => ({ display: "flex", alignItems: "center", gap: 11, padding: collapsed ? "10px 0" : "9px 12px", justifyContent: collapsed ? "center" : "flex-start", borderRadius: 10, marginBottom: 2, textDecoration: "none", color: isActive ? "var(--accent-strong)" : "var(--text-secondary)", background: isActive ? "var(--accent-soft)" : "transparent", fontSize: 13.5, fontWeight: 500 })}>
             {ICONS.user}{!collapsed && <span>Profile</span>}
           </NavLink>
-          <NavLink to="/dashboard/settings" style={({ isActive }) => ({ display: "flex", alignItems: "center", gap: 11, padding: collapsed ? "10px 0" : "9px 12px", justifyContent: collapsed ? "center" : "flex-start", borderRadius: 10, marginBottom: 2, textDecoration: "none", color: isActive ? "var(--accent-strong)" : "var(--text-secondary)", background: isActive ? "var(--accent-soft)" : "transparent", fontSize: 13.5, fontWeight: 500 })}>
+          <NavLink to="/dashboard/settings" className="cv-sidebar-link" title={collapsed ? "Settings" : undefined} style={({ isActive }) => ({ display: "flex", alignItems: "center", gap: 11, padding: collapsed ? "10px 0" : "9px 12px", justifyContent: collapsed ? "center" : "flex-start", borderRadius: 10, marginBottom: 2, textDecoration: "none", color: isActive ? "var(--accent-strong)" : "var(--text-secondary)", background: isActive ? "var(--accent-soft)" : "transparent", fontSize: 13.5, fontWeight: 500 })}>
             {ICONS.settings}{!collapsed && <span>Settings</span>}
           </NavLink>
         </nav>
 
         <div style={{ padding: 12, borderTop: "1px solid var(--border-subtle)" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 10, padding: collapsed ? "8px 0" : "8px 10px", justifyContent: collapsed ? "center" : "flex-start", borderRadius: 10 }}>
-            <div style={{ width: 30, height: 30, borderRadius: "50%", background: "var(--accent-grad)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 700, color: "white", flexShrink: 0 }}>
-              {user?.name?.[0]?.toUpperCase() || "U"}
+            <div style={{ width: 30, height: 30, borderRadius: 8, overflow: "hidden", border: "1px solid color-mix(in srgb,var(--accent) 72%,white 12%)", background: "var(--accent-grad)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 700, color: "white", flexShrink: 0 }}>
+              {avatarUrl ? <img src={avatarUrl} alt="" style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "center center", borderRadius: 7, display: "block" }} /> : (user?.name?.[0]?.toUpperCase() || "U")}
             </div>
             {!collapsed && (
               <div style={{ flex: 1, minWidth: 0 }}>
                 <p style={{ fontSize: 12.5, fontWeight: 600, color: "var(--text-primary)", margin: 0, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{user?.name || "Student"}</p>
-                <button onClick={() => navigate("/dashboard/profile")} style={{ fontSize: 10.5, color: "var(--text-tertiary)", background: "none", border: "none", padding: 0, cursor: "pointer" }}>View Profile</button>
+                <button type="button" onClick={() => navigate("/dashboard/profile")} style={{ fontSize: 10.5, color: "var(--text-tertiary)", background: "none", border: "none", padding: 0, cursor: "pointer" }}>View Profile</button>
               </div>
             )}
             {!collapsed && (
-              <button onClick={handleLogout} title="Logout" style={{ background: "none", border: "none", color: "var(--text-tertiary)", cursor: "pointer", display: "flex", padding: 3 }}>
+              <button type="button" onClick={handleLogout} title="Logout" aria-label="Log out" style={{ background: "none", border: "none", color: "var(--text-tertiary)", cursor: "pointer", display: "flex", padding: 3 }}>
                 {ICONS.logout}
               </button>
             )}

@@ -364,7 +364,7 @@ async function upsertDatasetProblem(dataset, { dryRun = false, writeSupplemental
   const problem = await Problem.findOneAndUpdate(
     { slug: doc.slug },
     { $set: { ...doc, isPublished: contentStatus.isComplete && doc.isPublished } },
-    { upsert: true, new: true, runValidators: true }
+    { upsert: true, returnDocument: "after", runValidators: true }
   );
 
   if (writeSupplementalCollections === true) {

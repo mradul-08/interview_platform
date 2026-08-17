@@ -15,6 +15,12 @@
 .dm-conversation-meta small { font-size:11px; color:var(--text-tertiary); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 .dm-unread { background:var(--accent-grad); color:#fff; font-size:10px; font-weight:800; border-radius:100px; padding:2px 7px; }
 .dm-empty { padding:20px 10px; font-size:12px; color:var(--text-tertiary); text-align:center; }
+.dm-empty.dm-error,.dm-inline-error{display:grid;justify-items:center;gap:8px;color:var(--red)}
+.dm-empty.dm-error button,.dm-inline-error button{padding:6px 10px;border:1px solid var(--border-default);border-radius:7px;background:var(--bg-elevated);color:var(--text-primary);font:600 11px var(--font-sans);cursor:pointer}
+.dm-inline-error{margin-bottom:8px;padding:9px 10px;border:1px solid var(--red);border-radius:8px;background:var(--red-soft);font-size:12px;text-align:center}
+.dm-send-error{grid-template-columns:1fr auto;margin:0 0 8px;text-align:left}
+.dm-composer button:focus-visible,.dm-composer input:focus-visible,.dm-inline-error button:focus-visible{outline:2px solid var(--focus-ring);outline-offset:2px}
+.dm-composer button:disabled{cursor:not-allowed;opacity:.55}
 
 .dm-avatar { display:grid; place-items:center; width:34px; height:34px; flex:0 0 auto; border-radius:50%; background:var(--accent-grad); color:#fff; font-weight:800; font-size:11.5px; }
 
@@ -25,6 +31,7 @@
 .dm-typing { color:var(--accent-strong); font-size:11px; }
 .dm-call-btn { margin-left:auto; display:grid; place-items:center; width:34px; height:34px; border-radius:50%; border:1px solid var(--border-default); background:var(--bg-elevated); color:var(--text-primary); cursor:pointer; }
 .dm-call-btn:hover { background:color-mix(in srgb, var(--accent) 14%, var(--bg-elevated)); }
+.dm-conversation:focus-visible,.dm-search-results button:focus-visible,.dm-call-btn:focus-visible,.dm-delete:focus-visible,.dm-attachment-preview button:focus-visible,.dm-accept:focus-visible,.dm-decline:focus-visible{outline:2px solid var(--focus-ring);outline-offset:2px}
 
 .dm-messages { flex:1; overflow-y:auto; padding:16px; display:flex; flex-direction:column; gap:8px; }
 .dm-bubble { position:relative; max-width:60%; padding:8px 12px; border-radius:14px; background:var(--bg-elevated); color:var(--text-primary); align-self:flex-start; font-size:12.5px; line-height:1.5; }
@@ -51,11 +58,25 @@
 .dm-accept { background:#22c55e; color:#fff; }
 .dm-decline { background:#ef4444; color:#fff; }
 
+@media (max-width:700px){
+  .dm-shell{height:auto;min-height:0;flex-direction:column;overflow:visible}
+  .dm-sidebar{width:auto;max-height:235px;border-right:0;border-bottom:1px solid var(--border-subtle)}
+  .dm-panel{min-height:500px}
+  .dm-messages{min-height:280px;padding:12px}
+  .dm-bubble{max-width:82%}
+  .dm-incoming-call{right:12px;bottom:12px;left:12px}
+}
+
+@media (max-width:420px){
+  .dm-header{padding-inline:11px}
+  .dm-composer{padding:10px 11px;gap:6px}
+  .dm-composer button[type="button"]{width:38px;height:38px}
+  .dm-composer button[type="submit"]{width:38px;height:38px}
+}
+
 .dm-call-backdrop { position:fixed; inset:0; z-index:70; display:grid; place-items:center; background:color-mix(in srgb, black 55%, transparent); }
 .dm-call-modal { width:min(560px, 92vw); border-radius:18px; border:1px solid var(--border-default); background:var(--bg-surface); box-shadow:var(--shadow-md); padding:18px; }
 .dm-call-modal header { display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:12px; }
 .dm-call-grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(180px, 1fr)); gap:8px; min-height:200px; }
 .dm-call-video { width:100%; border-radius:12px; background:#000; aspect-ratio:4/3; object-fit:cover; }
 .dm-call-modal footer { display:flex; justify-content:center; gap:10px; margin-top:14px; }
-
-

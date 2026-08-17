@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState, useCallback } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import api from "../../api/api";
 import { fetchList } from "../../api/listFetch";
+import "./problemsPageFixes.css";
 
 const PAGE_SIZE = 100;
 
@@ -22,19 +23,19 @@ const FilterPill = ({ label, options, value, onChange }) => {
   const [open, setOpen] = useState(false);
   return (
     <div style={{ position: "relative" }}>
-      <button onClick={() => setOpen((o) => !o)} style={{ display: "flex", alignItems: "center", gap: 6, padding: "7px 12px", borderRadius: "var(--radius-sm)", border: "1px solid var(--border-default)", background: value ? "var(--accent-soft)" : "var(--bg-elevated)", color: value ? "var(--accent-strong)" : "var(--text-secondary)", fontSize: 13, fontWeight: value ? 600 : 500, cursor: "pointer", whiteSpace: "nowrap", fontFamily: "var(--font-sans)" }}>
+      <button type="button" aria-haspopup="listbox" aria-expanded={open} onClick={() => setOpen((o) => !o)} style={{ display: "flex", alignItems: "center", gap: 6, padding: "7px 12px", borderRadius: "var(--radius-sm)", border: "1px solid var(--border-default)", background: value ? "var(--accent-soft)" : "var(--bg-elevated)", color: value ? "var(--accent-strong)" : "var(--text-secondary)", fontSize: 13, fontWeight: value ? 600 : 500, cursor: "pointer", whiteSpace: "nowrap", fontFamily: "var(--font-sans)" }}>
         {label}{value ? `: ${value}` : ""}
         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="6 9 12 15 18 9" /></svg>
       </button>
       {open && (
-        <div style={{ position: "absolute", top: "calc(100% + 6px)", left: 0, minWidth: 180, maxHeight: 280, overflowY: "auto", background: "var(--bg-elevated-2)", border: "1px solid var(--border-default)", borderRadius: "var(--radius-md)", zIndex: 200, boxShadow: "var(--shadow-md)", padding: "6px 0" }}>
-          <div onClick={() => { onChange(""); setOpen(false); }} style={{ padding: "8px 14px", fontSize: 13, color: !value ? "var(--accent-strong)" : "var(--text-secondary)", cursor: "pointer", fontWeight: !value ? 600 : 400 }}>
+        <div role="listbox" aria-label={`${label} options`} style={{ position: "absolute", top: "calc(100% + 6px)", left: 0, minWidth: 180, maxHeight: 280, overflowY: "auto", background: "var(--bg-elevated-2)", border: "1px solid var(--border-default)", borderRadius: "var(--radius-md)", zIndex: 200, boxShadow: "var(--shadow-md)", padding: "6px 0" }}>
+          <button type="button" role="option" aria-selected={!value} onClick={() => { onChange(""); setOpen(false); }} style={{ display: "block", width: "100%", textAlign: "left", padding: "8px 14px", fontSize: 13, color: !value ? "var(--accent-strong)" : "var(--text-secondary)", cursor: "pointer", fontWeight: !value ? 600 : 400, border: 0, background: "transparent", fontFamily: "var(--font-sans)" }}>
             All {label}s
-          </div>
+          </button>
           {options.map((o) => (
-            <div key={o} onClick={() => { onChange(o); setOpen(false); }} style={{ padding: "8px 14px", fontSize: 13, color: value === o ? "var(--accent-strong)" : "var(--text-secondary)", cursor: "pointer", background: value === o ? "var(--accent-soft)" : "transparent", fontWeight: value === o ? 600 : 400 }}>
+            <button type="button" role="option" aria-selected={value === o} key={o} onClick={() => { onChange(o); setOpen(false); }} style={{ display: "block", width: "100%", textAlign: "left", padding: "8px 14px", fontSize: 13, color: value === o ? "var(--accent-strong)" : "var(--text-secondary)", cursor: "pointer", background: value === o ? "var(--accent-soft)" : "transparent", fontWeight: value === o ? 600 : 400, border: 0, fontFamily: "var(--font-sans)" }}>
               {o}
-            </div>
+            </button>
           ))}
         </div>
       )}
@@ -48,6 +49,7 @@ export default function ProblemsPage() {
   const initialSearch = new URLSearchParams(location.search).get("search") || "";
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
   const [stats, setStats] = useState({ total: 0, easy: 0, medium: 0, hard: 0 });
   const [topics, setTopics] = useState([]);
   const [companies, setCompanies] = useState([]);
@@ -75,10 +77,15 @@ export default function ProblemsPage() {
 
   const loadProblems = useCallback(async () => {
     setLoading(true);
+    setError("");
     try {
       const res = await fetchList("/api/problems", query);
       setItems(res.items || []);
       setTotalPages(res.totalPages || 1);
+    } catch (err) {
+      setItems([]);
+      setTotalPages(1);
+      setError(err.response?.data?.message || "Problems could not be loaded. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -129,7 +136,7 @@ export default function ProblemsPage() {
   const total = stats.total || 0;
 
   return (
-    <div style={{ display: "flex", gap: 24, alignItems: "flex-start" }}>
+    <div className="problems-page" style={{ display: "flex", gap: 24, alignItems: "flex-start" }}>
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ marginBottom: 20 }}>
           <h1 style={{ fontSize: 26, fontWeight: 800, color: "var(--text-primary)", margin: "0 0 4px", letterSpacing: "-0.03em" }}>Problems</h1>
@@ -144,7 +151,7 @@ export default function ProblemsPage() {
           ))}
         </div>
 
-        <div style={{ display: "flex", gap: 8, marginBottom: 16, flexWrap: "wrap", alignItems: "center" }}>
+        <div className="problems-toolbar" style={{ display: "flex", gap: 8, marginBottom: 16, flexWrap: "wrap", alignItems: "center" }}>
           <div style={{ flex: 1, minWidth: 200, display: "flex", alignItems: "center", gap: 8, padding: "8px 14px", borderRadius: "var(--radius-sm)", border: "1px solid var(--border-default)", background: "var(--bg-elevated)" }}>
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--text-tertiary)" strokeWidth="2"><circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" /></svg>
             <input value={search} onChange={(e) => { setSearch(e.target.value); setPage(1); }} placeholder="Search problems or topics..." style={{ flex: 1, background: "none", border: "none", outline: "none", color: "var(--text-primary)", fontSize: 13, fontFamily: "var(--font-sans)" }} />
@@ -160,7 +167,7 @@ export default function ProblemsPage() {
           )}
         </div>
 
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 10, marginBottom: 18 }}>
+        <div className="problems-stats" style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 10, marginBottom: 18 }}>
           {[
             { label: "Total", val: stats.total || 0, color: "var(--accent)" },
             { label: "Easy", val: stats.easy || 0, color: "var(--green)" },
@@ -177,8 +184,8 @@ export default function ProblemsPage() {
           ))}
         </div>
 
-        <div style={{ background: "var(--bg-surface)", border: "1px solid var(--border-subtle)", borderRadius: "var(--radius-lg)", overflow: "hidden" }}>
-          <div style={{ display: "grid", gridTemplateColumns: "40px 1fr 110px 190px 130px 100px 40px", gap: 0, padding: "10px 20px", borderBottom: "1px solid var(--border-subtle)", background: "var(--bg-elevated)" }}>
+        <div className="problems-table" style={{ background: "var(--bg-surface)", border: "1px solid var(--border-subtle)", borderRadius: "var(--radius-lg)", overflow: "hidden" }}>
+          <div className="problems-table-head" style={{ display: "grid", gridTemplateColumns: "40px 1fr 110px 190px 130px 100px 40px", gap: 0, padding: "10px 20px", borderBottom: "1px solid var(--border-subtle)", background: "var(--bg-elevated)" }}>
             {["#", "Title", "Difficulty", "Topics", "Companies", "Acceptance", ""].map((h, i) => (
               <span key={i} style={{ fontSize: 11, fontWeight: 700, color: "var(--text-tertiary)", textTransform: "uppercase", letterSpacing: "0.06em" }}>{h}</span>
             ))}
@@ -190,13 +197,18 @@ export default function ProblemsPage() {
               <p style={{ color: "var(--text-tertiary)", fontSize: 13, margin: 0 }}>Loading problems...</p>
               <style>{`@keyframes cv-spin{to{transform:rotate(360deg)}}`}</style>
             </div>
+          ) : error ? (
+            <div role="alert" style={{ padding: 40, textAlign: "center" }}>
+              <p style={{ color: "var(--text-secondary)", fontSize: 13, margin: "0 0 12px" }}>{error}</p>
+              <button type="button" onClick={loadProblems} style={{ padding: "7px 14px", borderRadius: 8, border: "1px solid var(--border-default)", background: "var(--bg-elevated)", color: "var(--text-primary)", cursor: "pointer", fontSize: 13 }}>Try again</button>
+            </div>
           ) : visible.length === 0 ? (
             <div style={{ padding: 40, textAlign: "center", color: "var(--text-tertiary)", fontSize: 13 }}>No problems match your filters.</div>
           ) : visible.map((p, idx) => {
             const n = (page - 1) * PAGE_SIZE + idx + 1;
             const isMarked = bookmarked.has(p._id);
             return (
-              <div key={p._id} onClick={() => navigate(`/dashboard/problems/${p.slug}`)} style={{ display: "grid", gridTemplateColumns: "40px 1fr 110px 190px 130px 100px 40px", gap: 0, padding: "13px 20px", borderBottom: "1px solid var(--border-subtle)", cursor: "pointer", alignItems: "center" }}>
+              <div className="problems-table-row" key={p._id} role="button" tabIndex={0} aria-label={`Open problem: ${p.title}`} onClick={() => navigate(`/dashboard/problems/${p.slug}`)} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); navigate(`/dashboard/problems/${p.slug}`); } }} style={{ display: "grid", gridTemplateColumns: "40px 1fr 110px 190px 130px 100px 40px", gap: 0, padding: "13px 20px", borderBottom: "1px solid var(--border-subtle)", cursor: "pointer", alignItems: "center" }}>
                 <span style={{ fontSize: 12, color: "var(--text-tertiary)", fontFamily: "var(--font-mono)" }}>{n}</span>
                 <span style={{ fontSize: 13.5, fontWeight: 600, color: "var(--text-primary)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", paddingRight: 12 }}>{p.title}</span>
                 <DiffBadge d={p.difficulty} />
@@ -209,7 +221,7 @@ export default function ProblemsPage() {
                   {(p.companies || []).length > 3 && <span style={{ fontSize: 10, color: "var(--text-tertiary)", alignSelf: "center" }}>+{p.companies.length - 3}</span>}
                 </div>
                 <span style={{ fontSize: 12.5, fontFamily: "var(--font-mono)", color: p.acceptanceRate >= 50 ? "var(--green)" : p.acceptanceRate >= 35 ? "var(--medium-color)" : "var(--red)" }}>{p.acceptanceRate ? `${p.acceptanceRate}%` : "—"}</span>
-                <button onClick={(e) => toggleBookmark(p._id, e)} style={{ background: "none", border: "none", cursor: "pointer", color: isMarked ? "var(--amber)" : "var(--text-disabled)", display: "flex", padding: 4, borderRadius: 6 }}>
+                <button type="button" aria-label={isMarked ? `Remove ${p.title} bookmark` : `Bookmark ${p.title}`} onClick={(e) => toggleBookmark(p._id, e)} style={{ background: "none", border: "none", cursor: "pointer", color: isMarked ? "var(--amber)" : "var(--text-disabled)", display: "flex", padding: 4, borderRadius: 6 }}>
                   <svg width="14" height="14" viewBox="0 0 24 24" fill={isMarked ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2"><path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z" /></svg>
                 </button>
               </div>

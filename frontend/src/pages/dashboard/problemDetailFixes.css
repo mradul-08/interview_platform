@@ -1,0 +1,110 @@
+.problem-detail-page {
+  min-width: 0;
+}
+
+.problem-detail-toolbar {
+  overflow-x: auto;
+  scrollbar-width: thin;
+}
+
+.problem-detail-toolbar button:focus-visible,
+.problem-detail-toolbar a:focus-visible,
+.problem-detail-page .problem-panel-tab:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
+.problem-detail-divider {
+  position: relative;
+  z-index: 2;
+  min-width: 5px;
+}
+
+.problem-detail-editor > * {
+  min-width: 0;
+}
+
+.problem-detail-empty-result {
+  padding: 18px 12px;
+  border: 1px dashed var(--border-default);
+  border-radius: 10px;
+  color: var(--text-tertiary);
+  font-size: 13px;
+  text-align: center;
+}
+
+.problem-detail-verdict {
+  display: inline-flex;
+  align-items: center;
+  min-height: 28px;
+  padding: 3px 9px;
+  border-radius: 8px;
+}
+
+.problem-detail-verdict.is-success {
+  background: var(--green-soft);
+}
+
+.problem-detail-verdict.is-failure {
+  background: var(--red-soft);
+}
+
+@media (max-width: 900px) {
+  .problem-detail-toolbar {
+    gap: 8px !important;
+    padding-inline: 10px !important;
+  }
+
+  .problem-detail-workspace {
+    overflow: auto !important;
+  }
+
+  .problem-detail-description {
+    min-width: 380px;
+  }
+
+  .problem-detail-editor {
+    min-width: 420px;
+  }
+}
+
+@media (max-width: 620px) {
+  .problem-detail-page {
+    height: calc(100vh - 58px) !important;
+  }
+
+  .problem-detail-toolbar {
+    flex-wrap: wrap;
+    height: auto !important;
+    min-height: 52px;
+    padding-block: 6px !important;
+  }
+
+  .problem-detail-toolbar > span[title] {
+    display: none;
+  }
+
+  .problem-detail-workspace {
+    display: grid !important;
+    grid-template-rows: minmax(320px, 48vh) minmax(420px, 1fr);
+    overflow-y: auto !important;
+  }
+
+  .problem-detail-description,
+  .problem-detail-editor {
+    width: 100% !important;
+    min-width: 0;
+  }
+
+  .problem-detail-description {
+    min-height: 320px;
+  }
+
+  .problem-detail-empty-result {
+    padding-inline: 8px;
+  }
+
+  .problem-detail-divider {
+    display: none;
+  }
+}
