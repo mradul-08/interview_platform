@@ -303,9 +303,15 @@ body {
   transition: background-color 180ms ease, color 180ms ease;
 }
 
+[data-theme="light"] body {
+  background:
+    radial-gradient(circle at 86% -8%, rgba(240, 140, 0, 0.07), transparent 30rem),
+    var(--bg-canvas);
+}
+
 [data-theme="light"] input::placeholder,
 [data-theme="light"] textarea::placeholder {
-  color: #697586;
+  color: var(--text-tertiary);
   opacity: 1;
 }
 

@@ -49,44 +49,46 @@
 
 [data-theme="light"] {
   color-scheme: light;
-  --bg-canvas: #f7f7f8;
+  /* A calm cool canvas keeps white cards distinct without feeling sterile. */
+  --bg-canvas: #f4f7fb;
   --bg-surface: #ffffff;
-  --bg-elevated: #f1f1f2;
-  --bg-elevated-2: #e8e8e8;
-  --bg-elevated-3: #d7d7d7;
+  --bg-elevated: #f8fafc;
+  --bg-elevated-2: #eef2f7;
+  --bg-elevated-3: #e1e7ef;
 
-  --border-subtle: rgba(0, 0, 0, 0.1);
-  --border-default: rgba(0, 0, 0, 0.16);
-  --border-strong: rgba(0, 0, 0, 0.25);
+  --border-subtle: #e7ecf2;
+  --border-default: #d7e0ea;
+  --border-strong: #bdc9d7;
 
-  --text-primary: #172033;
-  --text-secondary: #334155;
-  --text-tertiary: #526174;
-  --text-disabled: #718096;
+  --text-primary: #172235;
+  --text-secondary: #435269;
+  --text-tertiary: #718096;
+  --text-disabled: #a1adbb;
 
-  --accent: #b45309;
-  --accent-soft: rgba(217, 119, 6, 0.12);
-  --accent-strong: #92400e;
-  --accent-grad: linear-gradient(135deg, #c46600 0%, #e58a0a 100%);
-  --focus-ring: rgba(180, 83, 9, 0.48);
+  /* Preserve CodeVerse orange, with enough contrast for text and controls. */
+  --accent: #f08c00;
+  --accent-soft: rgba(240, 140, 0, 0.12);
+  --accent-strong: #c96f00;
+  --accent-grad: linear-gradient(135deg, #e98200 0%, #ffa116 100%);
+  --focus-ring: rgba(240, 140, 0, 0.42);
 
   --cyan: #087f9b;
   --cyan-soft: rgba(8, 127, 155, 0.1);
-  --pink: #be185d;
-  --pink-soft: rgba(190, 24, 93, 0.1);
-  --amber: #b45309;
-  --amber-soft: rgba(180, 83, 9, 0.1);
-  --green: #047857;
-  --green-soft: rgba(4, 120, 87, 0.1);
-  --red: #dc2626;
-  --red-soft: rgba(220, 38, 38, 0.1);
-  --medium-color: #b45309;
-  --medium-soft: rgba(180, 83, 9, 0.1);
+  --pink: #c02670;
+  --pink-soft: rgba(192, 38, 112, 0.1);
+  --amber: #c96f00;
+  --amber-soft: rgba(201, 111, 0, 0.1);
+  --green: #087f5b;
+  --green-soft: rgba(8, 127, 91, 0.1);
+  --red: #d13b4b;
+  --red-soft: rgba(209, 59, 75, 0.1);
+  --medium-color: #c96f00;
+  --medium-soft: rgba(201, 111, 0, 0.1);
 
-  --shadow-sm: 0 2px 8px rgba(15, 23, 42, 0.08);
-  --shadow-md: 0 10px 28px rgba(15, 23, 42, 0.12);
-  --shadow-lg: 0 18px 52px rgba(15, 23, 42, 0.16);
-  --shadow-glow: 0 0 0 1px rgba(240, 136, 0, 0.2), 0 10px 28px rgba(240, 136, 0, 0.12);
+  --shadow-sm: 0 2px 8px rgba(31, 50, 81, 0.06);
+  --shadow-md: 0 10px 28px rgba(31, 50, 81, 0.1);
+  --shadow-lg: 0 18px 52px rgba(31, 50, 81, 0.14);
+  --shadow-glow: 0 0 0 1px rgba(240, 140, 0, 0.2), 0 10px 28px rgba(240, 140, 0, 0.12);
   --shadow-glow-accent: var(--shadow-glow);
 }
 

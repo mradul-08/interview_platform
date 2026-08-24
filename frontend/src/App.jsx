@@ -18,8 +18,39 @@ function PrivateRoute({ children, allowedRoles }) {
   return children;
 }
 
+function RouteLoading() {
+  return (
+    <main
+      aria-label="Loading CodeVerse"
+      role="status"
+      style={{
+        minHeight: "100svh",
+        display: "grid",
+        placeItems: "center",
+        overflow: "hidden",
+        backgroundColor: "#151515",
+        backgroundImage: "radial-gradient(circle at 50% 42%, rgba(255,161,22,0.16), transparent 34%), linear-gradient(rgba(255,255,255,0.035) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.035) 1px, transparent 1px)",
+        backgroundSize: "auto, 64px 64px, 64px 64px",
+        color: "#f8fafc",
+      }}
+    >
+      <div style={{ display: "grid", justifyItems: "center", gap: 16 }}>
+        <div style={{ position: "relative", width: 64, height: 64, padding: 3, borderRadius: 20, background: "linear-gradient(135deg, #ff9800, #ffa116)", boxShadow: "0 0 34px rgba(255,161,22,0.42)" }}>
+          <img src="/branding/codeverse-favicon.png" alt="CodeVerse" style={{ width: "100%", height: "100%", display: "block", borderRadius: 17, objectFit: "cover" }} />
+        </div>
+        <div style={{ textAlign: "center" }}>
+          <strong style={{ display: "block", fontSize: 20, letterSpacing: "-0.03em" }}>CodeVerse</strong>
+          <span style={{ display: "block", marginTop: 4, color: "#94a3b8", fontSize: 12 }}>Preparing your workspace</span>
+        </div>
+        <span aria-hidden="true" style={{ width: 26, height: 26, border: "2px solid rgba(255,161,22,0.22)", borderTopColor: "#ffa116", borderRadius: "50%", animation: "cv-route-spin .8s linear infinite" }} />
+      </div>
+      <style>{"@keyframes cv-route-spin { to { transform: rotate(360deg); } }"}</style>
+    </main>
+  );
+}
+
 function RouteShell({ children }) {
-  return <Suspense fallback={<div className="min-h-screen bg-slate-950" />}><>{children}</></Suspense>;
+  return <Suspense fallback={<RouteLoading />}><>{children}</></Suspense>;
 }
 
 function App() {

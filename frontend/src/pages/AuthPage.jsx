@@ -1,140 +1,47 @@
 /**
- * AuthPage — CodeVerse
+ * AuthPage — CodeVerse · Student Login v3.0
  *
- * Redesign notes:
- * - All original logic is untouched: zod schema, react-hook-form wiring, every
- *   API call (login/register/OAuth/admin-reset/verify/forgot-password), toast
- *   system, and role-based redirects work exactly as before.
- * - New: an interactive 3D role-constellation (React Three Fiber) that reacts
- *   to whichever role is selected, and a dashboard-explainer panel pulling
- *   real feature content from the CodeVerse spec (DSA sheets, mock rooms,
- *   candidate pipeline, admin console) so the page also sells the product,
- *   not just the form.
+ * Single centered card. Student-only (company/admin moved out — not part
+ * of this phase). Modern glassmorphism + a lightweight 3D backdrop that
+ * matches CodeVerse's actual accent color (tokens.css --accent: #ffa116),
+ * not a generic role-colored gradient.
  *
- * Deps used beyond the original file (install if missing):
- *   npm i framer-motion @react-three/fiber @react-three/drei lucide-react
+ * Logic: identical API contract as before for student — /api/auth/login,
+ * /api/auth/register, Google OAuth, forgot-password + verify-email token
+ * flow. Nothing here is faked; every button hits a real endpoint.
  */
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useMemo, useState, Suspense } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useNavigate } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import { Canvas, useFrame } from "@react-three/fiber";
-import { Line } from "@react-three/drei";
+import { Float, MeshDistortMaterial, Text } from "@react-three/drei";
 import {
-  GraduationCap,
-  Building2,
-  ShieldCheck,
-  Code2,
-  ListChecks,
-  Video,
-  Users,
-  Search,
-  ClipboardList,
-  Kanban,
-  Database,
-  BarChart3,
-  LogIn,
-  ChevronRight,
+  Eye, EyeOff, Lock, User, Mail,
+  CheckCircle2, XCircle, ArrowRight,
 } from "lucide-react";
 import api from "../api/api";
 
-/* ------------------------------------------------------------------ */
-/* Role content — grounded in the actual CodeVerse feature spec        */
-/* ------------------------------------------------------------------ */
-
-const roleMeta = {
-  student: {
-    title: "Student",
-    badge: "Open access",
-    icon: GraduationCap,
-    description:
-      "Create an account instantly and enter the student dashboard with email, username, or OAuth.",
-    pitch:
-      "Practice like LeetCode, mock-interview like Pramp, and stay accountable with people who are grinding the same sheet as you.",
-    features: [
-      { icon: Code2, title: "Coding practice", desc: "Judge0-backed editor across C++, Java, Python, and JS with instant verdicts." },
-      { icon: ListChecks, title: "DSA sheets", desc: "Track progress through Genesis 75, Ascend Sheet, and company-tagged sets." },
-      { icon: Video, title: "Mock interview rooms", desc: "Peer rooms with a shared editor, webcam, and a scored evaluation form." },
-      { icon: Users, title: "Networking & streaks", desc: "Connect with peers and keep a shared daily streak alive." },
-    ],
-  },
-  company: {
-    title: "Company",
-    badge: "Business verified",
-    icon: Building2,
-    description:
-      "Register with official business details and activate immediately after validation.",
-    pitch:
-      "Source and screen candidates the way a hiring team actually works — discovery, assessments, live rounds, one pipeline.",
-    features: [
-      { icon: Search, title: "Candidate discovery", desc: "Filter by skills, college, DSA score, and rank to shortlist fast." },
-      { icon: ClipboardList, title: "Assessments", desc: "Create timed coding assessments and review ranked submissions." },
-      { icon: Video, title: "Interview rooms", desc: "Run live technical rounds with screen share and a shared code editor." },
-      { icon: Kanban, title: "Pipeline tracking", desc: "Move candidates from Applied through Selected in one dashboard." },
-    ],
-  },
-  admin: {
-    title: "Admin",
-    badge: "Mailbox locked",
-    icon: ShieldCheck,
-    description:
-      "Only the approved mailbox can request a reset or use the private key to enter.",
-    pitch:
-      "Full editorial and platform control, locked behind a private key and a mailbox nobody else can touch.",
-    features: [
-      { icon: Database, title: "Content control", desc: "Add, edit, or retire problems, test cases, and DSA sheets." },
-      { icon: ShieldCheck, title: "Key-protected login", desc: "Restricted mailbox plus a private key — no public signup path." },
-      { icon: BarChart3, title: "Platform oversight", desc: "Watch leaderboards, reports, and company activity from one console." },
-    ],
-  },
+/* ── Theme (pulled from tokens.css, not a made-up role palette) ───── */
+const THEME = {
+  primary: "#ffa116",
+  secondary: "#ffb84d",
+  glow: "rgba(255,161,22,0.32)",
+  glowStrong: "rgba(255,161,22,0.55)",
+  bg: "rgba(255,161,22,0.07)",
+  border: "rgba(255,161,22,0.25)",
+  text: "#ffd699",
+  grad: "linear-gradient(135deg, #ff9800 0%, #ffa116 100%)",
+  orb1: "#c2660a",
+  orb2: "#7a3b06",
 };
 
-const ACCENT = {
-  student: {
-    ring: "border-cyan-300/40",
-    glow: "shadow-[0_0_0_1px_rgba(103,232,249,0.18)]",
-    bg: "bg-cyan-300/10",
-    text: "text-cyan-100",
-    softText: "text-cyan-200/70",
-    dot: "bg-cyan-300 shadow-[0_0_20px_rgba(103,232,249,0.9)]",
-    chip: "border-cyan-300/20 bg-cyan-300/10 text-cyan-100",
-    grad: "from-cyan-300 via-sky-400 to-indigo-400",
-    hex: "#67e8f9",
-  },
-  company: {
-    ring: "border-violet-300/40",
-    glow: "shadow-[0_0_0_1px_rgba(196,181,253,0.18)]",
-    bg: "bg-violet-300/10",
-    text: "text-violet-100",
-    softText: "text-violet-200/70",
-    dot: "bg-violet-300 shadow-[0_0_20px_rgba(196,181,253,0.9)]",
-    chip: "border-violet-300/20 bg-violet-300/10 text-violet-100",
-    grad: "from-violet-300 via-fuchsia-400 to-indigo-400",
-    hex: "#c4b5fd",
-  },
-  admin: {
-    ring: "border-amber-300/40",
-    glow: "shadow-[0_0_0_1px_rgba(252,211,77,0.18)]",
-    bg: "bg-amber-300/10",
-    text: "text-amber-100",
-    softText: "text-amber-200/70",
-    dot: "bg-amber-300 shadow-[0_0_20px_rgba(252,211,77,0.9)]",
-    chip: "border-amber-300/20 bg-amber-300/10 text-amber-100",
-    grad: "from-amber-300 via-orange-400 to-rose-400",
-    hex: "#fcd34d",
-  },
-};
-
-/* ------------------------------------------------------------------ */
-/* Schema — unchanged from the original implementation                */
-/* ------------------------------------------------------------------ */
-
+/* ── Zod schema — student only ──────────────────────────────────── */
 const authSchema = z
   .object({
-    role: z.enum(["student", "company", "admin"]),
     mode: z.enum(["signin", "signup"]),
     identifier: z.string().optional(),
     email: z.string().optional(),
@@ -142,271 +49,211 @@ const authSchema = z
     confirmPassword: z.string().optional(),
     fullName: z.string().optional(),
     username: z.string().optional(),
-    companyName: z.string().optional(),
-    officialEmail: z.string().optional(),
-    website: z.string().optional(),
-    linkedinPage: z.string().optional(),
-    registrationNumber: z.string().optional(),
-    hrName: z.string().optional(),
-    hrEmail: z.string().optional(),
-    companyLogo: z.string().optional(),
-    privateKey: z.string().optional(),
-    resetToken: z.string().optional(),
-    newPassword: z.string().optional(),
   })
   .superRefine((data, ctx) => {
     if (data.mode === "signin") {
-      if (data.role === "student" && !data.identifier?.trim()) {
-        ctx.addIssue({ code: "custom", path: ["identifier"], message: "Email or username is required." });
-      }
-      if (data.role === "company" && !data.email?.trim()) {
-        ctx.addIssue({ code: "custom", path: ["email"], message: "Official email is required." });
-      }
-      if (data.role === "admin") {
-        if (!data.email?.trim()) ctx.addIssue({ code: "custom", path: ["email"], message: "Admin email is required." });
-        if (!data.privateKey?.trim()) ctx.addIssue({ code: "custom", path: ["privateKey"], message: "Private key is required." });
-      }
-      if (!data.password?.trim() && data.role !== "admin") {
-        ctx.addIssue({ code: "custom", path: ["password"], message: "Password is required." });
-      }
-    }
-
-    if (data.mode === "signup") {
-      if (data.role === "student") {
-        if (!data.fullName?.trim()) ctx.addIssue({ code: "custom", path: ["fullName"], message: "Full name is required." });
-        if (!data.username?.trim()) ctx.addIssue({ code: "custom", path: ["username"], message: "Username is required." });
-        if (!data.email?.trim()) ctx.addIssue({ code: "custom", path: ["email"], message: "Email is required." });
-        if (!data.password?.trim()) ctx.addIssue({ code: "custom", path: ["password"], message: "Password is required." });
-      }
-
-      if (data.role === "company") {
-        ["companyName", "officialEmail", "website", "linkedinPage", "registrationNumber", "hrName", "hrEmail", "password"].forEach(
-          (field) => {
-            if (!data[field]?.trim()) ctx.addIssue({ code: "custom", path: [field], message: "This field is required." });
-          }
-        );
-      }
-
-      if (data.password && data.confirmPassword && data.password !== data.confirmPassword) {
-        ctx.addIssue({ code: "custom", path: ["confirmPassword"], message: "Passwords do not match." });
-      }
+      if (!data.identifier?.trim())
+        ctx.addIssue({ code: "custom", path: ["identifier"], message: "Email or username required." });
+      if (!data.password?.trim())
+        ctx.addIssue({ code: "custom", path: ["password"], message: "Password required." });
+    } else {
+      if (!data.fullName?.trim())
+        ctx.addIssue({ code: "custom", path: ["fullName"], message: "Full name required." });
+      if (!data.username?.trim())
+        ctx.addIssue({ code: "custom", path: ["username"], message: "Username required." });
+      if (!data.email?.trim())
+        ctx.addIssue({ code: "custom", path: ["email"], message: "Email required." });
+      if (!data.password?.trim())
+        ctx.addIssue({ code: "custom", path: ["password"], message: "Password required." });
+      if (data.password && data.confirmPassword && data.password !== data.confirmPassword)
+        ctx.addIssue({ code: "custom", path: ["confirmPassword"], message: "Passwords don't match." });
     }
   });
 
-const inputClass =
-  "w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-slate-100 outline-none transition placeholder:text-slate-500 focus:border-cyan-300/50 focus:bg-white/8";
+/* ── 3D Background: floating code particles + glowing orbs ────────── */
+const CODE_SNIPPETS = [
+  "</>", "{ }", "[ ]", "O(log n)", "async", "await", "npm i", "return",
+  "for()", "=>", "===", "n+1", "0x", "func()",
+];
 
-function cx(...parts) {
-  return parts.filter(Boolean).join(" ");
-}
-
-/* ------------------------------------------------------------------ */
-/* 3D role constellation — signature visual element                    */
-/* ------------------------------------------------------------------ */
-
-function ConstellationNodes({ activeRole }) {
-  const groupRef = useRef();
-
-  const nodes = useMemo(() => {
-    const clusters = ["student", "company", "admin"];
-    const pts = [];
-    clusters.forEach((cluster, ci) => {
-      const angleOffset = (ci / clusters.length) * Math.PI * 2;
-      for (let i = 0; i < 14; i += 1) {
-        const r = 1.5 + Math.random() * 0.9;
-        const theta = angleOffset + (Math.random() - 0.5) * 1.5;
-        const phi = Math.random() * Math.PI;
-        pts.push({
-          cluster,
-          position: [
-            r * Math.sin(phi) * Math.cos(theta),
-            (Math.random() - 0.5) * 2.1,
-            r * Math.sin(phi) * Math.sin(theta),
-          ],
-        });
-      }
-    });
-    return pts;
-  }, []);
-
-  const edges = useMemo(() => {
-    const lines = [];
-    for (let i = 0; i < nodes.length; i += 1) {
-      for (let j = i + 1; j < nodes.length; j += 1) {
-        if (nodes[i].cluster !== nodes[j].cluster) continue;
-        const [ax, ay, az] = nodes[i].position;
-        const [bx, by, bz] = nodes[j].position;
-        const dist = Math.hypot(ax - bx, ay - by, az - bz);
-        if (dist < 1.05) lines.push({ points: [nodes[i].position, nodes[j].position], cluster: nodes[i].cluster });
-      }
-    }
-    return lines;
-  }, [nodes]);
+function CodeParticle({ position, text, color, speed, size }) {
+  const meshRef = useRef();
+  const t = useRef(Math.random() * Math.PI * 2);
 
   useFrame((_, delta) => {
-    if (groupRef.current) groupRef.current.rotation.y += delta * 0.14;
+    t.current += delta * speed;
+    if (meshRef.current) {
+      meshRef.current.position.y = position[1] + Math.sin(t.current) * 0.6;
+      meshRef.current.rotation.y += delta * 0.3;
+      meshRef.current.rotation.z = Math.sin(t.current * 0.5) * 0.15;
+    }
   });
 
   return (
-    <group ref={groupRef}>
-      {edges.map((edge, i) => (
-        <Line
-          key={i}
-          points={edge.points}
-          color={edge.cluster === activeRole ? ACCENT[edge.cluster].hex : "#1e293b"}
-          transparent
-          opacity={edge.cluster === activeRole ? 0.55 : 0.2}
-          lineWidth={1}
-        />
-      ))}
-      {nodes.map((n, i) => (
-        <mesh key={i} position={n.position}>
-          <sphereGeometry args={[n.cluster === activeRole ? 0.06 : 0.035, 12, 12]} />
-          <meshBasicMaterial
-            color={ACCENT[n.cluster].hex}
-            transparent
-            opacity={n.cluster === activeRole ? 1 : 0.28}
-          />
-        </mesh>
-      ))}
-    </group>
-  );
-}
-
-function RoleConstellation({ activeRole }) {
-  return (
-    <div className="relative h-[260px] w-full overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-b from-white/5 to-transparent">
-      <Canvas camera={{ position: [0, 0, 5], fov: 48 }}>
-        <ambientLight intensity={0.9} />
-        <ConstellationNodes activeRole={activeRole} />
-      </Canvas>
-      <div className="pointer-events-none absolute inset-x-0 bottom-0 flex items-center justify-between bg-gradient-to-t from-[#03050d] to-transparent px-4 py-3 font-mono text-[10px] uppercase tracking-[0.2em] text-slate-500">
-        <span>node_map.render()</span>
-        <span className={ACCENT[activeRole].softText}>{activeRole}.cluster</span>
-      </div>
-    </div>
-  );
-}
-
-/* ------------------------------------------------------------------ */
-/* Small presentational pieces                                         */
-/* ------------------------------------------------------------------ */
-
-function TerminalEyebrow({ role }) {
-  return (
-    <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-black/40 px-4 py-2 font-mono text-[11px] text-slate-400">
-      <span className="h-2 w-2 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.8)]" />
-      <span>$ codeverse access --role={role}</span>
-    </div>
-  );
-}
-
-function ToastStack({ toasts, onDismiss }) {
-  return (
-    <div className="fixed right-4 top-4 z-50 space-y-3">
-      {toasts.map((toast) => (
-        <div
-          key={toast.id}
-          className={cx(
-            "min-w-[280px] max-w-sm rounded-2xl border px-4 py-3 shadow-2xl backdrop-blur",
-            toast.type === "error"
-              ? "border-rose-400/20 bg-rose-500/15 text-rose-100"
-              : "border-emerald-400/20 bg-emerald-500/15 text-emerald-100"
-          )}
-        >
-          <div className="flex items-start justify-between gap-4">
-            <p className="text-sm leading-5">{toast.message}</p>
-            <button type="button" className="text-xs uppercase tracking-[0.18em] text-white/60" onClick={() => onDismiss(toast.id)}>
-              Close
-            </button>
-          </div>
-        </div>
-      ))}
-    </div>
-  );
-}
-
-function RoleCard({ role, active, onClick }) {
-  const meta = roleMeta[role];
-  const accent = ACCENT[role];
-  const Icon = meta.icon;
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={cx(
-        "rounded-3xl border p-4 text-left transition",
-        active ? cx(accent.ring, accent.bg, accent.glow) : "border-white/10 bg-white/5 hover:border-white/20 hover:bg-white/7"
-      )}
+    <Text
+      ref={meshRef}
+      position={position}
+      fontSize={size * 0.24}
+      color={color}
+      fillOpacity={0.72}
+      anchorX="center"
+      anchorY="middle"
+      outlineColor="#120b05"
+      outlineWidth={0.018}
     >
-      <div className="flex items-center justify-between gap-3">
-        <div className="flex items-center gap-2.5">
-          <span className={cx("flex h-8 w-8 items-center justify-center rounded-xl border", active ? accent.ring : "border-white/10 bg-white/5")}>
-            <Icon className={cx("h-4 w-4", active ? accent.text : "text-slate-400")} />
-          </span>
-          <div>
-            <p className="text-sm font-semibold text-slate-100">{meta.title}</p>
-            <p className={cx("mt-0.5 text-[10px] uppercase tracking-[0.18em]", active ? accent.softText : "text-slate-500")}>{meta.badge}</p>
-          </div>
-        </div>
-        <div className={cx("h-3 w-3 rounded-full", active ? accent.dot : "bg-slate-600")} />
-      </div>
-      <p className="mt-3 text-xs leading-5 text-slate-300">{meta.description}</p>
-    </button>
+      {text}
+    </Text>
   );
 }
 
-function Field({ label, hint, error, children }) {
+function FloatingOrb({ position, color, scale, speed, distort }) {
   return (
-    <label className="block">
-      <span className="mb-2 block text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">{label}</span>
-      {children}
-      {hint ? <span className="mt-2 block text-[11px] leading-4 text-slate-500">{hint}</span> : null}
-      {error ? <span className="mt-2 block text-xs text-rose-300">{error}</span> : null}
-    </label>
+    <Float speed={speed} rotationIntensity={0.4} floatIntensity={1.2}>
+      <mesh position={position} scale={scale}>
+          <sphereGeometry args={[1, 24, 24]} />
+        <MeshDistortMaterial
+          color={color}
+          attach="material"
+          distort={distort}
+          speed={2}
+          roughness={0.15}
+          metalness={0.7}
+          emissive={color}
+          emissiveIntensity={0.3}
+          transparent
+          opacity={0.42}
+        />
+        <mesh scale={1.015}>
+          <sphereGeometry args={[1, 24, 24]} />
+          <meshBasicMaterial color={THEME.secondary} transparent opacity={0.1} wireframe />
+        </mesh>
+      </mesh>
+    </Float>
   );
 }
 
-function FeatureGrid({ role }) {
-  const meta = roleMeta[role];
-  const accent = ACCENT[role];
+function Scene3D() {
+  const particleCount = typeof window !== "undefined" && window.innerWidth <= 640 ? 10 : 18;
+  const particles = useMemo(
+    () =>
+      Array.from({ length: particleCount }, (_, i) => ({
+        id: i,
+        text: CODE_SNIPPETS[i % CODE_SNIPPETS.length],
+        position: [
+          (Math.random() - 0.5) * 22,
+          (Math.random() - 0.5) * 14,
+          (Math.random() - 0.5) * 6 - 4,
+        ],
+        color: i % 3 === 0 ? THEME.primary : i % 3 === 1 ? THEME.secondary : "#9a6125",
+        speed: 0.3 + Math.random() * 0.4,
+        size: 0.8 + Math.random() * 1.1,
+      })),
+    [particleCount]
+  );
+
   return (
-    <AnimatePresence mode="wait">
-      <motion.div
-        key={role}
-        initial={{ opacity: 0, y: 8 }}
-        animate={{ opacity: 1, y: 0 }}
-        exit={{ opacity: 0, y: -8 }}
-        transition={{ duration: 0.25 }}
-        className="grid gap-3 sm:grid-cols-2"
+    <>
+      <fog attach="fog" args={["#151515", 10, 24]} />
+      <ambientLight intensity={0.35} />
+      <pointLight position={[5, 5, 3]} intensity={2.4} color={THEME.primary} />
+      <pointLight position={[-5, -3, 3]} intensity={0.9} color={THEME.secondary} />
+
+      <FloatingOrb position={[-7, 2.4, -8]} color={THEME.orb1} scale={1.75} speed={1.4} distort={0.35} />
+      <FloatingOrb position={[7, -2.4, -9]} color={THEME.orb2} scale={1.25} speed={1.9} distort={0.42} />
+      <FloatingOrb position={[6, 3.4, -10]} color={THEME.primary} scale={0.62} speed={2.2} distort={0.25} />
+
+      {particles.map((p) => (
+        <CodeParticle key={p.id} {...p} />
+      ))}
+    </>
+  );
+}
+
+/* ── Toast ───────────────────────────────────────────────────────── */
+function Toast({ toast, onDismiss }) {
+  const isError = toast.type === "error";
+  return (
+    <motion.div
+      initial={{ opacity: 0, x: 60, scale: 0.92 }}
+      animate={{ opacity: 1, x: 0, scale: 1 }}
+      exit={{ opacity: 0, x: 60, scale: 0.9 }}
+      transition={{ type: "spring", stiffness: 400, damping: 30 }}
+      className="flex items-start gap-3 min-w-[280px] max-w-sm rounded-2xl border px-4 py-3.5 shadow-2xl backdrop-blur-xl"
+      style={{
+        background: isError ? "rgba(220,38,38,0.14)" : "rgba(74,222,170,0.14)",
+        borderColor: isError ? "rgba(220,38,38,0.3)" : "rgba(74,222,170,0.3)",
+      }}
+    >
+      {isError ? (
+        <XCircle className="h-4 w-4 mt-0.5 shrink-0 text-red-400" />
+      ) : (
+        <CheckCircle2 className="h-4 w-4 mt-0.5 shrink-0 text-emerald-400" />
+      )}
+      <p className="text-sm leading-5 flex-1" style={{ color: isError ? "#fca5a5" : "#9beac2" }}>
+        {toast.message}
+      </p>
+      <button
+        onClick={() => onDismiss(toast.id)}
+        className="text-[10px] uppercase tracking-widest opacity-50 hover:opacity-100 transition-opacity mt-0.5"
       >
-        {meta.features.map((feature) => {
-          const FeatureIcon = feature.icon;
-          return (
-            <div
-              key={feature.title}
-              className="group rounded-2xl border border-white/10 bg-white/5 p-4 shadow-xl shadow-cyan-950/10 backdrop-blur transition hover:border-white/20 hover:bg-white/7"
-            >
-              <span className={cx("flex h-8 w-8 items-center justify-center rounded-xl border", accent.ring, accent.bg)}>
-                <FeatureIcon className={cx("h-4 w-4", accent.text)} />
-              </span>
-              <p className="mt-3 text-sm font-semibold text-white">{feature.title}</p>
-              <p className="mt-1.5 text-xs leading-5 text-slate-400">{feature.desc}</p>
-            </div>
-          );
-        })}
-      </motion.div>
-    </AnimatePresence>
+        ×
+      </button>
+    </motion.div>
   );
 }
 
-/* ------------------------------------------------------------------ */
-/* Main component                                                      */
-/* ------------------------------------------------------------------ */
+/* ── Field + Input ───────────────────────────────────────────────── */
+function Field({ label, icon: Icon, error, children }) {
+  return (
+    <div style={{ display: "flex", minWidth: 0, flexDirection: "column", gap: 8 }}>
+      <label
+        className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-widest"
+        style={{ color: "rgba(255,220,170,0.82)" }}
+      >
+        {Icon && <Icon className="h-3 w-3" />}
+        {label}
+      </label>
+      {children}
+      {error && (
+        <p className="flex items-center gap-1 text-[11px] text-red-400">
+          <XCircle className="h-3 w-3" /> {error}
+        </p>
+      )}
+    </div>
+  );
+}
 
+function Input({ className = "", ...props }) {
+  const [show, setShow] = useState(false);
+  const isPassword = props.type === "password";
+  return (
+    <div className="relative">
+      <input
+        {...props}
+        type={isPassword && show ? "text" : props.type}
+        className={`w-full rounded-xl px-4 py-3 text-sm outline-none transition-all duration-200 ${isPassword ? "pr-11" : ""}
+          border bg-white/[0.04] text-slate-100 placeholder:text-slate-500
+          focus:bg-white/[0.07] ${className}`}
+        style={{ borderColor: "rgba(255,255,255,0.12)", boxShadow: "inset 0 1px 0 rgba(255,255,255,0.025)" }}
+        onFocus={(e) => { e.target.style.borderColor = THEME.primary; e.target.style.boxShadow = `0 0 0 3px ${THEME.glow}, inset 0 1px 0 rgba(255,255,255,0.04)`; e.target.style.background = "rgba(255,161,22,0.06)"; }}
+        onBlur={(e) => { e.target.style.borderColor = "rgba(255,255,255,0.12)"; e.target.style.boxShadow = "inset 0 1px 0 rgba(255,255,255,0.025)"; e.target.style.background = "rgba(255,255,255,0.04)"; }}
+      />
+      {isPassword && (
+        <button
+          type="button"
+          onClick={() => setShow((s) => !s)}
+          className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 transition-colors"
+        >
+          {show ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+        </button>
+      )}
+    </div>
+  );
+}
+
+/* ── Main component ─────────────────────────────────────────────── */
 export default function AuthPage() {
   const navigate = useNavigate();
-  const [role, setRole] = useState("student");
   const [mode, setMode] = useState("signin");
   const [support, setSupport] = useState(null);
   const [toasts, setToasts] = useState([]);
@@ -415,153 +262,68 @@ export default function AuthPage() {
   const {
     register,
     handleSubmit,
-    setValue,
     watch,
+    setValue,
     formState: { errors, isSubmitting },
   } = useForm({
     resolver: zodResolver(authSchema),
     defaultValues: {
-      role: "student",
       mode: "signin",
-      identifier: "",
-      email: "",
-      password: "",
-      confirmPassword: "",
-      fullName: "",
-      username: "",
-      companyName: "",
-      officialEmail: "",
-      website: "",
-      linkedinPage: "",
-      registrationNumber: "",
-      hrName: "",
-      hrEmail: "",
-      companyLogo: "",
-      privateKey: "",
-      resetToken: "",
-      newPassword: "",
+      identifier: "", email: "", password: "", confirmPassword: "",
+      fullName: "", username: "",
     },
   });
 
-  const currentRole = watch("role");
-  const currentMode = watch("mode");
-  const selectedRole = useMemo(() => roleMeta[currentRole], [currentRole]);
-  const accent = ACCENT[currentRole];
-
   useEffect(() => {
-    setValue("role", role, { shouldDirty: false, shouldTouch: false, shouldValidate: true });
-    setValue("mode", mode, { shouldDirty: false, shouldTouch: false, shouldValidate: true });
-  }, [mode, role, setValue]);
+    setValue("mode", mode, { shouldValidate: false });
+  }, [mode, setValue]);
 
   const pushToast = (type, message) => {
     const id = crypto.randomUUID();
-    setToasts((items) => [...items, { id, type, message }]);
-    window.setTimeout(() => {
-      setToasts((items) => items.filter((item) => item.id !== id));
-    }, 4500);
+    setToasts((prev) => [...prev, { id, type, message }]);
+    setTimeout(() => setToasts((prev) => prev.filter((t) => t.id !== id)), 4500);
   };
 
-  const dismissToast = (id) => setToasts((items) => items.filter((item) => item.id !== id));
-
-  const redirectByRole = (userRole) => {
-    if (userRole === "admin") navigate("/admin");
-    else if (userRole === "company") navigate("/company");
-    else {
-      navigate("/dashboard");
-    }
-  };
-
-  const startOAuth = async (provider) => {
-    setLoadingAction(provider);
+  const startOAuth = async () => {
+    setLoadingAction("google");
     try {
-      await api.get(`/api/auth/set-role?role=${role}`);
+      await api.get(`/api/auth/set-role?role=student`);
     } catch {
-      // non-blocking
+      /* OAuth redirect remains the source of truth. */
     }
-    window.location.href = `${import.meta.env.VITE_API_URL || "http://localhost:5001"}/api/auth/${provider}`;
+    window.location.href = `${import.meta.env.VITE_API_URL || "http://localhost:5001"}/api/auth/google`;
   };
 
   const onSubmit = async (data) => {
     setLoadingAction("submit");
     try {
-      if (data.mode === "signin") {
-        const payload =
-          data.role === "student"
-            ? { identifier: data.identifier, email: data.identifier, password: data.password, role: data.role }
-            : data.role === "company"
-              ? { email: data.email, identifier: data.email, password: data.password, role: data.role }
-              : { email: data.email, password: data.privateKey, role: "admin" };
-
+      if (mode === "signin") {
+        const payload = { identifier: data.identifier, email: data.identifier, password: data.password, role: "student" };
         const res = await api.post("/api/auth/login", payload);
         localStorage.setItem("token", res.data.token);
         localStorage.setItem("user", JSON.stringify(res.data.user));
-        pushToast("success", res.data.message || "Logged in successfully.");
-        redirectByRole(res.data.user.role);
+        pushToast("success", res.data.message || "Logged in!");
+        navigate("/dashboard");
         return;
       }
-
-      const payload =
-        data.role === "student"
-          ? {
-              role: "student",
-              fullName: data.fullName,
-              name: data.fullName,
-              username: data.username,
-              email: data.email,
-              password: data.password,
-            }
-          : {
-              role: "company",
-              companyName: data.companyName,
-              officialEmail: data.officialEmail,
-              email: data.officialEmail,
-              password: data.password,
-              website: data.website,
-              linkedinPage: data.linkedinPage,
-              companyWebsite: data.website,
-              companyLinkedinUrl: data.linkedinPage,
-              registrationNumber: data.registrationNumber,
-              hrName: data.hrName,
-              hrEmail: data.hrEmail,
-              companyLogo: data.companyLogo,
-              companyVerificationNotes: "",
-              companyIndustry: "",
-            };
-
-      const registerRes = await api.post("/api/auth/register", payload);
-      pushToast("success", registerRes.data.message || "Account created successfully.");
-
-      const loginPayload =
-        data.role === "student"
-          ? { identifier: data.email, email: data.email, password: data.password, role: "student" }
-          : { identifier: data.officialEmail, email: data.officialEmail, password: data.password, role: "company" };
-      const loginRes = await api.post("/api/auth/login", loginPayload);
+      const payload = {
+        role: "student",
+        fullName: data.fullName,
+        name: data.fullName,
+        username: data.username,
+        email: data.email,
+        password: data.password,
+      };
+      const reg = await api.post("/api/auth/register", payload);
+      pushToast("success", reg.data.message || "Account created!");
+      const loginRes = await api.post("/api/auth/login", {
+        identifier: data.email, email: data.email, password: data.password, role: "student",
+      });
       localStorage.setItem("token", loginRes.data.token);
       localStorage.setItem("user", JSON.stringify(loginRes.data.user));
-      redirectByRole(loginRes.data.user.role);
-    } catch (error) {
-      const message =
-        error.response?.data?.message ||
-        (data.role === "admin" ? "Admin login failed." : "Something went wrong.");
-      pushToast("error", message);
-    } finally {
-      setLoadingAction("");
-    }
-  };
-
-  const requestReset = async () => {
-    const email = watch("email");
-    if (!email?.trim()) {
-      pushToast("error", "Enter the admin email first.");
-      return;
-    }
-    setLoadingAction("admin-reset");
-    try {
-      const res = await api.post("/api/auth/admin/request-reset", { email });
-      pushToast("success", res.data?.resetToken ? `Reset token: ${res.data.resetToken}` : res.data?.message || "Reset token requested.");
-      setSupport({ kind: "admin-reset", token: res.data?.resetToken || "", email });
-    } catch (error) {
-      pushToast("error", error.response?.data?.message || "Unable to request reset.");
+      navigate("/dashboard");
+    } catch (err) {
+      pushToast("error", err.response?.data?.message || "Something went wrong.");
     } finally {
       setLoadingAction("");
     }
@@ -573,388 +335,313 @@ export default function AuthPage() {
       pushToast("error", "Enter your email first.");
       return;
     }
-
     setLoadingAction(kind);
     try {
       const endpoint = kind === "verify" ? "/api/auth/request-verification" : "/api/auth/request-password-reset";
       const res = await api.post(endpoint, { email });
       const token = res.data?.verificationToken || res.data?.resetToken || "";
       setSupport({ kind: kind === "verify" ? "verify" : "password", email, token });
-      pushToast("success", token ? `Dev token: ${token}` : res.data?.message || "Token requested.");
-    } catch (error) {
-      pushToast("error", error.response?.data?.message || "Unable to generate token.");
+      pushToast("success", token ? `Dev token: ${token}` : res.data?.message || "Token sent.");
+    } catch (err) {
+      pushToast("error", err.response?.data?.message || "Unable to generate token.");
     } finally {
       setLoadingAction("");
     }
   };
 
-  const submitSupport = async (event) => {
-    event.preventDefault();
+  const submitSupport = async (e) => {
+    e.preventDefault();
     if (!support) return;
-    const formData = new FormData(event.currentTarget);
-    const token = String(formData.get("token") || support.token || "").trim();
-    const newPassword = String(formData.get("newPassword") || "").trim();
+    const fd = new FormData(e.currentTarget);
+    const token = String(fd.get("token") || support.token || "").trim();
+    const newPassword = String(fd.get("newPassword") || "").trim();
     setLoadingAction("support");
     try {
-      if (support.kind === "admin-reset") {
-        const res = await api.post("/api/auth/admin/reset-password", {
-          email: support.email,
-          token,
-          newPassword,
-        });
-        pushToast("success", res.data?.message || "Admin password updated.");
-      } else if (support.kind === "verify") {
+      if (support.kind === "verify") {
         const res = await api.post("/api/auth/verify-email", { email: support.email, token });
         pushToast("success", res.data?.message || "Email verified.");
-      } else if (support.kind === "password") {
+      } else {
         const res = await api.post("/api/auth/reset-password", { email: support.email, token, newPassword });
         pushToast("success", res.data?.message || "Password reset complete.");
       }
       setSupport(null);
-    } catch (error) {
-      pushToast("error", error.response?.data?.message || "Action failed.");
+    } catch (err) {
+      pushToast("error", err.response?.data?.message || "Action failed.");
     } finally {
       setLoadingAction("");
     }
   };
 
   const loading = isSubmitting || Boolean(loadingAction);
-  const isStudent = currentRole === "student";
-  const isCompany = currentRole === "company";
-  const isAdmin = currentRole === "admin";
 
   return (
-    <div className="cv-auth-page min-h-screen overflow-hidden bg-[#03050d] text-white">
-      <ToastStack toasts={toasts} onDismiss={dismissToast} />
-      <div className="pointer-events-none fixed inset-0 bg-[radial-gradient(circle_at_top_left,rgba(34,211,238,0.18),transparent_35%),radial-gradient(circle_at_bottom_right,rgba(99,102,241,0.20),transparent_32%),linear-gradient(135deg,#03050d_0%,#06091a_50%,#020617_100%)]" />
-      <div className="pointer-events-none fixed inset-0 opacity-70 [background-image:linear-gradient(rgba(255,255,255,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.03)_1px,transparent_1px)] [background-size:72px_72px]" />
+    <div
+      className="relative flex min-h-screen items-start justify-center overflow-x-hidden overflow-y-auto bg-[#1a1a1a] px-4 py-8 text-white sm:py-10"
+      style={{ minHeight: "100svh", padding: "clamp(16px, 4vw, 40px) clamp(16px, 4vw, 32px)", boxSizing: "border-box" }}
+    >
+      {/* Toast stack */}
+      <div className="fixed right-4 top-4 z-[100] flex flex-col gap-2">
+        <AnimatePresence>
+          {toasts.map((t) => (
+            <Toast key={t.id} toast={t} onDismiss={(id) => setToasts((prev) => prev.filter((x) => x.id !== id))} />
+          ))}
+        </AnimatePresence>
+      </div>
 
-      <div className="relative mx-auto grid min-h-screen max-w-7xl lg:grid-cols-[1.15fr_0.85fr]">
-        <section className="flex items-center px-6 py-12 sm:px-10 lg:px-16">
-          <div className="max-w-2xl">
-            <div className="mb-7 flex items-center gap-3" aria-label="CodeVerse">
-              <img src="/branding/codeverse-logo-reference.png" alt="CodeVerse" className="h-12 w-12 rounded-2xl object-cover object-center shadow-[0_0_28px_rgba(37,99,235,0.35)]" />
-              <span className="text-lg font-extrabold tracking-[-0.03em] text-white">CodeVerse</span>
+      {/* 3D Background */}
+      <div className="fixed inset-0 z-0">
+        <Suspense fallback={null}>
+          <Canvas camera={{ position: [0, 0, 10], fov: 55 }} dpr={[1, 1.25]}>
+            <Scene3D />
+          </Canvas>
+        </Suspense>
+      </div>
+
+      {/* Ambient glow + vignette */}
+      <div
+        className="fixed inset-0 z-[1] pointer-events-none"
+        style={{
+          background: `radial-gradient(ellipse 60% 55% at 50% 40%, ${THEME.glow}, transparent 60%),
+                       linear-gradient(to bottom, rgba(26,26,26,0.35) 0%, rgba(26,26,26,0.9) 100%)`,
+        }}
+      />
+      <div
+        className="fixed inset-0 z-[1] pointer-events-none opacity-30"
+        style={{
+          backgroundImage: `linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px)`,
+          backgroundSize: "64px 64px",
+        }}
+      />
+
+      {/* Card */}
+      <motion.div
+        layout
+        initial={{ opacity: 0, y: 16 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4 }}
+        className="relative z-10 w-full max-w-[420px] rounded-3xl border backdrop-blur-2xl shadow-2xl"
+        style={{
+          width: "100%",
+          maxWidth: "min(420px, 100%)",
+          boxSizing: "border-box",
+          margin: "0 auto",
+          overflow: "hidden",
+          borderRadius: 28,
+          background: "rgba(20,20,20,0.82)",
+          borderColor: "rgba(255,161,22,0.18)",
+          backdropFilter: "blur(24px)",
+          WebkitBackdropFilter: "blur(24px)",
+          boxShadow: `0 0 0 1px rgba(255,161,22,0.05), 0 32px 80px rgba(0,0,0,0.72), 0 0 60px ${THEME.glow}`,
+        }}
+      >
+        <div className="h-px w-full" style={{ background: `linear-gradient(90deg, transparent, ${THEME.primary}, transparent)`, opacity: 0.9 }} />
+        <div className="p-6 sm:p-8" style={{ display: "flex", flexDirection: "column", gap: "clamp(18px, 3vw, 24px)" }}>
+          {/* Logo */}
+          <div className="flex flex-col items-center gap-3 text-center">
+            <div
+              className="relative flex h-12 w-12 items-center justify-center rounded-2xl"
+              style={{ background: "#080d20", border: "1px solid rgba(255,161,22,0.35)", boxShadow: `0 0 24px ${THEME.glow}`, overflow: "hidden" }}
+            >
+              <img src="/branding/codeverse-favicon.png" alt="CodeVerse logo" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
             </div>
-            <TerminalEyebrow role={role} />
-
-            <h1 className="mt-6 text-5xl font-black tracking-[-0.06em] text-white sm:text-6xl">
-              One console for prep, mocks, and hiring.
-            </h1>
-            <p className="mt-6 max-w-2xl text-base leading-7 text-slate-300 sm:text-lg">
-              CodeVerse folds the tools you'd normally split across a coding judge, a mock-interview site, and a networking feed
-              into one platform — students grind and connect, companies discover and screen, admins keep the content honest.
-            </p>
-
-            {/* Role-linked pitch, syncs with the console on the right */}
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={role}
-                initial={{ opacity: 0, y: 6 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -6 }}
-                transition={{ duration: 0.2 }}
-                className={cx("mt-6 flex items-start gap-3 rounded-2xl border p-4", ACCENT[role].ring, ACCENT[role].bg)}
-              >
-                {(() => {
-                  const RoleIcon = roleMeta[role].icon;
-                  return <RoleIcon className={cx("mt-0.5 h-5 w-5 shrink-0", ACCENT[role].text)} />;
-                })()}
-                <p className="text-sm leading-6 text-slate-200">{roleMeta[role].pitch}</p>
-              </motion.div>
-            </AnimatePresence>
-
-            {/* Interactive 3D role constellation */}
-            <div className="mt-6">
-              <RoleConstellation activeRole={role} />
-            </div>
-
-            {/* Dashboard explainer — three fully working roles */}
-            <div className="mt-8">
-              <div className="mb-3 flex items-center justify-between">
-                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
-                  What the {roleMeta[role].title.toLowerCase()} dashboard does
-                </p>
-                <div className="flex gap-1.5">
-                  {["student", "company", "admin"].map((item) => (
-                    <button
-                      key={item}
-                      type="button"
-                      onClick={() => setRole(item)}
-                      className={cx(
-                        "h-1.5 w-6 rounded-full transition",
-                        role === item ? ACCENT[item].dot : "bg-white/10 hover:bg-white/20"
-                      )}
-                      aria-label={`Preview ${item} dashboard`}
-                    />
-                  ))}
-                </div>
-              </div>
-              <FeatureGrid role={role} />
-            </div>
-
-            <div className="mt-8 rounded-[28px] border border-white/10 bg-white/5 p-6 shadow-2xl shadow-cyan-950/10 backdrop-blur">
-              <p className="text-sm font-semibold uppercase tracking-[0.18em] text-cyan-200/80">Why one platform</p>
-              <p className="mt-3 text-sm leading-7 text-slate-300">
-                Most prep stacks mean juggling a judge-style site for problems, a separate peer-mock tool, and a networking feed
-                on the side. CodeVerse keeps the practice, the mock rooms, the connections, and the hiring pipeline under one
-                login — with the login gate itself acting as the trust boundary between three genuinely different roles.
-              </p>
+            <div>
+              <p className="text-xl font-black tracking-tight text-white">CodeVerse</p>
+              <p className="mt-1 text-xs text-slate-400">Grind smarter. Interview better.</p>
             </div>
           </div>
-        </section>
 
-        <section className="flex items-center px-6 pb-12 lg:px-8 lg:py-12">
-          <div className="w-full rounded-[32px] border border-white/10 bg-slate-950/80 p-5 shadow-[0_30px_120px_rgba(0,0,0,0.55)] backdrop-blur-xl sm:p-7">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-semibold text-white">Role Access Console</p>
-                <p className="mt-1 text-xs text-slate-400">Use the right path for your account type.</p>
+          {/* Mode toggle */}
+          <div
+            className="flex rounded-xl border p-1"
+            style={{ borderColor: "rgba(255,161,22,0.2)", background: "rgba(255,255,255,0.035)" }}
+          >
+            {["signin", "signup"].map((m) => (
+              <button
+                key={m}
+                type="button"
+                onClick={() => setMode(m)}
+                className="flex-1 rounded-lg py-2 text-xs font-bold uppercase tracking-wider transition-all duration-200"
+                style={{
+                  background: mode === m ? THEME.grad : "transparent",
+                  color: mode === m ? "#1a1a1a" : "#8a8a8a",
+                }}
+              >
+                {m === "signin" ? "Sign In" : "Sign Up"}
+              </button>
+            ))}
+          </div>
+
+          {/* Form */}
+          <input type="hidden" {...register("mode")} />
+          <AnimatePresence mode="wait">
+            <motion.form
+              key={mode}
+              initial={{ opacity: 0, y: 6 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -6 }}
+              transition={{ duration: 0.2 }}
+              onSubmit={handleSubmit(onSubmit)}
+              className=""
+              style={{ display: "flex", flexDirection: "column", gap: 16 }}
+            >
+              {mode === "signup" && (
+                <>
+                  <Field label="Full Name" icon={User} error={errors.fullName?.message}>
+                    <Input placeholder="Your name" {...register("fullName")} />
+                  </Field>
+                  <Field label="Username" error={errors.username?.message}>
+                    <Input placeholder="Pick a username" {...register("username")} />
+                  </Field>
+                  <Field label="Email" icon={Mail} error={errors.email?.message}>
+                    <Input type="email" placeholder="you@example.com" {...register("email")} />
+                  </Field>
+                </>
+              )}
+
+              {mode === "signin" && (
+                <Field label="Email or Username" icon={User} error={errors.identifier?.message}>
+                  <Input placeholder="you@example.com or username" {...register("identifier")} />
+                </Field>
+              )}
+
+              {mode === "signin" ? (
+                <Field label="Password" icon={Lock} error={errors.password?.message}>
+                  <Input type="password" placeholder="Enter password" {...register("password")} />
+                </Field>
+              ) : (
+                <div className="grid min-w-0 grid-cols-1 gap-3">
+                  <Field label="Password" icon={Lock} error={errors.password?.message}>
+                    <Input type="password" placeholder="Create password" {...register("password")} />
+                  </Field>
+                  <Field label="Confirm" error={errors.confirmPassword?.message}>
+                    <Input type="password" placeholder="Repeat password" {...register("confirmPassword")} />
+                  </Field>
+                </div>
+              )}
+
+              {/* OAuth */}
+              <div className="flex items-center gap-3">
+                <div className="flex-1 h-px" style={{ background: "rgba(255,255,255,0.07)" }} />
+                <span className="text-[10px] font-bold uppercase tracking-widest text-slate-500">or</span>
+                <div className="flex-1 h-px" style={{ background: "rgba(255,255,255,0.07)" }} />
               </div>
-              <div className={cx("rounded-full border px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em]", accent.ring, accent.bg, accent.text)}>
-                {selectedRole.title}
-              </div>
-            </div>
-
-            <div className="mt-6 grid gap-3 sm:grid-cols-3">
-              {["student", "company", "admin"].map((item) => (
-                <RoleCard key={item} role={item} active={role === item} onClick={() => setRole(item)} />
-              ))}
-            </div>
-
-            <div className="mt-6 flex gap-2 rounded-2xl border border-white/10 bg-white/5 p-1">
               <button
                 type="button"
-                onClick={() => setMode("signin")}
-                className={cx(
-                  "flex-1 rounded-xl px-4 py-3 text-sm font-semibold transition",
-                  mode === "signin" ? cx(accent.bg, accent.text) : "text-slate-400 hover:text-white"
-                )}
+                onClick={startOAuth}
+                disabled={loading}
+                className="w-full flex items-center justify-center gap-2.5 rounded-xl border py-3 text-sm font-semibold text-slate-300 transition-all duration-200 hover:text-white disabled:opacity-50"
+                style={{ borderColor: "rgba(255,255,255,0.16)", background: "rgba(255,255,255,0.92)", color: "#202020" }}
+                onMouseEnter={(e) => { e.currentTarget.style.borderColor = THEME.primary; e.currentTarget.style.background = "#fff"; e.currentTarget.style.boxShadow = `0 0 22px ${THEME.glow}`; }}
+                onMouseLeave={(e) => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.16)"; e.currentTarget.style.background = "rgba(255,255,255,0.92)"; e.currentTarget.style.boxShadow = "none"; }}
               >
-                Sign in
+                <svg className="h-4 w-4" viewBox="0 0 24 24">
+                  <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
+                  <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+                  <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
+                  <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
+                </svg>
+                Continue with Google
               </button>
-              <button
-                type="button"
-                onClick={() => setMode("signup")}
-                className={cx(
-                  "flex-1 rounded-xl px-4 py-3 text-sm font-semibold transition",
-                  mode === "signup" ? cx(accent.bg, accent.text) : "text-slate-400 hover:text-white"
-                )}
-              >
-                Create account
-              </button>
-            </div>
-            <input type="hidden" {...register("role")} />
-            <input type="hidden" {...register("mode")} />
 
-            <AnimatePresence mode="wait">
+              {/* Submit */}
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full flex items-center justify-center gap-2 rounded-xl py-3.5 text-sm font-black tracking-wide transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed hover:opacity-90 hover:scale-[1.01] active:scale-[0.99]"
+                style={{ background: THEME.grad, boxShadow: `0 0 28px ${THEME.glow}, 0 4px 12px rgba(0,0,0,0.4)`, color: "#1a1a1a" }}
+              >
+                {loading ? (
+                  <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                  </svg>
+                ) : (
+                  <>
+                    {mode === "signin" ? "Enter Dashboard" : "Create Account"}
+                    <ArrowRight className="h-4 w-4" />
+                  </>
+                )}
+              </button>
+            </motion.form>
+          </AnimatePresence>
+
+          {/* Support actions */}
+          <div className="grid grid-cols-2 gap-2" style={{ gap: 10 }}>
+            <button
+              type="button"
+              onClick={() => requestUserToken("password")}
+              disabled={loading}
+              className="rounded-xl border py-2.5 text-[10px] font-bold uppercase tracking-wider text-slate-500 hover:text-slate-300 transition-all duration-200 hover:border-white/20 disabled:opacity-40"
+              style={{ minHeight: 52, borderColor: "rgba(255,161,22,0.16)", background: "rgba(255,161,22,0.035)", color: "#ad8b5d", fontSize: 10, lineHeight: 1.25, letterSpacing: "0.1em" }}
+            >
+              Forgot password
+            </button>
+            <button
+              type="button"
+              onClick={() => requestUserToken("verify")}
+              disabled={loading}
+              className="rounded-xl border py-2.5 text-[10px] font-bold uppercase tracking-wider text-slate-500 hover:text-slate-300 transition-all duration-200 hover:border-white/20 disabled:opacity-40"
+              style={{ minHeight: 52, borderColor: "rgba(255,161,22,0.16)", background: "rgba(255,161,22,0.035)", color: "#ad8b5d", fontSize: 10, lineHeight: 1.25, letterSpacing: "0.1em" }}
+            >
+              Verify email
+            </button>
+          </div>
+
+          {/* Support panel */}
+          <AnimatePresence>
+            {support && (
               <motion.form
-                key={`${currentRole}-${currentMode}`}
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -8 }}
-                transition={{ duration: 0.2 }}
-                className="mt-6 space-y-4"
-                onSubmit={handleSubmit(onSubmit)}
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                exit={{ opacity: 0, height: 0 }}
+                transition={{ duration: 0.25 }}
+                className="overflow-hidden"
+                onSubmit={submitSupport}
               >
-                {isStudent && currentMode === "signin" ? (
-                  <Field label="Email or username" error={errors.identifier?.message}>
-                    <input className={inputClass} placeholder="name@example.com or username" {...register("identifier")} />
-                  </Field>
-                ) : null}
-
-                {isCompany && currentMode === "signin" ? (
-                  <Field label="Official email" hint="Business email only." error={errors.email?.message}>
-                    <input className={inputClass} placeholder="hr@company.com" {...register("email")} />
-                  </Field>
-                ) : null}
-
-                {isAdmin && currentMode === "signin" ? (
-                  <>
-                    <Field label="Admin email" hint="Restricted to mradulgarg2005@gmail.com" error={errors.email?.message}>
-                      <input className={inputClass} placeholder="mradulgarg2005@gmail.com" {...register("email")} />
-                    </Field>
-                    <Field label="Private key" error={errors.privateKey?.message}>
-                      <input className={inputClass} type="password" placeholder="Enter private key" {...register("privateKey")} />
-                    </Field>
-                  </>
-                ) : null}
-
-                {currentMode === "signup" && isStudent ? (
-                  <>
-                    <Field label="Full name" error={errors.fullName?.message}>
-                      <input className={inputClass} placeholder="Your full name" {...register("fullName")} />
-                    </Field>
-                    <Field label="Username" error={errors.username?.message}>
-                      <input className={inputClass} placeholder="choose-a-username" {...register("username")} />
-                    </Field>
-                    <Field label="Email" error={errors.email?.message}>
-                      <input className={inputClass} placeholder="name@example.com" {...register("email")} />
-                    </Field>
-                  </>
-                ) : null}
-
-                {currentMode === "signup" && isCompany ? (
-                  <>
-                    <Field label="Company name" error={errors.companyName?.message}>
-                      <input className={inputClass} placeholder="CodeVerse Pvt Ltd" {...register("companyName")} />
-                    </Field>
-                    <Field label="Official email" error={errors.officialEmail?.message}>
-                      <input className={inputClass} placeholder="hr@company.com" {...register("officialEmail")} />
-                    </Field>
-                    <Field label="Website" error={errors.website?.message}>
-                      <input className={inputClass} placeholder="https://company.com" {...register("website")} />
-                    </Field>
-                    <Field label="LinkedIn page" error={errors.linkedinPage?.message}>
-                      <input className={inputClass} placeholder="https://www.linkedin.com/company/..." {...register("linkedinPage")} />
-                    </Field>
-                    <Field label="Registration number" error={errors.registrationNumber?.message}>
-                      <input className={inputClass} placeholder="Registration / GST / CIN" {...register("registrationNumber")} />
-                    </Field>
-                    <Field label="HR name" error={errors.hrName?.message}>
-                      <input className={inputClass} placeholder="HR contact name" {...register("hrName")} />
-                    </Field>
-                    <Field label="HR email" error={errors.hrEmail?.message}>
-                      <input className={inputClass} placeholder="hr@company.com" {...register("hrEmail")} />
-                    </Field>
-                    <Field label="Company logo URL" error={errors.companyLogo?.message}>
-                      <input className={inputClass} placeholder="https://..." {...register("companyLogo")} />
-                    </Field>
-                  </>
-                ) : null}
-
-                {currentMode === "signup" ? (
-                  <>
-                    <Field label="Password" error={errors.password?.message}>
-                      <input className={inputClass} type="password" placeholder="Create password" {...register("password")} />
-                    </Field>
-                    <Field label="Confirm password" error={errors.confirmPassword?.message}>
-                      <input className={inputClass} type="password" placeholder="Repeat password" {...register("confirmPassword")} />
-                    </Field>
-                  </>
-                ) : null}
-
-                {currentMode === "signin" && !isAdmin ? (
-                  <Field label="Password" error={errors.password?.message}>
-                    <input className={inputClass} type="password" placeholder="Enter password" {...register("password")} />
-                  </Field>
-                ) : null}
-
-                {currentMode === "signin" && isStudent ? (
-                  <div className="grid gap-3">
-                    <button
-                      type="button"
-                      onClick={() => startOAuth("google")}
-                      className="flex items-center justify-center gap-2 rounded-2xl border border-white/10 bg-white/5 px-3 py-3 text-xs font-semibold text-slate-200 transition hover:bg-white/10"
-                    >
-                      <LogIn className="h-4 w-4" />
-                      Continue with Google
+                <div
+                  className="rounded-2xl border p-4 space-y-3 mt-1"
+                  style={{ borderColor: THEME.border, background: THEME.bg }}
+                >
+                  <div className="flex items-center justify-between">
+                    <p className="text-xs font-bold uppercase tracking-widest" style={{ color: THEME.primary }}>
+                      {support.kind === "verify" ? "Verify Email" : "Reset Password"}
+                    </p>
+                    <button type="button" onClick={() => setSupport(null)} className="text-slate-500 hover:text-slate-300 text-xs">
+                      ✕
                     </button>
                   </div>
-                ) : null}
-
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className={cx(
-                    "flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r px-4 py-3.5 text-sm font-bold text-slate-950 transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-60",
-                    accent.grad
-                  )}
-                >
-                  {loading ? "Please wait..." : currentMode === "signin" ? "Enter dashboard" : "Create account"}
-                  {!loading ? <ChevronRight className="h-4 w-4" /> : null}
-                </button>
-              </motion.form>
-            </AnimatePresence>
-
-            <div className="mt-5 grid gap-3 sm:grid-cols-2">
-              <button
-                type="button"
-                onClick={requestReset}
-                className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm font-semibold text-slate-200 transition hover:border-cyan-300/30 hover:bg-cyan-300/10"
-              >
-                Request admin reset token
-              </button>
-              <button
-                type="button"
-                onClick={() => requestUserToken("verify")}
-                className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm font-semibold text-slate-200 transition hover:border-white/20 hover:bg-white/8"
-              >
-                Verify email
-              </button>
-            </div>
-
-            <div className="mt-3 grid gap-3 sm:grid-cols-2">
-              <button
-                type="button"
-                onClick={() => requestUserToken("password")}
-                className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm font-semibold text-slate-200 transition hover:border-cyan-300/30 hover:bg-cyan-300/10"
-              >
-                Forgot password
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setRole((current) => (current === "student" ? "company" : current === "company" ? "admin" : "student"));
-                  setMode("signin");
-                }}
-                className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm font-semibold text-slate-200 transition hover:border-white/20 hover:bg-white/8"
-              >
-                Cycle role
-              </button>
-            </div>
-
-            {support ? (
-              <form className="mt-4 space-y-4 rounded-3xl border border-white/10 bg-white/5 p-4" onSubmit={submitSupport}>
-                <div className="text-sm font-semibold text-white">
-                  {support.kind === "verify" ? "Verify your email" : support.kind === "password" ? "Reset your password" : "Admin reset"}
-                </div>
-                <div className="text-xs text-slate-400">
-                  {support.kind === "verify"
-                    ? "Paste the email verification token."
-                    : "Use the token sent to your mailbox, then set a new password."}
-                </div>
-                <Field label="Token">
-                  <input className={inputClass} name="token" placeholder="Enter token" defaultValue={support.token || ""} />
-                </Field>
-                {support.kind !== "verify" ? (
-                  <Field label="New password">
-                    <input className={inputClass} name="newPassword" type="password" placeholder="New password" />
+                  <Field label="Token">
+                    <Input name="token" placeholder="Paste token" defaultValue={support.token || ""} />
                   </Field>
-                ) : null}
-                <div className="flex gap-3">
+                  {support.kind !== "verify" && (
+                    <Field label="New Password">
+                      <Input name="newPassword" type="password" placeholder="New password" />
+                    </Field>
+                  )}
                   <button
                     type="submit"
                     disabled={loading}
-                    className="flex-1 rounded-2xl bg-white/10 px-4 py-3 text-sm font-semibold text-white transition hover:bg-white/15 disabled:cursor-not-allowed disabled:opacity-60"
+                    className="w-full rounded-xl py-2.5 text-sm font-bold transition-all duration-200"
+                    style={{ background: THEME.grad, color: "#1a1a1a", opacity: loading ? 0.6 : 1 }}
                   >
                     {loading ? "Working..." : "Submit"}
                   </button>
-                  <button
-                    type="button"
-                    onClick={() => setSupport(null)}
-                    className="rounded-2xl border border-white/10 px-4 py-3 text-sm font-semibold text-slate-300 transition hover:bg-white/5"
-                  >
-                    Close
-                  </button>
                 </div>
-              </form>
-            ) : null}
+              </motion.form>
+            )}
+          </AnimatePresence>
 
-            <div className="mt-4 flex flex-wrap gap-2 text-xs text-slate-400">
-              <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1">Student: email, username, Google OAuth</span>
-              <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1">Company: business email validation</span>
-              <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1">Admin: private key protected</span>
-            </div>
+          <p className="text-center text-[10px] leading-4 text-slate-600">
+            Your dashboard loads automatically after a successful login.
+          </p>
+        </div>
 
-            <p className="mt-5 text-center text-xs leading-5 text-slate-500">
-              {isAdmin
-                ? "Admin access is restricted to the verified mailbox and private key."
-                : "Your dashboard will load automatically after a successful login."}
-            </p>
-          </div>
-        </section>
-      </div>
+        {/* Card bottom glow */}
+        <div
+          className="h-px rounded-b-3xl w-full"
+          style={{ background: `linear-gradient(to right, transparent, ${THEME.border}, transparent)` }}
+        />
+      </motion.div>
     </div>
   );
 }
