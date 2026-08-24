@@ -7,6 +7,7 @@ const StudentDashboard = lazy(() => import("./pages/StudentDashboard"));
 const CompanyDashboard = lazy(() => import("./pages/CompanyDashboard"));
 const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
 const Home = lazy(() => import("./pages/Home"));
+const HomePreview = lazy(() => import("./pages/HomePreview"));
 const PublicProfilePage = lazy(() => import("./features/profile/PublicProfilePage"));
 
 function PrivateRoute({ children, allowedRoles }) {
@@ -26,6 +27,7 @@ function App() {
     <RouteShell>
       <Routes>
         <Route path="/" element={<Home />} />
+        <Route path="/homepage-preview" element={<HomePreview />} />
         <Route path="/login" element={<AuthPage />} />
         <Route path="/auth-success" element={<AuthSuccess />} />
         <Route path="/profile/:username" element={<PublicProfilePage />} />

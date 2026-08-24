@@ -5,6 +5,8 @@ const path = require("path");
 const { spawn } = require("child_process");
 
 const MAX_OUTPUT_BYTES = 1024 * 1024;
+const DOCKER_CONFIG_DIR = process.env.DOCKER_CONFIG || path.join(__dirname, "..", ".docker-task");
+const dockerEnvironment = { ...process.env, DOCKER_CONFIG: DOCKER_CONFIG_DIR };
 
 const LANGUAGE_CONFIG = {
   cpp: { image: "gcc:13", file: "solution.cpp", command: "g++ -std=c++17 -O2 -pipe solution.cpp -o solution || exit 200; start=$(date +%s%3N); timeout RUN_SECONDSs ./solution; code=$?; end=$(date +%s%3N); printf '\\n__CODEVERSE_RUNTIME_MS__=%s\\n' $((end-start)) >&2; exit $code" },
@@ -30,7 +32,10 @@ function getTimeoutMs(timeLimit) {
   // Compilation and Docker startup are not user-program runtime. Give those
   // phases a grace window; the actual code limit is enforced by `timeout`
   // inside the container below.
-  return Math.max(5000, Math.min(limit + 5000, 30000));
+  // Docker Desktop on Windows can spend several seconds starting a cold
+  // container. The code's real limit is enforced by `timeout` inside the
+  // container, so the host watchdog needs a separate, larger startup grace.
+  return Math.max(15000, Math.min(limit + 15000, 60000));
 }
 
 function runDocker({ workDir, input, command, language, timeLimit, memoryLimit }) {
@@ -52,7 +57,7 @@ function runDocker({ workDir, input, command, language, timeLimit, memoryLimit }
       "-w", "/workspace", getDockerImage(language), "sh", "-c", renderedCommand,
     ];
 
-    const child = spawn(process.env.DOCKER_BIN || "docker", args, { windowsHide: true });
+    const child = spawn(process.env.DOCKER_BIN || "docker", args, { windowsHide: true, env: dockerEnvironment });
     const stdout = [];
     const stderr = [];
     let timedOut = false;
@@ -118,7 +123,7 @@ function runDocker({ workDir, input, command, language, timeLimit, memoryLimit }
 
 function removeContainer(name) {
   return new Promise((resolve) => {
-    const cleanup = spawn(process.env.DOCKER_BIN || "docker", ["rm", "-f", name], { windowsHide: true });
+    const cleanup = spawn(process.env.DOCKER_BIN || "docker", ["rm", "-f", name], { windowsHide: true, env: dockerEnvironment });
     cleanup.on("close", () => resolve());
     cleanup.on("error", () => resolve());
   });
@@ -129,7 +134,7 @@ function classifyExecutionResult({ result, cleanStderr = "" }) {
   const dockerUnavailable = result.exitCode === 125 || /unable to find image|pull access denied|cannot connect to the docker daemon|failed to connect to the docker api|is the docker daemon running|no such image|dockerdesktoplinuxengine/i.test(result.stderr || "");
 
   if (dockerUnavailable) {
-    return { id: 0, description: "Internal Error" };
+    return { id: 0, description: "System Error" };
   }
   if (result.timedOut || result.exitCode === 124) {
     return { id: 5, description: "Time Limit Exceeded" };
@@ -142,6 +147,9 @@ function classifyExecutionResult({ result, cleanStderr = "" }) {
   }
   if (result.exitCode === 200) {
     return { id: 6, description: "Compilation Error" };
+  }
+  if (/(traceback|runtimeerror|segmentation fault)/i.test(cleanStderr)) {
+    return { id: 11, description: "Runtime Error" };
   }
   if (
     result.exitCode === 137 ||
@@ -168,6 +176,7 @@ async function executeInDocker({ sourceCode, language, stdin = "", timeLimit = 2
   const sourcePath = path.join(workDir, config.file);
   const startedAt = Date.now();
   try {
+    await fs.mkdir(DOCKER_CONFIG_DIR, { recursive: true });
     // The container runs as the unprivileged `runner` user. A writable bind
     // mount is needed for compiler artifacts (class files and executables).
     await fs.chmod(workDir, 0o777);
@@ -201,4 +210,4 @@ async function executeInDocker({ sourceCode, language, stdin = "", timeLimit = 2
   }
 }
 
-module.exports = { executeInDocker, normalizeLanguage, classifyExecutionResult };
+module.exports = { executeInDocker, normalizeLanguage, classifyExecutionResult, getTimeoutMs };

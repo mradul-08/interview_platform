@@ -174,7 +174,7 @@ export default function StudyGroupsPage() {
 
         <section className="sg-how-it-works sg-card" aria-labelledby="how-title">
           <div><span className="sg-eyebrow">MAKE PROGRESS TOGETHER</span><h2 id="how-title">A simpler way to stay consistent</h2></div>
-          <div className="sg-steps"><div><span>01</span><strong>Choose a goal</strong><p>Find a group aligned with what you are preparing for.</p></div><div><span>02</span><strong>Show up regularly</strong><p>Use discussions and sessions to keep momentum.</p></div><div><span>03</span><strong>Help each other win</strong><p>Share knowledge, ask questions, and celebrate progress.</p></div></div>
+          <div className="sg-steps"><div><span>01</span><strong>Choose a goal</strong><p>Find a group aligned with what you are preparing for.</p></div><div><span>02</span><strong>Show up regularly</strong><p>Use group chat and live tests to keep momentum.</p></div><div><span>03</span><strong>Help each other win</strong><p>Share knowledge, ask questions, and celebrate progress.</p></div></div>
         </section>
       </div>
     </main>

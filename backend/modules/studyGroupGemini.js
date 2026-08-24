@@ -2,9 +2,21 @@ const express = require("express");
 const mongoose = require("mongoose");
 const crypto = require("crypto");
 const { protect } = require("../middleware/authMiddleware");
-const StudyGroupTask = require("../StudyGroupTask");
 const DeveloperProfile = require("../models/DeveloperProfile");
 const Notification = require("../models/Notification");
+const Problem = require("../models/Problem");
+const AptitudeQuestion = require("../models/AptitudeQuestion");
+const CompetitiveTest = require("../models/CompetitiveTest");
+const CompetitiveTestAttempt = require("../models/CompetitiveTestAttempt");
+const Submission = require("../models/submission");
+const AptitudeSession = require("../models/AptitudeSession");
+const AptitudeAttempt = require("../models/AptitudeAttempt");
+const { validateDefinition, assertAttemptCanStart, remainingAttemptSeconds, participantDeadline, competitiveTestVisibilityFilter } = require("../services/competitiveTestService");
+const { VISIBLE_QUESTION_STATUSES } = require("../services/aptitudeService");
+const { reconcileCompetitiveTest, scheduleCompetitiveTest } = require("../services/competitiveTestLifecycle");
+const { finalizeCompetitiveTest } = require("../services/competitiveResultsService");
+const { notifyCompetitiveTest } = require("../services/competitiveNotificationService");
+const { getCompetitiveProgress, emitCompetitiveProgress } = require("../services/competitiveProgressService");
 
 const { Schema } = mongoose;
 const groupSchema = new Schema({
@@ -24,30 +36,12 @@ const memberSchema = new Schema({
   role: { type: String, enum: ["OWNER", "MEMBER"], default: "MEMBER" },
   status: { type: String, enum: ["PENDING", "APPROVED"], default: "PENDING" },
 }, { timestamps: true });
-const discussionSchema = new Schema({
-  groupId: { type: Schema.Types.ObjectId, ref: "GeminiStudyGroup", required: true },
-  authorId: { type: Schema.Types.ObjectId, ref: "User", required: true },
-  title: { type: String, required: true, trim: true },
-  content: { type: String, required: true, trim: true },
-}, { timestamps: true });
 const messageSchema = new Schema({
   groupId: { type: Schema.Types.ObjectId, ref: "GeminiStudyGroup", required: true, index: true },
   authorId: { type: Schema.Types.ObjectId, ref: "User", required: true },
   content: { type: String, required: true, trim: true, maxlength: 4000 },
   deliveredTo: [{ _id: false, userId: { type: Schema.Types.ObjectId, ref: "User" }, at: { type: Date } }],
   readBy: [{ _id: false, userId: { type: Schema.Types.ObjectId, ref: "User" }, at: { type: Date } }],
-}, { timestamps: true });
-const sessionSchema = new Schema({
-  groupId: { type: Schema.Types.ObjectId, ref: "GeminiStudyGroup", required: true, index: true },
-  hostId: { type: Schema.Types.ObjectId, ref: "User", required: true },
-  title: { type: String, required: true, trim: true, maxlength: 140 },
-  topic: { type: String, trim: true, maxlength: 80 },
-  scheduledTime: { type: Date, required: true },
-  durationMinutes: { type: Number, min: 15, max: 240, default: 60 },
-  status: { type: String, enum: ["scheduled", "active", "completed", "cancelled"], default: "scheduled" },
-  startedAt: { type: Date, default: null },
-  endedAt: { type: Date, default: null },
-  participantIds: [{ type: Schema.Types.ObjectId, ref: "User" }],
 }, { timestamps: true });
 const inviteSchema = new Schema({
   groupId: { type: Schema.Types.ObjectId, ref: "GeminiStudyGroup", required: true, index: true },
@@ -64,9 +58,7 @@ groupSchema.index({ isPublic: 1, createdAt: -1 });
 
 const Group = mongoose.models.GeminiStudyGroup || mongoose.model("GeminiStudyGroup", groupSchema);
 const Member = mongoose.models.GeminiStudyGroupMember || mongoose.model("GeminiStudyGroupMember", memberSchema);
-const Discussion = mongoose.models.GeminiStudyGroupDiscussion || mongoose.model("GeminiStudyGroupDiscussion", discussionSchema);
 const Message = mongoose.models.GeminiStudyGroupMessage || mongoose.model("GeminiStudyGroupMessage", messageSchema);
-const StudySession = mongoose.models.GeminiStudySession || mongoose.model("GeminiStudySession", sessionSchema);
 const Invite = mongoose.models.GeminiStudyGroupInvite || mongoose.model("GeminiStudyGroupInvite", inviteSchema);
 
 function activeChatUsers(io, groupId) {
@@ -103,6 +95,25 @@ function queueGroupMessageNotification(options) {
 }
 
 function id(req) { return req.user._id; }
+
+async function approvedGroupMember(groupId, userId) {
+  return Member.exists({ groupId, userId, status: "APPROVED" });
+}
+
+function uniqueIds(values) {
+  return [...new Set((Array.isArray(values) ? values : []).map((value) => String(value)).filter(Boolean))];
+}
+
+async function validateCompetitiveReferences({ type, problemIds, aptitudeQuestionIds }) {
+  const [problems, questions] = await Promise.all([
+    problemIds.length ? Problem.find({ _id: { $in: problemIds } }).select("_id").lean() : [],
+    aptitudeQuestionIds.length ? AptitudeQuestion.find({ _id: { $in: aptitudeQuestionIds }, qualityStatus: { $in: VISIBLE_QUESTION_STATUSES } }).select("_id").lean() : [],
+  ]);
+  if (problems.length !== problemIds.length) throw Object.assign(new Error("One or more selected DSA problems are unavailable"), { status: 400 });
+  if (questions.length !== aptitudeQuestionIds.length) throw Object.assign(new Error("One or more selected Aptitude questions are unavailable"), { status: 400 });
+  if (type === "DSA" && aptitudeQuestionIds.length) throw Object.assign(new Error("DSA tests cannot include Aptitude questions"), { status: 400 });
+  if (type === "APTITUDE" && problemIds.length) throw Object.assign(new Error("Aptitude tests cannot include DSA problems"), { status: 400 });
+}
 async function enrichMemberAvatars(members) {
   const userIds = members.map((member) => member.userId?._id || member.userId).filter(Boolean);
   if (!userIds.length) return members;
@@ -222,49 +233,227 @@ router.get("/:groupId/dashboard", protect, async (req, res) => {
   if (!group) return res.status(404).json({ message: "Group not found" });
   const membership = await Member.findOne({ groupId: group._id, userId: id(req), status: "APPROVED" }).lean();
   if (!membership) return res.status(403).json({ code: "GROUP_MEMBERSHIP_REQUIRED", message: "Join the group to view its workspace" });
-  const [members, discussions, tasks] = await Promise.all([
-    Member.find({ groupId: group._id, status: "APPROVED" }).populate("userId", "name email username avatarUrl").lean(),
-    Discussion.find({ groupId: group._id }).populate("authorId", "name").sort({ createdAt: -1 }).lean(),
-    StudyGroupTask.find({ groupId: group._id }).populate("assignedTo", "name avatarUrl").sort({ createdAt: -1 }).lean(),
-  ]);
+  const members = await Member.find({ groupId: group._id, status: "APPROVED" }).populate("userId", "name email username avatarUrl").lean();
   const enrichedMembers = await enrichMemberAvatars(members);
-  const activity = [
-    ...enrichedMembers.map((member) => ({ type: "member_joined", label: `${member.userId?.name || "A member"} joined the group`, createdAt: member.createdAt })),
-    ...discussions.map((discussion) => ({ type: "discussion_created", label: `${discussion.authorId?.name || "A member"} started “${discussion.title}”`, createdAt: discussion.createdAt })),
-  ].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)).slice(0, 20);
-  const upcomingSession = await StudySession.findOne({ groupId: group._id, status: "scheduled", scheduledTime: { $gte: new Date() } }).populate("hostId", "name avatarUrl").sort({ scheduledTime: 1 }).lean();
-  res.json({ group, membership, members: enrichedMembers, discussions, activity, announcements: [], upcomingSession, tasks });
+  const activity = enrichedMembers.map((member) => ({ type: "member_joined", label: `${member.userId?.name || "A member"} joined the group`, createdAt: member.createdAt })).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)).slice(0, 20);
+  res.json({ group, membership, members: enrichedMembers, activity, announcements: [] });
 });
-router.get("/:groupId/tasks", protect, async (req, res) => {
+router.post("/:groupId/competitive-tests", protect, async (req, res) => {
   if (!validId(req.params.groupId)) return badId(res);
-  const member = await Member.exists({ groupId: req.params.groupId, userId: id(req), status: "APPROVED" });
-  if (!member) return res.status(403).json({ message: "You must be an approved member to view tasks" });
-  res.json(await StudyGroupTask.find({ groupId: req.params.groupId }).populate("assignedTo", "name avatarUrl").sort({ createdAt: -1 }).lean());
-});
-router.post("/:groupId/tasks", protect, async (req, res) => {
-  if (!validId(req.params.groupId)) return badId(res);
-  const member = await Member.exists({ groupId: req.params.groupId, userId: id(req), status: "APPROVED" });
-  if (!member) return res.status(403).json({ message: "You must be an approved member to create tasks" });
+  if (!await approvedGroupMember(req.params.groupId, id(req))) return res.status(403).json({ message: "You must be an approved member to create a competitive test" });
+  const group = await Group.findById(req.params.groupId).select("ownerId").lean();
+  if (!group) return res.status(404).json({ message: "Group not found" });
+
+  const problemIds = uniqueIds(req.body.problemIds);
+  const aptitudeQuestionIds = uniqueIds(req.body.aptitudeQuestionIds);
   const title = String(req.body.title || "").trim();
-  if (!title) return res.status(400).json({ message: "Task title is required" });
-  const task = await StudyGroupTask.create({ groupId: req.params.groupId, title, description: String(req.body.description || "").trim(), priority: ["Low", "Medium", "High"].includes(req.body.priority) ? req.body.priority : "Medium", dueDate: req.body.dueDate || null, assignedTo: Array.isArray(req.body.assignedTo) ? req.body.assignedTo : [] });
-  const payload = await task.populate("assignedTo", "name avatarUrl");
-  req.app.locals.io?.to(`study-group:${req.params.groupId}`).emit("group:task", payload);
-  res.status(201).json(payload);
+  if (!title) return res.status(400).json({ message: "Competitive test title is required" });
+  if ([...problemIds, ...aptitudeQuestionIds].some((value) => !validId(value))) return res.status(400).json({ message: "Selected question and problem IDs must be valid" });
+  let definition;
+  try {
+    definition = validateDefinition({ ...req.body, problemIds, aptitudeQuestionIds });
+  } catch (error) {
+    return res.status(400).json({ message: error.message });
+  }
+  // The creator is also a valid participant. Keep manager permissions separate
+  // from participation, but guarantee the owner can complete the test they
+  // created even when the form did not include the owner checkbox.
+  const participantIds = uniqueIds([id(req), String(group.ownerId), ...(Array.isArray(req.body.participantIds) ? req.body.participantIds : [])]);
+  if (!participantIds.length) return res.status(400).json({ message: "At least one participant is required" });
+  if (participantIds.some((value) => !validId(value))) return res.status(400).json({ message: "Participant IDs must be valid" });
+  const approvedMembers = await Member.find({ groupId: req.params.groupId, userId: { $in: participantIds }, status: "APPROVED" }).select("userId").lean();
+  if (approvedMembers.length !== participantIds.length) return res.status(400).json({ message: "All participants must be approved group members" });
+  try {
+    await validateCompetitiveReferences(definition);
+  } catch (error) {
+    return res.status(error.status || 400).json({ message: error.message });
+  }
+
+  const test = await CompetitiveTest.create({
+    groupId: req.params.groupId,
+    createdBy: id(req),
+    title,
+    description: String(req.body.description || "").trim(),
+    type: definition.type,
+    problemIds: definition.problemIds,
+    aptitudeQuestionIds: definition.aptitudeQuestionIds,
+    participantIds,
+    scheduledAt: definition.scheduledAt,
+    durationSeconds: definition.durationSeconds,
+    scoring: req.body.scoring && typeof req.body.scoring === "object" ? req.body.scoring : {},
+  });
+  await CompetitiveTestAttempt.insertMany(participantIds.map((participantId) => ({ testId: test._id, groupId: req.params.groupId, participantId, status: "INVITED" })));
+  scheduleCompetitiveTest(test, req.app.locals.io);
+  await notifyCompetitiveTest({ test, event: "scheduled", io: req.app.locals.io });
+  req.app.locals.io?.to(`study-group:${req.params.groupId}`).emit("group:test", { testId: test._id, groupId: req.params.groupId, status: test.status });
+  res.status(201).json(test);
 });
-router.patch("/:groupId/tasks/:taskId", protect, async (req, res) => {
-  if (!validId(req.params.groupId) || !validId(req.params.taskId)) return badId(res);
-  const member = await Member.exists({ groupId: req.params.groupId, userId: id(req), status: "APPROVED" });
-  if (!member) return res.status(403).json({ message: "You must be an approved member to update tasks" });
-  const updates = {};
-  if (typeof req.body.title === "string" && req.body.title.trim()) updates.title = req.body.title.trim();
-  if (["TODO", "IN_PROGRESS", "DONE"].includes(req.body.status)) updates.status = req.body.status;
-  if (["Low", "Medium", "High"].includes(req.body.priority)) updates.priority = req.body.priority;
-  if (req.body.dueDate !== undefined) updates.dueDate = req.body.dueDate || null;
-  const task = await StudyGroupTask.findOneAndUpdate({ _id: req.params.taskId, groupId: req.params.groupId }, { $set: updates }, { returnDocument: "after", runValidators: true }).populate("assignedTo", "name avatarUrl");
-  if (!task) return res.status(404).json({ message: "Task not found" });
-  req.app.locals.io?.to(`study-group:${req.params.groupId}`).emit("group:task", task);
-  res.json(task);
+
+router.get("/:groupId/competitive-tests", protect, async (req, res) => {
+  if (!validId(req.params.groupId)) return badId(res);
+  if (!await approvedGroupMember(req.params.groupId, id(req))) return res.status(403).json({ message: "You must be an approved member to view competitive tests" });
+  const isOwner = Boolean(await Member.exists({ groupId: req.params.groupId, userId: id(req), role: "OWNER", status: "APPROVED" }));
+  // Results are a group-shared resource. Approved members can see the test
+  // card even when they were not selected as participants.
+  const visibility = { groupId: req.params.groupId };
+  const requestedPage = Math.max(1, Number.parseInt(req.query.page, 10) || 1);
+  const limit = Math.min(50, Math.max(1, Number.parseInt(req.query.limit, 10) || 10));
+  const total = await CompetitiveTest.countDocuments(visibility);
+  const totalPages = Math.max(1, Math.ceil(total / limit));
+  const page = Math.min(requestedPage, totalPages);
+  const tests = await CompetitiveTest.find(visibility).sort({ scheduledAt: 1, _id: 1 }).skip((page - 1) * limit).limit(limit).select("title description type scheduledAt durationSeconds startedAt endsAt status createdBy participantIds problemIds aptitudeQuestionIds scoring").lean();
+  await Promise.all(tests.map(async (test) => {
+    const current = await reconcileCompetitiveTest(test._id, req.app.locals.io);
+    if (current?.status === "ENDED") await finalizeCompetitiveTest(current._id, req.app.locals.io);
+  }));
+  const currentTests = await CompetitiveTest.find({ _id: { $in: tests.map((test) => test._id) } }).sort({ scheduledAt: 1 }).select("title description type scheduledAt durationSeconds startedAt endsAt status createdBy participantIds problemIds aptitudeQuestionIds scoring").lean();
+  const attempts = await CompetitiveTestAttempt.find({ groupId: req.params.groupId, participantId: id(req), testId: { $in: currentTests.map((test) => test._id) } }).select("testId status startedAt endsAt completedAt score rank").lean();
+  const attemptByTest = new Map(attempts.map((attempt) => [String(attempt.testId), attempt]));
+  res.json({ tests: currentTests.map((test) => ({ ...test, attempt: attemptByTest.get(String(test._id)) || null, canManage: isOwner || String(test.createdBy) === String(id(req)) })), pagination: { page, limit, total, totalPages } });
+});
+
+router.get("/:groupId/competitive-tests/:testId", protect, async (req, res) => {
+  if (!validId(req.params.groupId) || !validId(req.params.testId)) return badId(res);
+  if (!await approvedGroupMember(req.params.groupId, id(req))) return res.status(403).json({ message: "You must be an approved member to view this competitive test" });
+  const isOwner = Boolean(await Member.exists({ groupId: req.params.groupId, userId: id(req), role: "OWNER", status: "APPROVED" }));
+  const test = await CompetitiveTest.findOne({ _id: req.params.testId, ...competitiveTestVisibilityFilter({ groupId: req.params.groupId, userId: id(req), isOwner }) }).select("title description type scheduledAt durationSeconds startedAt endsAt status createdBy participantIds problemIds aptitudeQuestionIds scoring").lean();
+  if (!test) return res.status(404).json({ message: "Competitive test not found" });
+  let currentTest = await reconcileCompetitiveTest(test._id, req.app.locals.io);
+  if (currentTest?.status === "ENDED") currentTest = await finalizeCompetitiveTest(currentTest._id, req.app.locals.io);
+  const attempt = await CompetitiveTestAttempt.findOne({ testId: test._id, participantId: id(req) }).select("status startedAt endsAt completedAt score rank categoryBreakdown aptitudeSessionId dsaSubmissionIds").lean();
+  const progress = await getCompetitiveProgress({ test: currentTest || test });
+  res.json({ serverNow: new Date().toISOString(), test: currentTest || test, attempt: attempt || null, canManage: isOwner || String(test.createdBy) === String(id(req)), ...progress });
+});
+
+router.post("/:groupId/competitive-tests/:testId/join", protect, async (req, res) => {
+  if (!validId(req.params.groupId) || !validId(req.params.testId)) return badId(res);
+  if (!await approvedGroupMember(req.params.groupId, id(req))) return res.status(403).json({ message: "You must be an approved member to join this competitive test" });
+  const test = await CompetitiveTest.findOne({ _id: req.params.testId, groupId: req.params.groupId, participantIds: id(req) }).lean();
+  if (!test) return res.status(404).json({ message: "Competitive test not found" });
+  const currentTest = await reconcileCompetitiveTest(test._id, req.app.locals.io);
+  if (!currentTest || !["SCHEDULED", "LIVE"].includes(currentTest.status)) return res.status(409).json({ message: "This competitive test is no longer joinable" });
+  const attempt = await CompetitiveTestAttempt.findOneAndUpdate({ testId: currentTest._id, participantId: id(req), status: "INVITED" }, { $set: { status: "JOINED" } }, { returnDocument: "after" }).lean();
+  if (!attempt) return res.status(409).json({ message: "This participant attempt is already joined or closed" });
+  req.app.locals.io?.to(`study-group:${req.params.groupId}`).emit("group:test-participant", { testId: test._id, groupId: req.params.groupId, participantId: id(req), status: attempt.status });
+  await emitCompetitiveProgress({ test: currentTest, io: req.app.locals.io });
+  res.json(attempt);
+});
+
+router.post("/:groupId/competitive-tests/:testId/start", protect, async (req, res) => {
+  if (!validId(req.params.groupId) || !validId(req.params.testId)) return badId(res);
+  if (!await approvedGroupMember(req.params.groupId, id(req))) return res.status(403).json({ message: "You must be an approved member to start this competitive test" });
+  const test = await CompetitiveTest.findOne({ _id: req.params.testId, groupId: req.params.groupId, participantIds: id(req) });
+  if (!test) return res.status(404).json({ message: "Competitive test not found" });
+  const currentTest = await reconcileCompetitiveTest(test._id, req.app.locals.io);
+  const attempt = await CompetitiveTestAttempt.findOne({ testId: test._id, participantId: id(req) });
+  try {
+    assertAttemptCanStart(currentTest, attempt);
+  } catch (error) {
+    return res.status(409).json({ message: error.message });
+  }
+  const now = new Date();
+  const endsAt = participantDeadline(currentTest, now);
+  const started = await CompetitiveTestAttempt.findOneAndUpdate(
+    { _id: attempt._id, testId: test._id, participantId: id(req), status: "JOINED" },
+    { $set: { status: "STARTED", startedAt: now, endsAt } },
+    { returnDocument: "after" },
+  ).lean();
+  if (!started) return res.status(409).json({ message: "Participant attempt has already started or closed" });
+  const extendedTest = await CompetitiveTest.findOneAndUpdate(
+    { _id: test._id, status: "LIVE" },
+    { $max: { endsAt } },
+    { returnDocument: "after" },
+  );
+  if (!extendedTest) return res.status(409).json({ message: "Competitive test is no longer live" });
+  scheduleCompetitiveTest(extendedTest, req.app.locals.io);
+  const payload = { testId: test._id, groupId: req.params.groupId, participantId: id(req), status: started.status, startedAt: started.startedAt, endsAt: started.endsAt, remainingSeconds: remainingAttemptSeconds(started, now) };
+  req.app.locals.io?.to(`study-group:${req.params.groupId}`).emit("group:test-participant", payload);
+  await emitCompetitiveProgress({ test: extendedTest, io: req.app.locals.io });
+  res.json({ attempt: started, remainingSeconds: payload.remainingSeconds });
+});
+
+router.post("/:groupId/competitive-tests/:testId/aptitude-session", protect, async (req, res) => {
+  if (!validId(req.params.groupId) || !validId(req.params.testId)) return badId(res);
+  if (!await approvedGroupMember(req.params.groupId, id(req))) return res.status(403).json({ message: "You must be an approved member to access this competitive test" });
+  const test = await CompetitiveTest.findOne({ _id: req.params.testId, groupId: req.params.groupId, participantIds: id(req) });
+  if (!test) return res.status(404).json({ message: "Competitive test not found" });
+  const currentTest = await reconcileCompetitiveTest(test._id, req.app.locals.io);
+  if (!currentTest || !["APTITUDE", "DSA_APTITUDE"].includes(currentTest.type)) return res.status(409).json({ message: "This competitive test has no Aptitude component" });
+  const attempt = await CompetitiveTestAttempt.findOne({ testId: currentTest._id, participantId: id(req), status: "STARTED" });
+  if (!attempt) return res.status(409).json({ message: "Start the participant attempt before opening Aptitude" });
+  if (!attempt.endsAt || new Date() >= new Date(attempt.endsAt)) return res.status(409).json({ message: "Competitive test deadline has passed" });
+  if (attempt.aptitudeSessionId) {
+    const existing = await AptitudeSession.findOne({ _id: attempt.aptitudeSessionId, userId: id(req), competitiveTestId: currentTest._id });
+    if (existing) return res.json(existing);
+  }
+  const session = await AptitudeSession.create({
+    userId: id(req),
+    mode: "EXAM_SIMULATION",
+    config: { totalQuestions: currentTest.aptitudeQuestionIds.length, timeLimitSeconds: Math.max(1, Math.ceil((new Date(attempt.endsAt) - new Date(attempt.startedAt)) / 1000)) },
+    questions: currentTest.aptitudeQuestionIds.map((questionId, order) => ({ questionId, order })),
+    startedAt: attempt.startedAt,
+    expiresAt: attempt.endsAt,
+    competitiveTestId: currentTest._id,
+    competitiveTestAttemptId: attempt._id,
+  });
+  const linkedAttempt = await CompetitiveTestAttempt.findOneAndUpdate(
+    { _id: attempt._id, status: "STARTED", aptitudeSessionId: null },
+    { $set: { aptitudeSessionId: session._id } },
+    { returnDocument: "after" },
+  ).lean();
+  if (!linkedAttempt || String(linkedAttempt.aptitudeSessionId) !== String(session._id)) {
+    await AptitudeSession.deleteOne({ _id: session._id, competitiveTestAttemptId: attempt._id });
+    const existing = await AptitudeSession.findOne({ competitiveTestAttemptId: attempt._id, userId: id(req), competitiveTestId: currentTest._id });
+    if (existing) return res.json(existing);
+    return res.status(409).json({ message: "Could not create the Aptitude attempt safely" });
+  }
+  res.status(201).json(session);
+});
+router.get("/:groupId/competitive-tests/:testId/results", protect, async (req, res) => {
+  if (!validId(req.params.groupId) || !validId(req.params.testId)) return badId(res);
+  if (!await approvedGroupMember(req.params.groupId, id(req))) return res.status(403).json({ message: "You must be an approved member to view results" });
+  const isOwner = Boolean(await Member.exists({ groupId: req.params.groupId, userId: id(req), role: "OWNER", status: "APPROVED" }));
+  // Approved group membership is the authorization boundary for published results.
+  let test = await CompetitiveTest.findOne({ _id: req.params.testId, groupId: req.params.groupId }).lean();
+  if (!test) return res.status(404).json({ message: "Competitive test not found" });
+  test = await reconcileCompetitiveTest(test._id, req.app.locals.io);
+  if (test?.status === "ENDED") test = await finalizeCompetitiveTest(test._id, req.app.locals.io);
+  if (!test || test.status !== "RESULTS_AVAILABLE") return res.status(409).json({ message: "Results are not available yet" });
+  const attempts = await CompetitiveTestAttempt.find({ testId: test._id }).populate("participantId", "name username avatarUrl").sort({ rank: 1, _id: 1 }).lean();
+  res.json({ test, results: attempts.map((attempt) => ({ attemptId: attempt._id, participant: attempt.participantId, status: attempt.status, score: attempt.score, dsaScore: attempt.dsaScore, aptitudeScore: attempt.aptitudeScore, scoreBreakdown: attempt.scoreBreakdown, categoryBreakdown: attempt.categoryBreakdown, completionTimeSeconds: attempt.completionTimeSeconds, rank: attempt.rank })) });
+});
+router.get("/:groupId/competitive-tests/:testId/attempts/:attemptId/submissions", protect, async (req, res) => {
+  if (![req.params.groupId, req.params.testId, req.params.attemptId].every(validId)) return badId(res);
+  if (!await approvedGroupMember(req.params.groupId, id(req))) return res.status(403).json({ message: "You must be an approved member to view submissions" });
+  const isOwner = Boolean(await Member.exists({ groupId: req.params.groupId, userId: id(req), role: "OWNER", status: "APPROVED" }));
+  // Every approved member may inspect every participant report for this group test.
+  const test = await CompetitiveTest.findOne({ _id: req.params.testId, groupId: req.params.groupId }).select("_id createdBy problemIds aptitudeQuestionIds").lean();
+  if (!test) return res.status(404).json({ message: "Competitive test not found" });
+  const attempt = await CompetitiveTestAttempt.findOne({ _id: req.params.attemptId, testId: test._id, groupId: req.params.groupId }).select("_id participantId aptitudeSessionId").lean();
+  if (!attempt) return res.status(404).json({ message: "Competitive test attempt not found" });
+  const canView = true; // approvedGroupMember above already authorized this request
+  if (!canView) return res.status(403).json({ message: "You cannot view this participant's submissions" });
+  const [submissions, assignedProblems, aptitudeSession, aptitudeAttempts] = await Promise.all([
+    Submission.find({ competitiveTestAttemptId: attempt._id }).select("_id problem verdict runtime memory language code createdAt").populate("problem", "_id title slug").sort({ createdAt: 1 }).lean(),
+    Problem.find({ _id: { $in: test.problemIds || [] } }).select("_id title slug").lean(),
+    attempt.aptitudeSessionId ? AptitudeSession.findOne({ _id: attempt.aptitudeSessionId, competitiveTestId: test._id, competitiveTestAttemptId: attempt._id }).select("results").lean() : null,
+    attempt.aptitudeSessionId ? AptitudeAttempt.find({ sessionId: attempt.aptitudeSessionId }).select("questionId isCorrect isSkipped").lean() : [],
+  ]);
+  const acceptedProblems = new Set(submissions.filter((submission) => submission.verdict === "Accepted").map((submission) => String(submission.problem?._id || submission.problem)));
+  const dsaProblems = (test.problemIds || []).map((problemId) => {
+    const problem = assignedProblems.find((item) => String(item._id) === String(problemId));
+    return { _id: problemId, title: problem?.title || "Problem", slug: problem?.slug || "", solved: acceptedProblems.has(String(problemId)) };
+  });
+  const persistedResults = aptitudeSession?.results || {};
+  const answered = Number.isFinite(Number(persistedResults.totalAnswered)) ? Number(persistedResults.totalAnswered) : aptitudeAttempts.filter((item) => !item.isSkipped).length;
+  const correct = Number.isFinite(Number(persistedResults.totalCorrect)) ? Number(persistedResults.totalCorrect) : aptitudeAttempts.filter((item) => !item.isSkipped && item.isCorrect).length;
+  const aptitudeSummary = {
+    total: (test.aptitudeQuestionIds || []).length,
+    answered: Math.min((test.aptitudeQuestionIds || []).length, answered),
+    correct: Math.min((test.aptitudeQuestionIds || []).length, correct),
+    incorrect: Math.max(0, Math.min((test.aptitudeQuestionIds || []).length, answered) - Math.min((test.aptitudeQuestionIds || []).length, correct)),
+  };
+  res.json({ submissions, dsaProblems, aptitudeSummary });
 });
 router.get("/:groupId/members", protect, async (req, res) => {
   if (!validId(req.params.groupId)) return badId(res);
@@ -331,15 +520,6 @@ router.post("/:groupId/leave", protect, async (req, res) => {
   req.app.locals.io?.to(`user:${id(req)}`).emit("group:membership", membershipEvent);
   res.json({ message: "You left the group" });
 });
-router.post("/:groupId/discussions", protect, async (req, res) => {
-  if (!validId(req.params.groupId)) return badId(res);
-  const { title, content } = req.body;
-  if (!title || !content) return res.status(400).json({ message: "Title and content are required" });
-  const discussion = await Discussion.create({ groupId: req.params.groupId, authorId: id(req), title, content });
-  const payload = await discussion.populate("authorId", "name");
-  req.app.locals.io?.to(`study-group:${req.params.groupId}`).emit("group:discussion", payload);
-  res.status(201).json(payload);
-});
 router.get("/:groupId/messages", protect, async (req, res) => {
   if (!validId(req.params.groupId)) return badId(res);
   const member = await Member.exists({ groupId: req.params.groupId, userId: id(req), status: "APPROVED" });
@@ -372,67 +552,4 @@ router.post("/:groupId/messages", protect, async (req, res) => {
   req.app.locals.io?.to(`study-group:${req.params.groupId}`).emit("group:message", payload);
   res.status(201).json(payload);
 });
-router.get("/:groupId/sessions", protect, async (req, res) => {
-  if (!validId(req.params.groupId)) return badId(res);
-  const member = await Member.exists({ groupId: req.params.groupId, userId: id(req), status: "APPROVED" });
-  if (!member) return res.status(403).json({ message: "Join the group to view sessions" });
-  const sessions = await StudySession.find({ groupId: req.params.groupId }).populate("hostId", "name avatarUrl").populate("participantIds", "name avatarUrl").sort({ scheduledTime: 1 }).limit(50).lean();
-  res.json(sessions);
-});
-router.post("/:groupId/sessions", protect, async (req, res) => {
-  if (!validId(req.params.groupId)) return badId(res);
-  const member = await Member.exists({ groupId: req.params.groupId, userId: id(req), status: "APPROVED" });
-  if (!member) return res.status(403).json({ message: "Join the group to schedule a session" });
-  const { title, topic, scheduledTime, durationMinutes = 60 } = req.body;
-  if (!title || !scheduledTime || Number.isNaN(new Date(scheduledTime).getTime())) return res.status(400).json({ message: "Title and a valid scheduled time are required" });
-  const session = await StudySession.create({ groupId: req.params.groupId, hostId: id(req), title, topic, scheduledTime, durationMinutes, participantIds: [id(req)] });
-  const payload = await session.populate("hostId", "name avatarUrl");
-  req.app.locals.io?.to(`study-group:${req.params.groupId}`).emit("session:updated", payload);
-  res.status(201).json(payload);
-});
-router.post("/:groupId/sessions/:sessionId/join", protect, async (req, res) => {
-  if (!validId(req.params.groupId) || !validId(req.params.sessionId)) return badId(res);
-  const member = await Member.exists({ groupId: req.params.groupId, userId: id(req), status: "APPROVED" });
-  if (!member) return res.status(403).json({ message: "Join the group to attend sessions" });
-  const session = await StudySession.findOneAndUpdate({ _id: req.params.sessionId, groupId: req.params.groupId, status: { $in: ["scheduled", "active"] } }, { $addToSet: { participantIds: id(req) } }, { returnDocument: "after" }).populate("participantIds", "name avatarUrl");
-  if (!session) return res.status(404).json({ message: "Joinable session not found" });
-  req.app.locals.io?.to(`study-group:${req.params.groupId}`).emit("session:updated", session);
-  res.json(session);
-});
-router.post("/:groupId/sessions/:sessionId/leave", protect, async (req, res) => {
-  if (!validId(req.params.groupId) || !validId(req.params.sessionId)) return badId(res);
-  const member = await Member.exists({ groupId: req.params.groupId, userId: id(req), status: "APPROVED" });
-  if (!member) return res.status(403).json({ message: "Join the group to leave its sessions" });
-  const session = await StudySession.findOneAndUpdate({ _id: req.params.sessionId, groupId: req.params.groupId, status: { $in: ["scheduled", "active"] } }, { $pull: { participantIds: id(req) } }, { returnDocument: "after" }).populate("participantIds", "name avatarUrl");
-  if (!session) return res.status(404).json({ message: "Joinable session not found" });
-  req.app.locals.io?.to(`study-group:${req.params.groupId}`).emit("session:updated", session);
-  res.json(session);
-});
-router.post("/:groupId/sessions/:sessionId/start", protect, async (req, res) => {
-  if (!validId(req.params.groupId) || !validId(req.params.sessionId)) return badId(res);
-  const session = await StudySession.findOne({ _id: req.params.sessionId, groupId: req.params.groupId });
-  if (!session) return res.status(404).json({ message: "Session not found" });
-  if (String(session.hostId) !== String(id(req))) return res.status(403).json({ message: "Only the session host can start it" });
-  if (session.status !== "scheduled") return res.status(409).json({ message: "Only scheduled sessions can be started" });
-  session.status = "active";
-  session.startedAt = new Date();
-  await session.save();
-  const payload = await session.populate(["hostId", "participantIds"]);
-  req.app.locals.io?.to(`study-group:${req.params.groupId}`).emit("session:started", payload);
-  res.json(payload);
-});
-router.post("/:groupId/sessions/:sessionId/end", protect, async (req, res) => {
-  if (!validId(req.params.groupId) || !validId(req.params.sessionId)) return badId(res);
-  const session = await StudySession.findOne({ _id: req.params.sessionId, groupId: req.params.groupId });
-  if (!session) return res.status(404).json({ message: "Session not found" });
-  if (String(session.hostId) !== String(id(req))) return res.status(403).json({ message: "Only the session host can end it" });
-  if (session.status !== "active") return res.status(409).json({ message: "Only active sessions can be ended" });
-  session.status = "completed";
-  session.endedAt = new Date();
-  await session.save();
-  const payload = await session.populate(["hostId", "participantIds"]);
-  req.app.locals.io?.to(`study-group:${req.params.groupId}`).emit("session:ended", payload);
-  res.json(payload);
-});
-
 module.exports = router;

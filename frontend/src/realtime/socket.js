@@ -1,6 +1,6 @@
 import { io } from "socket.io-client";
 
-const socketUrl = import.meta.env.VITE_API_URL || "http://127.0.0.1:5001";
+const socketUrl = import.meta.env.VITE_API_URL || "http://localhost:5001";
 let socket;
 
 export function getRealtimeSocket() {

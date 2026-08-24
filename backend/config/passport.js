@@ -37,6 +37,9 @@ registerStrategy(
         clientID: process.env.GOOGLE_CLIENT_ID,
         clientSecret: process.env.GOOGLE_CLIENT_SECRET,
         callbackURL: process.env.GOOGLE_CALLBACK_URL,
+        // Use Google's current OpenID Connect user-info endpoint. The older
+        // oauth2/v3 endpoint intermittently returns profile-fetch failures.
+        userProfileURL: "https://openidconnect.googleapis.com/v1/userinfo",
         passReqToCallback: true,
     },
     async (req, accessToken, refreshToken, profile, done) => {

@@ -50,7 +50,7 @@ async function executeCode({ problemId, code, language, type, userId, includeHid
       });
     } catch (error) {
       const failResponse = {
-        status: { id: 0, description: "Internal Error" },
+        status: { id: 0, description: "System Error" },
         stdout: "",
         stderr: error.message || "Judge0 request failed",
         compile_output: "",
@@ -61,7 +61,7 @@ async function executeCode({ problemId, code, language, type, userId, includeHid
         input: normalizedInput,
         expectedOutput: testcase.expectedOutput,
         output: "",
-        verdict: "Internal Error",
+        verdict: "System Error",
         status: failResponse.status,
         runtime: "",
         memory: "",
@@ -76,7 +76,7 @@ async function executeCode({ problemId, code, language, type, userId, includeHid
         request: {},
         response: failResponse,
         testcase,
-        verdict: "Internal Error",
+        verdict: "System Error",
       };
       break;
     }
@@ -116,7 +116,7 @@ async function executeCode({ problemId, code, language, type, userId, includeHid
   const last = resultSummaries[resultSummaries.length - 1] || {};
   const finalVerdict = resultSummaries.every((item) => item.verdict === "Accepted")
     ? "Accepted"
-    : last.verdict || "Internal Error";
+    : last.verdict || "System Error";
   const hideLastDetails = last.isHidden && !includeHiddenDetails;
   const visibleTestcaseResults = resultSummaries.map((item) => {
     if (!item.isHidden || includeHiddenDetails) return item;

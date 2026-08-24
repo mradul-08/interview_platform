@@ -14,6 +14,7 @@ const { getExecutionDebug } = require("./controllers/executionController");
 const { scheduleNightlySync } = require("./jobs/syncProblems");
 const { startImportWorker } = require("./services/importQueue");
 const { initSocket } = require("./socket");
+const { startCompetitiveTestLifecycle } = require("./services/competitiveTestLifecycle");
 const studyGroupRoutes = require("./modules/studyGroupGemini");
 
 const routes = {
@@ -34,6 +35,7 @@ const routes = {
   directMessages: require("./routes/directMessageRoutes"),
   notifications: require("./routes/notificationRoutes"),
   profile: require("./routes/profileRoutes"),
+  mockInterviews: require("./routes/mockInterviewRoutes"),
 };
 
 const app = express();
@@ -88,6 +90,7 @@ app.use("/api/direct-messages", routes.directMessages);
 app.use("/api/messages", routes.directMessages);
 app.use("/api/notifications", routes.notifications);
 app.use("/api/profile", routes.profile);
+app.use("/api/mock-interviews", routes.mockInterviews);
 app.get("/api/debug/execution/:id", protect, requireRole("admin"), getExecutionDebug);
 app.get("/api/health", (req, res) => {
   const databaseStates = ["disconnected", "connected", "connecting", "disconnecting"];
@@ -142,6 +145,7 @@ async function startServer() {
   console.log("MongoDB Connected ✅");
   await startImportWorker();
   await scheduleNightlySync();
+  await startCompetitiveTestLifecycle(io);
   httpServer.listen(port, "127.0.0.1", () => console.log(`Server running on port ${port} ✅`));
 }
 

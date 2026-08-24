@@ -4,7 +4,7 @@
 // can drift from the actual problem bank.
 
 const Problem = require("../models/Problem");
-const Submission = require("../models/Submission");
+const Submission = require("../models/submission");
 const { paginatedResponse } = require("../utils/paginate");
 const { SHEET_CATALOG, normalizeSheetName } = require("../config/sheets");
 

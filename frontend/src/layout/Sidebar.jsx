@@ -12,9 +12,7 @@ const NAV_SECTIONS = [
       { label: "DSA Sheets", path: "/dashboard/sheets", icon: "list" },
       { label: "Aptitude", path: "/dashboard/aptitude", icon: "brain" },
       { label: "Mock Interviews", path: "/dashboard/mock", icon: "video" },
-      { label: "Contests", path: "/dashboard/contests", icon: "flag" },
       { label: "Leaderboard", path: "/dashboard/leaderboard", icon: "trophy" },
-      { label: "Network", path: "/dashboard/network", icon: "share2" },
       { label: "Study Groups", path: "/dashboard/groups", icon: "users2" },
       { label: "Messages", path: "/dashboard/messages", icon: "mail" },
     ],
@@ -102,9 +100,6 @@ export default function Sidebar({ user, collapsed, setCollapsed, mobile, onClose
           </NavLink>
           <NavLink to="/dashboard/profile" className="cv-sidebar-link" title={collapsed ? "Profile" : undefined} style={({ isActive }) => ({ display: "flex", alignItems: "center", gap: 11, padding: collapsed ? "10px 0" : "9px 12px", justifyContent: collapsed ? "center" : "flex-start", borderRadius: 10, marginBottom: 2, textDecoration: "none", color: isActive ? "var(--accent-strong)" : "var(--text-secondary)", background: isActive ? "var(--accent-soft)" : "transparent", fontSize: 13.5, fontWeight: 500 })}>
             {ICONS.user}{!collapsed && <span>Profile</span>}
-          </NavLink>
-          <NavLink to="/dashboard/settings" className="cv-sidebar-link" title={collapsed ? "Settings" : undefined} style={({ isActive }) => ({ display: "flex", alignItems: "center", gap: 11, padding: collapsed ? "10px 0" : "9px 12px", justifyContent: collapsed ? "center" : "flex-start", borderRadius: 10, marginBottom: 2, textDecoration: "none", color: isActive ? "var(--accent-strong)" : "var(--text-secondary)", background: isActive ? "var(--accent-soft)" : "transparent", fontSize: 13.5, fontWeight: 500 })}>
-            {ICONS.settings}{!collapsed && <span>Settings</span>}
           </NavLink>
         </nav>
 

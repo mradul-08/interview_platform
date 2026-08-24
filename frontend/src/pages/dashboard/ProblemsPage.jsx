@@ -1,10 +1,12 @@
-import { useEffect, useMemo, useState, useCallback } from "react";
+import { useEffect, useMemo, useState, useCallback, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import api from "../../api/api";
 import { fetchList } from "../../api/listFetch";
+import { getRealtimeSocket } from "../../realtime/socket";
 import "./problemsPageFixes.css";
 
-const PAGE_SIZE = 100;
+// Keep pages small enough to scan while avoiding a full-page reload between them.
+const PAGE_SIZE = 20;
 
 const DiffBadge = ({ d }) => {
   const cfg = {
@@ -59,11 +61,11 @@ export default function ProblemsPage() {
   const [filterCompany, setFilterCompany] = useState("");
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [pageLoading, setPageLoading] = useState(false);
+  const pageCache = useRef(new Map());
   const [tab, setTab] = useState("All");
-  const [bookmarked, setBookmarked] = useState(() => {
-    try { return new Set(JSON.parse(localStorage.getItem("cv_bookmarks") || "[]")); }
-    catch { return new Set(); }
-  });
+  const [bookmarked, setBookmarked] = useState(() => new Set());
+  const [bookmarkBusy, setBookmarkBusy] = useState(() => new Set());
 
   const query = useMemo(() => ({
     page,
@@ -75,23 +77,75 @@ export default function ProblemsPage() {
     ...(filterCompany ? { company: filterCompany } : {}),
   }), [page, search, filterDiff, filterTopic, filterCompany]);
 
-  const loadProblems = useCallback(async () => {
-    setLoading(true);
+  const loadProblems = useCallback(async (force = false) => {
+    const cacheKey = JSON.stringify(query);
+    const cached = pageCache.current.get(cacheKey);
+    if (!force && cached) {
+      setItems(cached.items);
+      setTotalPages(cached.totalPages);
+      setLoading(false);
+      return;
+    }
+
+    // Keep the current page visible while another page is fetched.
+    setLoading((current) => current && items.length === 0);
+    setPageLoading(true);
     setError("");
     try {
       const res = await fetchList("/api/problems", query);
       setItems(res.items || []);
-      setTotalPages(res.totalPages || 1);
+      setTotalPages(Math.max(1, res.totalPages || 1));
+      pageCache.current.set(cacheKey, {
+        items: res.items || [],
+        totalPages: Math.max(1, res.totalPages || 1),
+      });
     } catch (err) {
-      setItems([]);
-      setTotalPages(1);
+      if (items.length === 0) setItems([]);
+      if (items.length === 0) setTotalPages(1);
       setError(err.response?.data?.message || "Problems could not be loaded. Please try again.");
     } finally {
       setLoading(false);
+      setPageLoading(false);
     }
-  }, [query]);
+  }, [query, items.length]);
 
   useEffect(() => { loadProblems(); }, [loadProblems]);
+
+  // Warm the next page in the background. Clicking Next then renders from memory.
+  useEffect(() => {
+    if (page >= totalPages) return undefined;
+    const nextQuery = { ...query, page: page + 1 };
+    const nextKey = JSON.stringify(nextQuery);
+    if (pageCache.current.has(nextKey)) return undefined;
+    let cancelled = false;
+    fetchList("/api/problems", nextQuery).then((res) => {
+      if (cancelled) return;
+      pageCache.current.set(nextKey, {
+        items: res.items || [],
+        totalPages: Math.max(1, res.totalPages || 1),
+      });
+    }).catch(() => {});
+    return () => { cancelled = true; };
+  }, [page, query, totalPages]);
+
+  useEffect(() => {
+    let active = true;
+    api.get("/api/problems/bookmarks").then((res) => {
+      if (active) setBookmarked(new Set((res.data?.bookmarks || []).map((problem) => String(problem._id))));
+    }).catch(() => {});
+    const socket = getRealtimeSocket();
+    const onBookmark = (event) => {
+      const problemId = String(event?.problem?._id || "");
+      if (!problemId) return;
+      setBookmarked((current) => {
+        const next = new Set(current);
+        event.bookmarked ? next.add(problemId) : next.delete(problemId);
+        return next;
+      });
+    };
+    socket.on("problem:bookmark-updated", onBookmark);
+    return () => { active = false; socket.off("problem:bookmark-updated", onBookmark); };
+  }, []);
 
   useEffect(() => {
     let mounted = true;
@@ -115,15 +169,21 @@ export default function ProblemsPage() {
 
   const visible = tab === "Bookmarked" ? items.filter((p) => bookmarked.has(p._id)) : items;
 
-  const toggleBookmark = useCallback((id, e) => {
+  const toggleBookmark = useCallback(async (id, e) => {
     e.stopPropagation();
-    setBookmarked((prev) => {
-      const next = new Set(prev);
-      next.has(id) ? next.delete(id) : next.add(id);
-      localStorage.setItem("cv_bookmarks", JSON.stringify([...next]));
-      return next;
-    });
-  }, []);
+    const problemId = String(id);
+    if (bookmarkBusy.has(problemId)) return;
+    const willBookmark = !bookmarked.has(problemId);
+    setBookmarkBusy((current) => new Set(current).add(problemId));
+    setBookmarked((current) => { const next = new Set(current); willBookmark ? next.add(problemId) : next.delete(problemId); return next; });
+    try {
+      await api.request({ method: willBookmark ? "post" : "delete", url: `/api/problems/${problemId}/bookmark` });
+    } catch {
+      setBookmarked((current) => { const next = new Set(current); willBookmark ? next.delete(problemId) : next.add(problemId); return next; });
+    } finally {
+      setBookmarkBusy((current) => { const next = new Set(current); next.delete(problemId); return next; });
+    }
+  }, [bookmarkBusy, bookmarked]);
 
   const clearFilters = () => {
     setSearch("");
@@ -221,7 +281,7 @@ export default function ProblemsPage() {
                   {(p.companies || []).length > 3 && <span style={{ fontSize: 10, color: "var(--text-tertiary)", alignSelf: "center" }}>+{p.companies.length - 3}</span>}
                 </div>
                 <span style={{ fontSize: 12.5, fontFamily: "var(--font-mono)", color: p.acceptanceRate >= 50 ? "var(--green)" : p.acceptanceRate >= 35 ? "var(--medium-color)" : "var(--red)" }}>{p.acceptanceRate ? `${p.acceptanceRate}%` : "—"}</span>
-                <button type="button" aria-label={isMarked ? `Remove ${p.title} bookmark` : `Bookmark ${p.title}`} onClick={(e) => toggleBookmark(p._id, e)} style={{ background: "none", border: "none", cursor: "pointer", color: isMarked ? "var(--amber)" : "var(--text-disabled)", display: "flex", padding: 4, borderRadius: 6 }}>
+                <button type="button" disabled={bookmarkBusy.has(String(p._id))} aria-label={isMarked ? `Remove ${p.title} bookmark` : `Bookmark ${p.title}`} onClick={(e) => toggleBookmark(p._id, e)} style={{ background: "none", border: "none", cursor: bookmarkBusy.has(String(p._id)) ? "wait" : "pointer", color: isMarked ? "var(--amber)" : "var(--text-disabled)", display: "flex", padding: 4, borderRadius: 6, opacity: bookmarkBusy.has(String(p._id)) ? 0.6 : 1 }}>
                   <svg width="14" height="14" viewBox="0 0 24 24" fill={isMarked ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2"><path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z" /></svg>
                 </button>
               </div>
@@ -230,11 +290,11 @@ export default function ProblemsPage() {
         </div>
 
         <div style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: 6, marginTop: 20 }}>
-          <button onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page === 1} style={{ padding: "6px 14px", borderRadius: 8, border: "1px solid var(--border-default)", background: "var(--bg-elevated)", color: "var(--text-secondary)", cursor: page === 1 ? "not-allowed" : "pointer", fontSize: 13, opacity: page === 1 ? 0.4 : 1 }}>
+          <button type="button" onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page === 1 || pageLoading} style={{ padding: "6px 14px", borderRadius: 8, border: "1px solid var(--border-default)", background: "var(--bg-elevated)", color: "var(--text-secondary)", cursor: page === 1 || pageLoading ? "not-allowed" : "pointer", fontSize: 13, opacity: page === 1 || pageLoading ? 0.4 : 1 }}>
             ← Prev
           </button>
-          <span style={{ fontSize: 13, color: "var(--text-secondary)" }}>Page {page} of {totalPages}</span>
-          <button onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={page === totalPages} style={{ padding: "6px 14px", borderRadius: 8, border: "1px solid var(--border-default)", background: "var(--bg-elevated)", color: "var(--text-secondary)", cursor: page === totalPages ? "not-allowed" : "pointer", fontSize: 13, opacity: page === totalPages ? 0.4 : 1 }}>
+          <span style={{ fontSize: 13, color: "var(--text-secondary)", minWidth: 100, textAlign: "center" }}>Page {page} of {totalPages}{pageLoading ? " · Loading" : ""}</span>
+          <button type="button" onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={page === totalPages || pageLoading} style={{ padding: "6px 14px", borderRadius: 8, border: "1px solid var(--border-default)", background: "var(--bg-elevated)", color: "var(--text-secondary)", cursor: page === totalPages || pageLoading ? "not-allowed" : "pointer", fontSize: 13, opacity: page === totalPages || pageLoading ? 0.4 : 1 }}>
             Next →
           </button>
         </div>

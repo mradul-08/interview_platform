@@ -1,8 +1,85 @@
 const Problem = require("../models/Problem");
-const Submission = require("../models/Submission");
+const User = require("../models/User");
+const Submission = require("../models/submission");
 const { createOrUpdateProblem } = require("../services/ImportService");
 const { canonicalizeProblem } = require("../services/ProblemNormalizer");
 const { setCache, getCache, clearCache } = require("../services/cache");
+const { emitToUser } = require("../socket");
+
+const bookmarkProblemFields = "_id title slug difficulty topic tags companies acceptanceRate";
+
+function bookmarkProblemPayload(problem, bookmarked) {
+    return {
+        problem: problem ? {
+            _id: problem._id,
+            title: problem.title,
+            slug: problem.slug,
+            difficulty: problem.difficulty,
+            topic: problem.topic || [],
+            tags: problem.tags || [],
+            companies: problem.companies || [],
+            acceptanceRate: problem.acceptanceRate || 0,
+        } : null,
+        bookmarked,
+    };
+
+}
+
+const getBookmarks = async (req, res) => {
+    try {
+        const page = Math.max(1, Number.parseInt(req.query.page, 10) || 1);
+        const limit = Math.min(50, Math.max(1, Number.parseInt(req.query.limit, 10) || 12));
+        const search = String(req.query.search || "").trim();
+        const difficulty = String(req.query.difficulty || "").trim();
+        const sort = String(req.query.sort || "recent");
+        const user = await User.findById(req.user._id).select("bookmarkedProblems").lean();
+        const ids = user?.bookmarkedProblems || [];
+        const filter = { _id: { $in: ids }, isPublished: true };
+        if (difficulty) filter.difficulty = difficulty;
+        if (search) {
+            const safeSearch = escapeRegex(search.slice(0, 80));
+            filter.$or = [
+                { title: { $regex: safeSearch, $options: "i" } },
+                { slug: { $regex: safeSearch, $options: "i" } },
+                { topic: { $regex: safeSearch, $options: "i" } },
+                { tags: { $regex: safeSearch, $options: "i" } },
+                { companies: { $regex: safeSearch, $options: "i" } },
+            ];
+        }
+        const problems = await Problem.find(filter).select(bookmarkProblemFields).lean();
+        const byId = new Map(problems.map((problem) => [String(problem._id), problem]));
+        const ordered = ids.map((id) => byId.get(String(id))).filter(Boolean);
+        if (sort === "title") ordered.sort((a, b) => String(a.title).localeCompare(String(b.title)));
+        if (sort === "difficulty") {
+            const order = { Easy: 1, Medium: 2, Hard: 3 };
+            ordered.sort((a, b) => (order[a.difficulty] || 99) - (order[b.difficulty] || 99) || String(a.title).localeCompare(String(b.title)));
+        }
+        const total = ordered.length;
+        const start = (page - 1) * limit;
+        res.json({ bookmarks: ordered.slice(start, start + limit), page, limit, total, totalPages: Math.max(1, Math.ceil(total / limit)), search, difficulty, sort });
+    } catch (error) {
+        console.error("Get problem bookmarks error:", error.message);
+        res.status(500).json({ message: "Bookmarks could not be loaded" });
+    }
+};
+
+const updateBookmark = async (req, res, bookmarked) => {
+    try {
+        const problem = await Problem.findOne({ _id: req.params.id, isPublished: true }).select(bookmarkProblemFields).lean();
+        if (!problem) return res.status(404).json({ message: "Problem not found" });
+        const update = bookmarked ? { $addToSet: { bookmarkedProblems: problem._id } } : { $pull: { bookmarkedProblems: problem._id } };
+        await User.updateOne({ _id: req.user._id }, update);
+        const payload = bookmarkProblemPayload(problem, bookmarked);
+        emitToUser(req.app.locals.io, req.user._id, "problem:bookmark-updated", payload);
+        res.json(payload);
+    } catch (error) {
+        console.error("Update problem bookmark error:", error.message);
+        res.status(500).json({ message: "Bookmark could not be updated" });
+    }
+};
+
+const addBookmark = (req, res) => updateBookmark(req, res, true);
+const removeBookmark = (req, res) => updateBookmark(req, res, false);
 
 function computeContentStatus(problem) {
     const hasStatement = Boolean(String(problem.statement || problem.description || "").trim());
@@ -162,6 +239,7 @@ const getProblemBySlug = async (req, res) => {
         res.json({
             ...canonicalizeProblem(problem, { includeHidden: req.user?.role === "admin" }),
             userSubmissions: submissions,
+            bookmarked: Boolean(req.user?.bookmarkedProblems?.some((id) => String(id) === String(problem._id))),
         });
     } catch (error) {
         res.status(500).json({ message: "Server Error" });
@@ -501,6 +579,9 @@ const deleteProblem = async (req, res) => {
 };
 
 module.exports = {
+    getBookmarks,
+    addBookmark,
+    removeBookmark,
     getProblems,
     getProblemBySlug,
     searchProblems,

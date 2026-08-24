@@ -1,7 +1,8 @@
 // backend/controllers/dashboardController.js
 const User = require("../models/User");
 const Problem = require("../models/Problem");
-const Submission = require("../models/Submission");
+const Submission = require("../models/submission");
+const MockInterview = require("../models/MockInterview");
 const { getStreakStats } = require("../services/streakService");
 
 const TOPIC_LIST = [
@@ -19,6 +20,26 @@ const getDashboard = async (req, res) => {
         if (!user) return res.status(404).json({ message: "User not found" });
 
         const userId = user._id;
+        const [mockInterviewsAttended, rankAhead] = await Promise.all([
+            MockInterview.countDocuments({
+                status: "ENDED",
+                $or: [
+                    { attendedByIds: userId },
+                    {
+                        attendedByIds: { $exists: false },
+                        $or: [{ hostId: userId }, { participantIds: userId }],
+                    },
+                ],
+            }),
+            User.countDocuments({
+                role: "student",
+                $or: [
+                    { points: { $gt: user.points } },
+                    { points: user.points, _id: { $lt: userId } },
+                ],
+            }),
+        ]);
+        const globalRank = rankAhead + 1;
         const streakStats = await getStreakStats(userId);
 
         // ── All accepted submissions ──────────────────────────────────────
@@ -39,7 +60,7 @@ const getDashboard = async (req, res) => {
         const problemsTarget = 300;
         const problemScore = Math.min(user.problemsSolved / problemsTarget, 1) * 60;
         const streakScore  = Math.min(streakStats.currentStreak / 30, 1) * 20;
-        const mockScore    = Math.min(user.mockInterviewsAttended / 10, 1) * 20;
+        const mockScore    = Math.min(mockInterviewsAttended / 10, 1) * 20;
         const placementReadiness = Math.round(problemScore + streakScore + mockScore);
 
         // ── Resume Learning: most recent submission of any verdict ────────
@@ -184,9 +205,9 @@ const getDashboard = async (req, res) => {
         // ── Leaderboard preview (top 5 by points) ────────────────────────
         const topUsers    = await User.find({ role: "student" })
             .select("name college points problemsSolved currentStreak")
-            .sort({ points: -1 })
+            .sort({ points: -1, _id: 1 })
             .limit(5);
-        const myRankCount = await User.countDocuments({ role: "student", points: { $gt: user.points } });
+        const myRankCount = rankAhead;
         const leaderboard = {
             isReady: topUsers.length > 0,
             top:     topUsers.map((u, i) => ({
@@ -216,8 +237,8 @@ const getDashboard = async (req, res) => {
                 currentStreak:        streakStats.currentStreak,
                 longestStreak:        streakStats.longestStreak,
                 points:               user.points,
-                rank:                 user.rank,
-                mockInterviewsAttended: user.mockInterviewsAttended,
+                rank:                 globalRank,
+                mockInterviewsAttended,
                 placementReadiness,
             },
             resumeLearning,

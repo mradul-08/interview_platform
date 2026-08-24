@@ -1,4 +1,4 @@
-const CompanyQuestion = require("../models/CompanyQuestion");
+const CompanyQuestion = require("../models/companyQuestion");
 
 // GET /api/questions?company=&topic=&search=&page=&limit=
 const getQuestions = async (req, res) => {

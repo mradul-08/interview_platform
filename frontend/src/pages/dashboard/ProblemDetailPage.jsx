@@ -1,9 +1,11 @@
 // src/pages/dashboard/ProblemDetailPage.jsx
 // Full LeetCode-style split panel: problem description + Monaco code editor
 import { useState, useEffect, useRef } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate, useSearchParams } from "react-router-dom";
 import Editor from "@monaco-editor/react";
+import { Bookmark } from "lucide-react";
 import api from "../../api/api";
+import { getRealtimeSocket } from "../../realtime/socket";
 import "./problemDetailFixes.css";
 
 // ── Diff badge ────────────────────────────────────────────────────
@@ -54,7 +56,7 @@ void input;`,
 
 // ── Simple syntax-highlighting textarea (no Monaco dependency) ────
 // We use a <textarea> overlay pattern; Monaco can be swapped in later.
-function CodeEditor({ value, onChange, language, fontSize }) {
+function CodeEditor({ value, onChange, language, fontSize, readOnly = false }) {
   const monacoLanguage = {
     cpp: "cpp",
     java: "java",
@@ -81,6 +83,7 @@ function CodeEditor({ value, onChange, language, fontSize }) {
           insertSpaces: true,
           smoothScrolling: true,
           renderLineHighlight: "all",
+          readOnly,
         }}
       />
     </div>
@@ -154,6 +157,7 @@ function TestcasePanel({ testcases, runResult, running }) {
                     {runResult.verdict === "Compilation Error" && "Compiler rejected the code. Open details for the exact message."}
                     {runResult.verdict === "Runtime Error" && "The program crashed or exited unexpectedly. Open details to inspect the error."}
                     {runResult.verdict === "Time Limit Exceeded" && "The code exceeded the configured time limit. Open details for execution status."}
+                    {runResult.verdict === "System Error" && "The execution service is temporarily unavailable. Your code was not evaluated."}
                   </div>
                 )}
                 <button
@@ -636,7 +640,16 @@ export { TestcasePanel };
 // ── Main page ─────────────────────────────────────────────────────
 export default function ProblemDetailPage() {
   const { slug } = useParams();
+  const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
+  const competitiveTestId = searchParams.get("competitiveTestId");
+  const competitiveTestAttemptId = searchParams.get("competitiveTestAttemptId");
+  const competitiveGroupId = searchParams.get("groupId");
   const [problem, setProblem]   = useState(null);
+  const [bookmarked, setBookmarked] = useState(false);
+  const [bookmarkBusy, setBookmarkBusy] = useState(false);
+  const [bookmarkError, setBookmarkError] = useState("");
+  const [userSubmissions, setUserSubmissions] = useState([]);
   const [loading, setLoading]   = useState(true);
   const [loadError, setLoadError] = useState("");
   const [lang, setLang]         = useState("cpp");
@@ -645,6 +658,11 @@ export default function ProblemDetailPage() {
   const [running, setRunning]   = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [runResult, setRunResult] = useState(null);
+  const [competitiveContext, setCompetitiveContext] = useState(null);
+  const [competitiveContextError, setCompetitiveContextError] = useState("");
+  const [competitiveNow, setCompetitiveNow] = useState(Date.now());
+  const [competitiveClockOffset, setCompetitiveClockOffset] = useState(0);
+  const [competitiveExpired, setCompetitiveExpired] = useState(false);
   const [splitPct, setSplitPct] = useState(50); // left panel %
   const [dragging, setDragging] = useState(false);
   const containerRef = useRef(null);
@@ -671,12 +689,79 @@ export default function ProblemDetailPage() {
     setProblem(null);
     api.get(`/api/problems/slug/${slug}`).then(res => {
       setProblem(res.data);
+      setBookmarked(Boolean(res.data?.bookmarked));
+      setUserSubmissions(res.data.userSubmissions || []);
       setLoading(false);
     }).catch((error) => {
       setLoadError(error.response?.data?.message || "Problem could not be loaded. Please try again.");
       setLoading(false);
     });
   }, [slug]);
+
+  useEffect(() => {
+    if (!problem?._id) return undefined;
+    const socket = getRealtimeSocket();
+    const onBookmark = (event) => {
+      if (String(event?.problem?._id) !== String(problem._id)) return;
+      setBookmarked(Boolean(event.bookmarked));
+      setBookmarkError("");
+    };
+    socket.on("problem:bookmark-updated", onBookmark);
+    return () => socket.off("problem:bookmark-updated", onBookmark);
+  }, [problem?._id]);
+
+  useEffect(() => {
+    if (!competitiveTestId || !competitiveTestAttemptId || !competitiveGroupId) return undefined;
+    if (![competitiveTestId, competitiveTestAttemptId, competitiveGroupId].every((value) => /^[a-f\d]{24}$/i.test(value))) return undefined;
+    let active = true;
+    setCompetitiveContextError("");
+    const loadCompetitiveContext = () => api.get(`/api/study-groups/${competitiveGroupId}/competitive-tests/${competitiveTestId}`).then((res) => {
+      if (!active) return;
+      if (!res.data?.attempt || String(res.data.attempt._id) !== String(competitiveTestAttemptId)) {
+        setCompetitiveContext(null);
+        setCompetitiveContextError("This competitive-test attempt is unavailable for your account.");
+        return;
+      }
+      const serverTime = Date.parse(res.data.serverNow || "");
+      if (Number.isFinite(serverTime)) setCompetitiveClockOffset(serverTime - Date.now());
+      setCompetitiveContext(res.data);
+      if (res.data.attempt.status !== "STARTED" && res.data.attempt.status !== "COMPLETED" && res.data.attempt.status !== "PARTIAL") {
+        setCompetitiveContextError("Start this participant attempt from the Live Tests board before submitting.");
+      }
+    }).catch((error) => { if (active) { setCompetitiveContext(null); setCompetitiveContextError(error.response?.data?.message || "The live-test timer could not be verified."); } });
+    loadCompetitiveContext();
+    const timer = window.setInterval(() => setCompetitiveNow(Date.now()), 1000);
+    const refresh = (event) => { if (String(event?.testId) === String(competitiveTestId)) loadCompetitiveContext(); };
+    const socket = getRealtimeSocket();
+    socket.on("group:test", refresh);
+    socket.on("group:test-participant", refresh);
+    socket.on("group:test-progress", refresh);
+    const contextPoll = window.setInterval(loadCompetitiveContext, 5000);
+    return () => { active = false; window.clearInterval(timer); window.clearInterval(contextPoll); socket.off("group:test", refresh); socket.off("group:test-participant", refresh); socket.off("group:test-progress", refresh); };
+  }, [competitiveGroupId, competitiveTestAttemptId, competitiveTestId]);
+
+  const isCompetitive = Boolean(competitiveTestId && competitiveTestAttemptId && competitiveGroupId && [competitiveTestId, competitiveTestAttemptId, competitiveGroupId].every((value) => /^[a-f\d]{24}$/i.test(value)));
+
+  useEffect(() => {
+    if (!problem?._id) return undefined;
+    let active = true;
+    const loadSubmissions = () => api.get(`/api/submissions/problem/${problem._id}`).then((res) => active && setUserSubmissions(res.data || [])).catch(() => {});
+    loadSubmissions();
+    const timer = window.setInterval(loadSubmissions, isCompetitive ? 3000 : 15000);
+    return () => { active = false; window.clearInterval(timer); };
+  }, [problem?._id, isCompetitive]);
+
+  const competitiveEndsAt = competitiveContext?.attempt?.endsAt || competitiveContext?.test?.endsAt;
+  const competitiveRemaining = competitiveEndsAt ? Math.max(0, Math.ceil((new Date(competitiveEndsAt).getTime() - (competitiveNow + competitiveClockOffset)) / 1000)) : null;
+  const competitiveDanger = competitiveRemaining !== null && competitiveRemaining <= 60;
+  const formatCompetitiveClock = (seconds) => `${String(Math.floor(Math.max(0, seconds) / 60)).padStart(2, "0")}:${String(Math.max(0, seconds) % 60).padStart(2, "0")}`;
+
+  useEffect(() => {
+    if (!isCompetitive || competitiveRemaining !== 0 || competitiveExpired) return;
+    setCompetitiveExpired(true);
+    const timer = window.setTimeout(() => navigate(`/dashboard/groups/${competitiveGroupId}?tab=${encodeURIComponent("Live Tests")}`), 2500);
+    return () => window.clearTimeout(timer);
+  }, [competitiveGroupId, competitiveExpired, competitiveRemaining, isCompetitive, navigate]);
 
   // Update code when language changes
   useEffect(() => {
@@ -687,10 +772,26 @@ export default function ProblemDetailPage() {
     setCode(DEFAULT_CODE[lang] || "// Write a complete stdin/stdout program");
   };
 
+  const toggleProblemBookmark = async () => {
+    if (!problem?._id || bookmarkBusy) return;
+    const nextBookmarked = !bookmarked;
+    setBookmarkBusy(true);
+    setBookmarkError("");
+    setBookmarked(nextBookmarked);
+    try {
+      await api.request({ method: nextBookmarked ? "post" : "delete", url: `/api/problems/${problem._id}/bookmark` });
+    } catch (error) {
+      setBookmarked(!nextBookmarked);
+      setBookmarkError(error.response?.data?.message || "Bookmark could not be updated.");
+    } finally {
+      setBookmarkBusy(false);
+    }
+  };
+
   const normalizeExecutionResult = (data) => ({
     success: Boolean(data?.success ?? true),
     executionId: data?.executionId || "",
-    verdict: data?.verdict || "Runtime Error",
+    verdict: data?.verdict || "System Error",
     output: data?.output || "",
     stdout: data?.stdout || data?.output || "",
     actualOutput: data?.actualOutput || data?.output || "",
@@ -730,7 +831,7 @@ export default function ProblemDetailPage() {
   }, [dragging]);
 
   const handleRun = async () => {
-    if (running || submitting || !problem) return;
+    if (running || submitting || !problem || competitiveExpired) return;
     setRunning(true);
     setRunResult(null);
     try {
@@ -768,7 +869,7 @@ export default function ProblemDetailPage() {
   };
 
   const handleSubmit = async () => {
-    if (!problem || running || submitting) return;
+    if (!problem || running || submitting || competitiveExpired || (isCompetitive && competitiveContext?.attempt?.status !== "STARTED")) return;
     setSubmitting(true);
     setRunResult(null);
     try {
@@ -776,9 +877,14 @@ export default function ProblemDetailPage() {
         problemId: problem._id,
         code,
         language: lang,
+        ...(isCompetitive ? { competitiveTestId, competitiveTestAttemptId } : {}),
       });
       setRunResult(normalizeExecutionResult(res.data));
+      setUserSubmissions((current) => [res.data.submission, ...current.filter((item) => item._id !== res.data.submission?._id)]);
     } catch (error) {
+      if (error.response?.status === 409 && error.response?.data?.message === "Competitive test deadline has passed") {
+        setCompetitiveExpired(true);
+      }
       setRunResult({
         success: false,
         executionId: "",
@@ -818,6 +924,8 @@ export default function ProblemDetailPage() {
 
   return (
     <div className="problem-detail-page" style={{ display: "flex", flexDirection: "column", height: "calc(100vh - 68px)", overflow: "hidden" }}>
+
+      {isCompetitive && <div role="status" aria-live="assertive" style={{ position: "sticky", top: 0, zIndex: 5, display: "flex", alignItems: "center", gap: 14, flexWrap: "wrap", padding: "9px 16px", background: competitiveExpired || competitiveDanger ? "var(--red-soft)" : "var(--bg-elevated)", borderBottom: "1px solid var(--border-default)", color: "var(--text-primary)" }}><strong>LIVE TEST{competitiveContext?.test?.title ? ` · ${competitiveContext.test.title}` : ""}</strong><span style={{ marginLeft: "auto", fontFamily: "var(--font-mono)", fontWeight: 800, color: competitiveExpired || competitiveDanger ? "var(--red)" : "var(--accent-strong)", animation: competitiveDanger && !competitiveExpired ? "competitive-test-pulse 1s ease-in-out infinite" : undefined }}>{competitiveExpired ? "Time's up" : competitiveRemaining === null ? "Verifying timer..." : formatCompetitiveClock(competitiveRemaining)}</span><Link to={`/dashboard/groups/${competitiveGroupId}?tab=${encodeURIComponent("Live Tests")}`} style={{ color: "var(--accent-strong)", fontSize: 12 }}>Back to Live Tests</Link>{competitiveContextError && <span style={{ flexBasis: "100%", color: "var(--red)", fontSize: 12 }}>{competitiveContextError}</span>}{competitiveExpired && <span style={{ flexBasis: "100%", color: "var(--red)", fontSize: 12 }}>Time's up — this test has ended. Returning to the test board...</span>}</div>}
 
       {/* ── Top bar ── */}
       <div className="problem-detail-toolbar" style={{ display: "flex", alignItems: "center", gap: 12, padding: "0 16px", height: 44, background: "var(--bg-surface)", borderBottom: "1px solid var(--border-subtle)", flexShrink: 0 }}>
@@ -878,16 +986,21 @@ export default function ProblemDetailPage() {
           Reset template
         </button>
 
+        <button type="button" onClick={toggleProblemBookmark} disabled={bookmarkBusy} aria-label={bookmarked ? "Remove bookmark" : "Bookmark problem"} title={bookmarkError || undefined}
+          style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "6px 10px", borderRadius: 8, border: "1px solid var(--border-default)", background: bookmarked ? "var(--accent-soft)" : "var(--bg-elevated)", color: bookmarked ? "var(--accent-strong)" : "var(--text-secondary)", fontSize: 12.5, fontWeight: 600, cursor: bookmarkBusy ? "wait" : "pointer", opacity: bookmarkBusy ? 0.7 : 1 }}>
+          <Bookmark size={14} fill={bookmarked ? "currentColor" : "none"} /> {bookmarked ? "Saved" : "Save"}
+        </button>
+
         {/* Auto save hint */}
         <span style={{ fontSize: 11, color: "var(--text-disabled)", fontFamily: "var(--font-mono)" }}>Auto Save</span>
 
         {/* Run / Submit */}
-        <button type="button" onClick={handleRun} disabled={running || submitting}
+        <button type="button" onClick={handleRun} disabled={running || submitting || competitiveExpired}
           aria-label={running ? "Running code" : "Run code"}
           style={{ padding: "6px 16px", borderRadius: 8, border: "1px solid var(--border-default)", background: "var(--bg-elevated)", color: "var(--text-primary)", fontSize: 13, fontWeight: 600, cursor: running || submitting ? "not-allowed" : "pointer", opacity: running || submitting ? 0.6 : 1, fontFamily: "var(--font-sans)" }}>
           {running ? "Running..." : "▶ Run"}
         </button>
-        <button type="button" onClick={handleSubmit} disabled={submitting || running}
+        <button type="button" onClick={handleSubmit} disabled={submitting || running || competitiveExpired || (isCompetitive && competitiveContext?.attempt?.status !== "STARTED")}
           aria-label={submitting ? "Submitting solution" : "Submit solution"}
           style={{ padding: "6px 16px", borderRadius: 8, border: "none", background: "var(--accent)", color: "white", fontSize: 13, fontWeight: 700, cursor: submitting || running ? "not-allowed" : "pointer", opacity: submitting || running ? 0.6 : 1, fontFamily: "var(--font-sans)" }}>
           {submitting ? "Submitting..." : "+ Submit"}
@@ -895,11 +1008,12 @@ export default function ProblemDetailPage() {
       </div>
 
       {/* ── Split panels ── */}
+      {bookmarkError && <div role="alert" style={{ padding: "6px 16px", color: "var(--red)", background: "var(--red-soft)", borderBottom: "1px solid var(--border-default)", fontSize: 12 }}>{bookmarkError}</div>}
       <div ref={containerRef} className="problem-detail-workspace" style={{ display: "flex", flex: 1, overflow: "hidden", userSelect: dragging ? "none" : "auto" }}>
 
         {/* LEFT: Problem description */}
         <div className="problem-detail-description" style={{ width: `${splitPct}%`, background: "var(--bg-surface)", display: "flex", flexDirection: "column", overflow: "hidden", flexShrink: 0 }}>
-          <ProblemPanel problem={problem} userSubmissions={problem.userSubmissions || []} />
+          <ProblemPanel problem={problem} userSubmissions={userSubmissions} />
         </div>
 
         {/* Drag handle */}
@@ -908,7 +1022,7 @@ export default function ProblemDetailPage() {
 
         {/* RIGHT: Editor + testcase */}
         <div className="problem-detail-editor" style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden", background: "var(--bg-canvas)" }}>
-          <CodeEditor value={code} onChange={setCode} language={lang} fontSize={fontSize} />
+          <CodeEditor value={code} onChange={competitiveExpired ? () => {} : setCode} language={lang} fontSize={fontSize} readOnly={competitiveExpired} />
           <DebugTestcasePanel testcases={(problem.testCases || []).filter((testCase) => !(testCase.hidden || testCase.isHidden))} runResult={runResult} running={running} />
         </div>
       </div>

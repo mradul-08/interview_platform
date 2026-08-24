@@ -128,6 +128,7 @@
 .study-ranking-row { display: grid; grid-template-columns: 80px 1fr 110px 100px 90px; gap: 12px; align-items: center; padding: 12px 16px; }
 .study-ranking-head { color: var(--text-tertiary); background: var(--bg-elevated); font-size: 11px; font-weight: 800; text-transform: uppercase; }
 .study-ranking-row { border-top: 1px solid var(--border-subtle); color: var(--text-secondary); font-size: 13px; }
+.study-ranking-row.is-live-updated { background: color-mix(in srgb, var(--accent-soft) 55%, transparent); transition: background 220ms ease; }
 .study-ranking-row strong { color: var(--text-primary); }
 .study-ranking-row small { display: block; margin-top: 3px; color: var(--text-tertiary); }
 

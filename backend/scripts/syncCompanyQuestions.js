@@ -2,7 +2,7 @@
 require("dotenv").config();
 const axios = require("axios");
 const mongoose = require("mongoose");
-const CompanyQuestion = require("../models/CompanyQuestion");
+const CompanyQuestion = require("../models/companyQuestion");
 
 const REPO = "snehasishroy/leetcode-companywise-interview-questions";
 const BRANCH = "master";

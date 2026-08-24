@@ -1,14 +1,21 @@
-const Submission = require("../models/Submission");
+const Submission = require("../models/submission");
 const Problem = require("../models/Problem");
 const { executeCode } = require("../services/executionService");
 const { getExecutionLogById } = require("../services/executionLogger");
 const { processAcceptedSubmission } = require("../services/gamificationService");
+const mongoose = require("mongoose");
+const CompetitiveTest = require("../models/CompetitiveTest");
+const CompetitiveTestAttempt = require("../models/CompetitiveTestAttempt");
+const { assertCompetitiveSubmissionWindow } = require("../services/competitiveSubmissionService");
+const { completeCompetitiveAttemptIfReady } = require("../services/competitiveAttemptCompletionService");
+const { emitCompetitiveProgress } = require("../services/competitiveProgressService");
+const { emitLeaderboardUpdate } = require("./leaderboardController");
 
 function buildExecutionResponse(result) {
   return {
     success: Boolean(result?.success ?? true),
     executionId: result?.executionId || "",
-    verdict: result?.verdict || "Internal Error",
+    verdict: result?.verdict || "System Error",
     runtime: result?.runtime || "",
     memory: result?.memory || "",
     stdout: result?.stdout || "",
@@ -104,11 +111,21 @@ async function runCode(req, res) {
 
 async function submitCode(req, res) {
   try {
-    const { problemId, code, language } = req.body || {};
+    const { problemId, code, language, competitiveTestId, competitiveTestAttemptId } = req.body || {};
     if (!problemId || !code || !language) {
       return res.status(400).json({ message: "problemId, code and language are required" });
     }
 
+    let competitiveContext = null;
+    if (competitiveTestId || competitiveTestAttemptId) {
+      if (!mongoose.isValidObjectId(competitiveTestId) || !mongoose.isValidObjectId(competitiveTestAttemptId)) return res.status(400).json({ message: "Valid competitive test and attempt IDs are required" });
+      const [test, attempt] = await Promise.all([
+        CompetitiveTest.findOne({ _id: competitiveTestId, participantIds: req.user._id }),
+        CompetitiveTestAttempt.findOne({ _id: competitiveTestAttemptId, testId: competitiveTestId, participantId: req.user._id }),
+      ]);
+      assertCompetitiveSubmissionWindow({ test, attempt, problemId });
+      competitiveContext = { test, attempt };
+    }
     // The submit flow awards points after an Accepted result, so load the
     // problem explicitly here. Run-only execution does not need this field.
     const problem = await Problem.findById(problemId).select("difficulty title").lean();
@@ -122,6 +139,7 @@ async function submitCode(req, res) {
       userId: req.user?._id,
       includeHiddenDetails: req.user?.role === "admin",
     });
+    if (competitiveContext) assertCompetitiveSubmissionWindow({ test: competitiveContext.test, attempt: competitiveContext.attempt, problemId, now: new Date() });
     const submission = await Submission.create({
       user: req.user._id,
       problem: problemId,
@@ -130,12 +148,25 @@ async function submitCode(req, res) {
       verdict: result.verdict,
       runtime: result.runtime || "",
       memory: result.memory || "",
+      competitiveTestId: competitiveContext?.test?._id || null,
+      competitiveTestAttemptId: competitiveContext?.attempt?._id || null,
     });
+
+    if (competitiveContext) {
+      let participantStatus = "STARTED";
+      await CompetitiveTestAttempt.updateOne({ _id: competitiveContext.attempt._id, status: "STARTED" }, { $addToSet: { dsaSubmissionIds: submission._id } });
+      if (submission.verdict === "Accepted") {
+        const completed = await completeCompetitiveAttemptIfReady({ test: competitiveContext.test, attemptId: competitiveContext.attempt._id });
+        if (completed?.status === "COMPLETED") participantStatus = completed.status;
+      }
+      req.app.locals.io?.to(`study-group:${String(competitiveContext.test.groupId)}`).emit("group:test-participant", { testId: competitiveContext.test._id, groupId: competitiveContext.test.groupId, participantId: req.user._id, status: participantStatus, problemId, verdict: submission.verdict });
+      await emitCompetitiveProgress({ test: competitiveContext.test, io: req.app.locals.io });
+    }
 
     const gamification = result.verdict === "Accepted"
       ? await processAcceptedSubmission({ userId: req.user._id, submissionId: submission._id, problem })
       : null;
-    if (result.verdict === "Accepted") req.app.locals.io?.emit("leaderboard:updated", { userId: String(req.user._id), reason: "accepted-submission" });
+    if (result.verdict === "Accepted") await emitLeaderboardUpdate(req.app.locals.io, req.user._id);
 
     return res.status(201).json({
       submission,
@@ -147,7 +178,7 @@ async function submitCode(req, res) {
   } catch (error) {
     console.error("Submit code error:", error.message, error.response?.data || "");
     const message = error.response?.data?.message || error.response?.data || error.message || "Submit failed";
-    return res.status(500).json({ message });
+    return res.status(error.status || 500).json({ message });
   }
 }
 

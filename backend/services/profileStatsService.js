@@ -1,5 +1,5 @@
 const User = require("../models/User");
-const Submission = require("../models/Submission");
+const Submission = require("../models/submission");
 const UserAchievement = require("../models/UserAchievement");
 const AptitudeAttempt = require("../models/AptitudeAttempt");
 const PointTransaction = require("../models/PointTransaction");

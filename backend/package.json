@@ -32,6 +32,8 @@
     "validate:aptitude": "node scripts/validateAptitudeBank.js",
     "import:aptitude": "node scripts/importAptitudeBank.js",
     "fix:user-index": "node scripts/fixUserUsernameIndex.js",
+    "migrate:conversation-status": "node scripts/migrateConversationStatus.js",
+    "migrate:notification-index": "node scripts/migrateNotificationDedupeIndex.js",
     "backfill:streaks": "node scripts/backfillStreakAchievements.js",
     "backfill:developer-profiles": "node scripts/backfillDeveloperProfiles.js",
     "docker:build": "docker build -t codeverse-executor:latest ./docker"

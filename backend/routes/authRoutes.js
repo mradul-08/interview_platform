@@ -82,7 +82,7 @@ function issueTokenAndRedirect(req, res) {
 
   const redirectBase = process.env.CLIENT_URL || "http://localhost:5173";
   res.redirect(
-    `${redirectBase}/auth-success?token=${accessToken}&name=${encodeURIComponent(user.name)}&email=${encodeURIComponent(user.email)}&role=${user.role}`
+    `${redirectBase}/auth-success?token=${accessToken}&id=${encodeURIComponent(user._id)}&name=${encodeURIComponent(user.name)}&email=${encodeURIComponent(user.email)}&role=${user.role}`
   );
 }
 

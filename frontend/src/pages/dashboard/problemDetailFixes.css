@@ -2,6 +2,11 @@
   min-width: 0;
 }
 
+@keyframes competitive-test-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.55; }
+}
+
 .problem-detail-toolbar {
   overflow-x: auto;
   scrollbar-width: thin;
@@ -108,3 +113,4 @@
     display: none;
   }
 }
+.problem-detail-page{--competitive-pulse-color:var(--red)}@keyframes pulse{0%,100%{opacity:1}50%{opacity:.55}}

@@ -56,26 +56,32 @@ function SheetTabs({ sheets, active, onSelect }) {
 
 // ── Hero stats row ────────────────────────────────────────────────
 function HeroStats({ stats, sheetName, onContinue, onRandom }) {
+    const safeStats = stats || { total: 0, solved: 0, easy: 0, medium: 0, hard: 0, pct: 0 };
     const items = [
-        { label: "Total", val: stats.total, color: "var(--accent)" },
-        { label: "Solved", val: stats.solved, color: "var(--green)" },
-        { label: "Easy", val: stats.easy, color: "var(--green)" },
-        { label: "Medium", val: stats.medium, color: "var(--medium-color)" },
-        { label: "Hard", val: stats.hard, color: "var(--red)" },
+        { label: "Total", val: safeStats.total, color: "var(--text-primary)" },
+        { label: "Solved", val: safeStats.solved, color: "var(--green)" },
+        { label: "Easy", val: safeStats.easy, color: "var(--green)" },
+        { label: "Medium", val: safeStats.medium, color: "var(--medium-color)" },
+        { label: "Hard", val: safeStats.hard, color: "var(--red)" },
     ];
+    const remaining = Math.max(0, safeStats.total - safeStats.solved);
+    const progress = Math.min(100, Math.max(0, Number(safeStats.pct) || 0));
     return (
-        <div style={{ background: "var(--bg-surface)", border: "1px solid var(--border-subtle)", borderRadius: "var(--radius-xl)", padding: "24px 28px", marginBottom: 20, position: "relative", overflow: "hidden" }}>
+        <div className="cv-sheet-hero" style={{ background: "linear-gradient(135deg, var(--bg-surface) 0%, var(--bg-elevated) 100%)", border: "1px solid var(--border-default)", borderRadius: "var(--radius-xl)", padding: "22px 24px 18px", marginBottom: 20, position: "relative", overflow: "hidden", boxShadow: "0 18px 45px rgba(0,0,0,0.18)" }}>
+            <div style={{ position: "absolute", width: 260, height: 260, right: -100, top: -140, borderRadius: "50%", background: "var(--accent)", opacity: 0.09, filter: "blur(4px)" }} />
             <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 3, background: "var(--accent-grad)" }} />
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: 18 }}>
+            <div className="cv-sheet-hero-main" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 18, position: "relative" }}>
                 <div>
-                    <h1 style={{ fontSize: 24, fontWeight: 900, color: "var(--text-primary)", margin: "0 0 6px", letterSpacing: "-0.03em" }}>{sheetName}</h1>
-                    <p style={{ fontSize: 13, color: "var(--text-tertiary)", margin: "0 0 16px" }}>{stats.pct}% complete · {stats.total - stats.solved} problems left</p>
+                    <div style={{ display: "flex", alignItems: "center", gap: 9, marginBottom: 9 }}><span style={{ width: 8, height: 8, borderRadius: "50%", background: "var(--accent)", boxShadow: "0 0 0 5px var(--accent-soft)" }} /><span style={{ fontSize: 10.5, fontWeight: 800, letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--accent-strong)" }}>Your practice roadmap</span></div>
+                    <h1 style={{ fontSize: 30, fontWeight: 900, color: "var(--text-primary)", margin: "0 0 5px", letterSpacing: "-0.045em" }}>{sheetName}</h1>
+                    <p style={{ fontSize: 13, color: "var(--text-secondary)", margin: "0 0 16px" }}>{sheetName === "Blind75" ? "The essential interview patterns" : "A focused path to stronger problem solving"} · {remaining} problem{remaining === 1 ? "" : "s"} left</p>
+                    <div style={{ width: "min(360px, 100%)", height: 6, borderRadius: 99, background: "var(--bg-elevated-2)", overflow: "hidden", marginBottom: 16 }}><div style={{ width: `${progress}%`, height: "100%", borderRadius: 99, background: "var(--accent-grad)", transition: "width 300ms ease" }} /></div>
                     <div style={{ display: "flex", gap: 10 }}>
-                        <button onClick={onContinue} style={{ padding: "9px 18px", borderRadius: "var(--radius-md)", background: "var(--accent)", color: "white", border: "none", fontSize: 13, fontWeight: 700, cursor: "pointer" }}>Continue →</button>
-                        <button onClick={onRandom} style={{ padding: "9px 18px", borderRadius: "var(--radius-md)", background: "var(--bg-elevated)", color: "var(--text-primary)", border: "1px solid var(--border-default)", fontSize: 13, fontWeight: 600, cursor: "pointer" }}>Random problem</button>
+                        <button type="button" onClick={onContinue} style={{ padding: "9px 17px", borderRadius: "var(--radius-md)", background: "var(--accent)", color: "white", border: "none", fontSize: 13, fontWeight: 800, cursor: "pointer", boxShadow: "0 8px 18px rgba(255,159,10,0.18)" }}>Continue practice <span aria-hidden="true">→</span></button>
+                        <button type="button" onClick={onRandom} style={{ padding: "9px 15px", borderRadius: "var(--radius-md)", background: "var(--bg-elevated-2)", color: "var(--text-primary)", border: "1px solid var(--border-default)", fontSize: 13, fontWeight: 700, cursor: "pointer" }}>Surprise me</button>
                     </div>
                 </div>
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(80px,1fr))", gap: 10 }}>
+                <div className="cv-sheet-metrics" style={{ display: "grid", gridTemplateColumns: "repeat(5, minmax(72px, 1fr))", gap: 8, width: "min(100%, 560px)" }}>
                     {items.map((it) => (
                         <div key={it.label} style={{ textAlign: "center", padding: "8px 14px", borderRadius: "var(--radius-md)", background: "var(--bg-elevated)", border: "1px solid var(--border-subtle)" }}>
                             <div style={{ fontSize: 18, fontWeight: 800, color: it.color, fontFamily: "var(--font-mono)" }}>{it.val}</div>
@@ -84,6 +90,7 @@ function HeroStats({ stats, sheetName, onContinue, onRandom }) {
                     ))}
                 </div>
             </div>
+            <style>{`@media (max-width: 640px) { .cv-sheet-metrics { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; width: 100% !important; } .cv-sheet-hero-main > div:first-child { width: 100%; } }`}</style>
         </div>
     );
 }

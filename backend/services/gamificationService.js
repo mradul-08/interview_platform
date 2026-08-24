@@ -1,6 +1,6 @@
 const User = require("../models/User");
 const Problem = require("../models/Problem");
-const Submission = require("../models/Submission");
+const Submission = require("../models/submission");
 const PointTransaction = require("../models/PointTransaction");
 const RewardTicket = require("../models/RewardTicket");
 const UserSheetUnlock = require("../models/UserSheetUnlock");

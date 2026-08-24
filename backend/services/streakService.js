@@ -1,4 +1,4 @@
-const Submission = require("../models/Submission");
+const Submission = require("../models/submission");
 const User = require("../models/User");
 const UserAchievement = require("../models/UserAchievement");
 const { BADGE_DEFINITIONS } = require("../config/badges");

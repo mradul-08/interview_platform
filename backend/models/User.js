@@ -36,6 +36,11 @@ const userSchema = new mongoose.Schema(
         username: { type: String, trim: true, default: undefined, unique: true, sparse: true },
         avatarUrl: { type: String, default: "" },
         bio: { type: String, default: "" },
+        // Updated when a user's last realtime socket disconnects; used for
+        // "Last seen" in Messages. Online/offline itself is derived from the
+        // live in-memory socket registry (see backend/socket.js), never from
+        // polling this field.
+        lastSeenAt: { type: Date, default: null },
         college: { type: String, default: "" },
         degree: { type: String, default: "" },
         branch: { type: String, default: "" },
@@ -54,6 +59,7 @@ const userSchema = new mongoose.Schema(
         freezeCapacity: { type: Number, default: 2, min: 0, max: 2 },
         rank: { type: Number, default: 0 },
         mockInterviewsAttended: { type: Number, default: 0 },
+        bookmarkedProblems: [{ type: mongoose.Schema.Types.ObjectId, ref: "Problem" }],
 
         // Company fields
         companyName: { type: String, default: "" },
@@ -86,3 +92,5 @@ const userSchema = new mongoose.Schema(
 );
 
 module.exports = mongoose.model("User", userSchema);
+
+

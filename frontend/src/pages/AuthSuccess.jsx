@@ -7,13 +7,14 @@ function AuthSuccess() {
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const token = params.get("token");
+    const id = params.get("id");
     const name = params.get("name");
     const email = params.get("email");
     const role = params.get("role");
 
     if (token) localStorage.setItem("token", token);
     if (name || email || role) {
-      localStorage.setItem("user", JSON.stringify({ name, email, role }));
+      localStorage.setItem("user", JSON.stringify({ id, name, email, role }));
     }
 
     if (role === "admin") navigate("/admin", { replace: true });

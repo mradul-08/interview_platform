@@ -1,5 +1,5 @@
 import { Navigate, NavLink, Route, Routes, useLocation } from "react-router-dom";
-import { Building2, Dumbbell, LayoutGrid, RotateCcw, Timer, TrendingUp } from "lucide-react";
+import { Dumbbell, LayoutGrid, RotateCcw, Timer, TrendingUp } from "lucide-react";
 import "../../styles/aptitude-module.css";
 import "../../styles/aptitude.css";
 import OverviewPage from "./pages/OverviewPage";
@@ -7,7 +7,6 @@ import PracticePage from "./pages/PracticePage";
 import MockTestsPage from "./pages/MockTestsPage";
 import ReviewPage from "./pages/ReviewPage";
 import ProgressPage from "./pages/ProgressPage";
-import CompanyPrepPage from "./pages/CompanyPrepPage";
 import SessionPage from "./session/SessionPage";
 import ResultPage from "./results/ResultPage";
 import SessionReviewPage from "./results/SessionReviewPage";
@@ -20,7 +19,6 @@ const tabs = [
   { to: "/dashboard/aptitude/mock", label: "Mock Tests", icon: Timer },
   { to: "/dashboard/aptitude/review", label: "Review", icon: RotateCcw },
   { to: "/dashboard/aptitude/progress", label: "Progress", icon: TrendingUp },
-  { to: "/dashboard/aptitude/company", label: "Company Prep", icon: Building2 },
 ];
 
 function IsolatedPage({ title, children }) {
@@ -48,7 +46,6 @@ export default function AptitudeRoutes() {
         <Route path="mock" element={<IsolatedPage title="Mock Tests"><MockTestsPage /></IsolatedPage>} />
         <Route path="review" element={<IsolatedPage title="Review"><ReviewPage /></IsolatedPage>} />
         <Route path="progress" element={<IsolatedPage title="Progress"><ProgressPage /></IsolatedPage>} />
-        <Route path="company" element={<IsolatedPage title="Company Prep"><CompanyPrepPage /></IsolatedPage>} />
         <Route path="session/:sessionId" element={<IsolatedPage title="Practice Session"><SessionPage /></IsolatedPage>} />
         <Route path="results/:sessionId/review" element={<IsolatedPage title="Mistake Review"><SessionReviewPage /></IsolatedPage>} />
         <Route path="results/:sessionId/full-review" element={<IsolatedPage title="Full Session Review"><FullSessionReviewPage /></IsolatedPage>} />

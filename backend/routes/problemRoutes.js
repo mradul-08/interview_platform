@@ -20,6 +20,9 @@ const {
     createProblem,
     updateProblem,
     deleteProblem,
+    getBookmarks,
+    addBookmark,
+    removeBookmark,
 } = require("../controllers/problemController");
 
 const router = express.Router();
@@ -30,6 +33,7 @@ router.get("/topics", protect, getTopics);
 router.get("/tags", protect, getTagList);
 router.get("/companies", protect, getCompaniesFromProblems);
 router.get("/sources", protect, getSourceList);
+router.get("/bookmarks", protect, getBookmarks);
 router.get("/audit/content", protect, getProblemContentAudit);
 router.post("/audit/repair-imported", protect, requireRole("admin"), repairImportedProblemContent);
 router.post("/audit/repair-imported/:id", protect, requireRole("admin"), repairImportedProblemById);
@@ -39,6 +43,8 @@ router.get("/search", protect, searchProblems);
 router.get("/random", protect, randomProblem);
 router.get("/", protect, getProblems);
 router.get("/slug/:slug", protect, getProblemBySlug);
+router.post("/:id/bookmark", protect, addBookmark);
+router.delete("/:id/bookmark", protect, removeBookmark);
 router.post("/", protect, requireRole("admin"), createProblem);
 router.put("/:id", protect, requireRole("admin"), updateProblem);
 router.delete("/:id", protect, requireRole("admin"), deleteProblem);

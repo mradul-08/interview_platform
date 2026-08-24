@@ -23,16 +23,20 @@ const submissionSchema = new mongoose.Schema(
                 "Output Limit Exceeded",
                 "Input Parsing Error",
                 "Internal Error",
+                "System Error",
             ],
             required: true,
         },
         runtime:  { type: String, default: "" },  // e.g. "42 ms"
         memory:   { type: String, default: "" },  // e.g. "16.2 MB"
+        competitiveTestId: { type: mongoose.Schema.Types.ObjectId, ref: "CompetitiveTest", default: null },
+        competitiveTestAttemptId: { type: mongoose.Schema.Types.ObjectId, ref: "CompetitiveTestAttempt", default: null },
     },
     { timestamps: true }
 );
 
 submissionSchema.index({ user: 1, createdAt: -1 });
 submissionSchema.index({ user: 1, problem: 1, verdict: 1 });
+submissionSchema.index({ competitiveTestAttemptId: 1, createdAt: -1 });
 
 module.exports = mongoose.model("Submission", submissionSchema);

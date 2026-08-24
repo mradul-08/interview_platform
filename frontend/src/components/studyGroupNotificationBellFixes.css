@@ -43,3 +43,12 @@
     max-height: min(62vh, 430px);
   }
 }
+
+.sg-notification-icon--direct_message { background: color-mix(in srgb, #38bdf8 18%, var(--bg-elevated)); color: #38bdf8; }
+.sg-notification-icon--study_group_join,
+.sg-notification-icon--study_group_message { background: color-mix(in srgb, #22c55e 18%, var(--bg-elevated)); color: #22c55e; }
+.sg-notification-icon--leaderboard { background: color-mix(in srgb, #f59e0b 18%, var(--bg-elevated)); color: #f59e0b; }
+.sg-notification-icon--competitive_test_scheduled,
+.sg-notification-icon--competitive_test_live,
+.sg-notification-icon--competitive_test_ended,
+.sg-notification-icon--competitive_test_results { background: color-mix(in srgb, #a855f7 18%, var(--bg-elevated)); color: #a855f7; }

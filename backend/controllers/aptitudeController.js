@@ -1,5 +1,7 @@
 const AptitudeAttempt = require("../models/AptitudeAttempt");
 const AptitudeSession = require("../models/AptitudeSession");
+const CompetitiveTest = require("../models/CompetitiveTest");
+const CompetitiveTestAttempt = require("../models/CompetitiveTestAttempt");
 const AptitudeQuestion = require("../models/AptitudeQuestion");
 const AptitudeProfile = require("../models/AptitudeProfile");
 const AptitudeBookmark = require("../models/AptitudeBookmark");
@@ -10,6 +12,8 @@ const { buildPagination, paginatedResponse } = require("../utils/paginate");
 const { publicQuestion, getOrCreateProfile, processAttempt, selectAdaptiveQuestions, getDashboardData, getAnalyticsSnapshot, getTodayMission, computeReadinessScore, getReadinessBreakdown, getStreakCalendar, getMistakeBreakdown, getSkillDNA, getSpeedAccuracyProfile, getRevisionQueue, getConfidenceCalibration, VISIBLE_QUESTION_STATUSES } = require("../services/aptitudeService");
 const { emitToUser } = require("../socket");
 const { normalizeSubmissionId, validateSelectedAnswer, validateSubmissionReuse, authoritativeTimeSeconds } = require("../services/aptitudeContracts");
+const { completeCompetitiveAttemptIfReady } = require("../services/competitiveAttemptCompletionService");
+const { emitCompetitiveProgress } = require("../services/competitiveProgressService");
 
 const fail = (res, message) => res.status(500).json({ success: false, message });
 const snapshotQuestion = (question) => ({ question: question.question, options: question.options, correctAnswer: question.correctAnswer, explanation: question.explanation || "", shortTrick: question.shortTrick || "", conceptNote: question.conceptNote || "", expectedTime: question.expectedTime || 0, version: question.version || 1, contentHash: question.contentHash || "" });
@@ -34,7 +38,7 @@ exports.getRecommendations = async (req, res) => { try { const data = await sele
 exports.getDailyMission = async (req, res) => { try { res.json({ success: true, mission: await getTodayMission(req.user._id) }); } catch (e) { fail(res, "Failed to fetch daily mission"); } };
 exports.getBadges = async (req, res) => { try { const profile = await AptitudeProfile.findOne({ userId: req.user._id }).lean(); const earned = new Set((profile?.badges || []).map((b) => b.badgeId)); res.json({ success: true, badges: APTITUDE_BADGES.map((badge) => ({ ...badge, earned: earned.has(badge.id), unlockedAt: profile?.badges?.find((b) => b.badgeId === badge.id)?.unlockedAt || null })) }); } catch (e) { fail(res, "Failed to fetch badges"); } };
 
-exports.getQuestions = async (req, res) => { try { const filter = { qualityStatus: { $in: VISIBLE_QUESTION_STATUSES } }; ["category", "topic", "difficulty"].forEach((key) => { if (req.query[key]) filter[key] = req.query[key]; }); const total = await AptitudeQuestion.countDocuments(filter); const { skip, limit, page, totalPages } = buildPagination(total, req.query.page, req.query.limit); const questions = await AptitudeQuestion.find(filter).select("-correctAnswer -explanation -shortTrick -conceptNote").sort({ createdAt: -1 }).skip(skip).limit(limit).lean(); res.json({ success: true, ...paginatedResponse(questions, total, page, limit), totalPages }); } catch (e) { fail(res, "Failed to fetch questions"); } };
+exports.getQuestions = async (req, res) => { try { const filter = { qualityStatus: { $in: VISIBLE_QUESTION_STATUSES } }; ["category", "topic", "difficulty"].forEach((key) => { if (req.query[key]) filter[key] = req.query[key]; }); const search = String(req.query.search || "").trim(); if (search) { const pattern = new RegExp(search.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "i"); filter.$or = [{ question: pattern }, { topic: pattern }, { category: pattern }]; } const total = await AptitudeQuestion.countDocuments(filter); const { skip, limit, page, totalPages } = buildPagination(total, req.query.page, req.query.limit); const questions = await AptitudeQuestion.find(filter).select("-correctAnswer -explanation -shortTrick -conceptNote").sort({ createdAt: -1 }).skip(skip).limit(limit).lean(); res.json({ success: true, ...paginatedResponse(questions, total, page, limit), totalPages }); } catch (e) { fail(res, "Failed to fetch questions"); } };
 exports.getQuestion = async (req, res) => { try { const question = await AptitudeQuestion.findOne({ _id: req.params.id, qualityStatus: { $in: VISIBLE_QUESTION_STATUSES } }).select("-correctAnswer -explanation -shortTrick -conceptNote").lean(); if (!question) return res.status(404).json({ success: false, message: "Question not found" }); res.json({ success: true, question }); } catch (e) { res.status(404).json({ success: false, message: "Question not found" }); } };
 exports.submitAttempt = async (req, res) => { try { const { questionId, selectedAnswer, confidence, timeSpent, startedAt, sessionId } = req.body; if (!questionId || !["A", "B", "C", "D", null, undefined].includes(selectedAnswer)) return res.status(400).json({ success: false, message: "Valid questionId and answer are required" }); const question = await AptitudeQuestion.findOne({ _id: questionId, qualityStatus: { $in: VISIBLE_QUESTION_STATUSES } }).lean(); if (!question) return res.status(404).json({ success: false, message: "Question not found" }); const now = new Date(); const clientStart = startedAt ? new Date(startedAt) : null; const elapsed = clientStart && !Number.isNaN(clientStart.getTime()) ? Math.max(0, Math.round((now.getTime() - clientStart.getTime()) / 1000)) : Number(timeSpent) || 0; const safeTime = Math.min(elapsed, 3600); const result = await processAttempt({ userId: req.user._id, question, selectedAnswer: selectedAnswer || null, timeSpent: safeTime, confidence: confidence || null, sessionId: sessionId || null }); if (sessionId) await AptitudeSession.updateOne({ _id: sessionId, userId: req.user._id, "questions.questionId": questionId }, { $set: { "questions.$.status": selectedAnswer ? "ANSWERED" : "SKIPPED", "questions.$.attemptId": result.attempt._id, "questions.$.answeredAt": now } }); emitToUser(req.app.locals.io, req.user._id, "aptitude:analytics-updated", { reason: "attempt-saved" }); if (result.newBadges?.length || result.streakData || result.xpAwarded) emitToUser(req.app.locals.io, req.user._id, "gamification:updated", { reason: "attempt-saved" }); res.json({ success: true, result: { ...result, serverTimeSpent: safeTime } }); } catch (e) { console.error(e); fail(res, "Failed to submit attempt"); } };
 
@@ -148,6 +152,23 @@ exports.submitSession = async (req, res) => {
       return res.status(409).json({ success: false, code: "SESSION_NOT_ACTIVE", message: "This session is no longer active" });
     }
 
+    if (session.competitiveTestId && session.competitiveTestAttemptId) {
+      const competitiveTest = await CompetitiveTest.findOne({ _id: session.competitiveTestId, participantIds: req.user._id }).lean();
+      const competitiveAttempt = await CompetitiveTestAttempt.findOne({ _id: session.competitiveTestAttemptId, testId: session.competitiveTestId, participantId: req.user._id, status: "STARTED" });
+      if (competitiveTest && competitiveAttempt) {
+        const update = { aptitudeScore: results.score, categoryBreakdown: results.categoryBreakdown };
+        await CompetitiveTestAttempt.updateOne({ _id: competitiveAttempt._id, status: "STARTED" }, { $set: update });
+        const completed = await completeCompetitiveAttemptIfReady({ test: competitiveTest, attemptId: competitiveAttempt._id });
+        if (completed?.status === "COMPLETED") {
+          update.status = completed.status;
+          update.completedAt = completed.completedAt;
+          update.completionTimeSeconds = completed.completionTimeSeconds;
+        }
+        req.app.locals.io?.to(`study-group:${String(competitiveTest.groupId)}`).emit("group:test-participant", { testId: competitiveTest._id, groupId: competitiveTest.groupId, participantId: req.user._id, status: update.status || "STARTED", aptitudeScore: results.score });
+        await emitCompetitiveProgress({ test: competitiveTest, io: req.app.locals.io });
+      }
+    }
+
     emitToUser(req.app.locals.io, req.user._id, "aptitude:analytics-updated", { reason: "session-completed" });
     emitToUser(req.app.locals.io, req.user._id, "gamification:updated", { reason: "session-completed" });
     res.json({ success: true, results, readinessScore: await computeReadinessScore(req.user._id), sessionId: session._id });
@@ -198,6 +219,11 @@ async function submitAttemptV2(req, res) {
       if (sessionId) {
         const session = await AptitudeSession.findOne({ _id: sessionId, userId: req.user._id, status: "ACTIVE" });
         if (!session) throw Object.assign(new Error("This session is no longer active"), { status: 409, code: "SESSION_NOT_ACTIVE" });
+        if (session.competitiveTestId) {
+          const competitiveTest = await CompetitiveTest.findOne({ _id: session.competitiveTestId, status: "LIVE", participantIds: req.user._id });
+          const competitiveAttempt = await CompetitiveTestAttempt.findOne({ _id: session.competitiveTestAttemptId, testId: session.competitiveTestId, participantId: req.user._id, status: "STARTED" });
+          if (!competitiveTest || !competitiveAttempt || !competitiveAttempt.endsAt || new Date() >= new Date(competitiveAttempt.endsAt)) throw Object.assign(new Error("Competitive test deadline has passed"), { status: 409, code: "COMPETITIVE_TEST_EXPIRED" });
+        }
         const sessionQuestion = session.questions.find((item) => String(item.questionId) === String(questionId));
         if (!sessionQuestion) throw Object.assign(new Error("Question does not belong to this session"), { status: 403, code: "QUESTION_NOT_IN_SESSION" });
         if (sessionQuestion.attemptId) throw Object.assign(new Error("This question has already been submitted"), { status: 409, code: "QUESTION_ALREADY_SUBMITTED" });

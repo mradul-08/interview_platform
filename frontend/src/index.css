@@ -548,3 +548,144 @@ h6 {
     border-color: var(--border-default);
   }
 }
+
+/* Public homepage responsive layout. Keep this scoped so dashboard/auth
+   layouts are not affected by marketing-page adjustments. */
+.cv-public-page {
+  overflow-x: clip;
+}
+
+.cv-site-graph canvas {
+  display: block;
+  width: 100% !important;
+  height: 100% !important;
+}
+
+@media (max-width: 767px) {
+  .cv-public-page header > div {
+    height: 60px;
+    padding-right: 16px;
+    padding-left: 16px;
+  }
+
+  .cv-public-page header .font-display {
+    font-size: 14px;
+  }
+
+  .cv-public-page header .h-8 {
+    width: 30px;
+    height: 30px;
+  }
+
+  .cv-site-graph {
+    opacity: .62;
+  }
+
+  .cv-site-graph canvas {
+    transform: scale(1.18);
+    transform-origin: center;
+  }
+
+  .cv-public-page section#top {
+    min-height: 100svh;
+  }
+
+  .cv-public-page section#top > .relative.z-10 {
+    align-items: flex-start;
+    padding-top: 6.5rem;
+    padding-bottom: 3.5rem;
+  }
+
+  .cv-public-page section#top > .relative.z-10 > div {
+    padding-right: 16px;
+    padding-left: 16px;
+  }
+
+  .cv-public-page section#top > .relative.z-10 > div > div {
+    max-width: 100%;
+  }
+
+  .cv-hero-badge {
+    max-width: 100%;
+    margin-bottom: 1.25rem;
+    padding-right: .7rem;
+    padding-left: .7rem;
+    white-space: normal;
+    text-align: center;
+  }
+
+  .cv-hero-badge span:last-child {
+    line-height: 1.35;
+  }
+
+  .cv-public-page h1 {
+    font-size: clamp(2.35rem, 11vw, 3.5rem) !important;
+    line-height: 1.02 !important;
+    overflow-wrap: anywhere;
+  }
+
+  .cv-public-page section#top p {
+    max-width: 100%;
+    font-size: 15px;
+    line-height: 1.6;
+  }
+
+  .cv-hero-actions {
+    align-items: stretch;
+    flex-direction: column;
+    gap: .7rem;
+    margin-top: 1.5rem;
+  }
+
+  .cv-hero-actions button {
+    width: 100%;
+    min-height: 3.1rem;
+  }
+
+  .cv-hero-proof {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: .5rem;
+    margin-top: 1.75rem;
+    line-height: 1.5;
+  }
+
+  .cv-hero-proof > .h-1 {
+    display: none;
+  }
+
+  .cv-public-page section:not(#top) {
+    padding-top: 4.5rem !important;
+    padding-bottom: 4.5rem !important;
+  }
+
+  .cv-public-page section:not(#top) > div {
+    padding-right: 16px;
+    padding-left: 16px;
+  }
+
+  .cv-public-page section:not(#top) h2 {
+    font-size: clamp(1.8rem, 8vw, 2.4rem) !important;
+    line-height: 1.1;
+  }
+
+  .cv-public-page footer > div {
+    padding: 2.5rem 16px;
+  }
+
+  .cv-public-page footer .ml-2 {
+    display: none;
+  }
+
+  .cv-public-page footer > div > div:last-child {
+    width: 100%;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cv-site-graph {
+    opacity: .42;
+  }
+}
