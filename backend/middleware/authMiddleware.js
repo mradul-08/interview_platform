@@ -1,7 +1,7 @@
 const User = require("../models/User");
 const jwt = require("jsonwebtoken");
 const { hashToken } = require("../services/tokenService");
-const ADMIN_EMAILS = (process.env.ADMIN_EMAILS || "mradulgarg2005@gmail.com")
+const ADMIN_EMAILS = (process.env.ADMIN_EMAILS || "")
     .split(",")
     .map((email) => email.trim().toLowerCase())
     .filter(Boolean);

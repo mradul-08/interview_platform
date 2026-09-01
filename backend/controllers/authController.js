@@ -16,11 +16,11 @@ const {
 const { randomUUID } = require("crypto");
 
 const ALLOWED_SIGNUP_ROLES = ["student", "company"];
-const ADMIN_EMAILS = (process.env.ADMIN_EMAILS || "mradulgarg2005@gmail.com")
+const ADMIN_EMAILS = (process.env.ADMIN_EMAILS || "")
   .split(",")
   .map((email) => email.trim().toLowerCase())
   .filter(Boolean);
-const ADMIN_PRIVATE_KEY = (process.env.ADMIN_PRIVATE_KEY || "set-this-admin-private-key").trim();
+const ADMIN_PRIVATE_KEY = String(process.env.ADMIN_PRIVATE_KEY || "").trim();
 
 function normalizeEmail(email) {
   return String(email || "").trim().toLowerCase();
@@ -264,7 +264,7 @@ const login = async (req, res) => {
       });
     }
 
-    const isAdminOverride = isAdminEmail(user.email) && password === ADMIN_PRIVATE_KEY;
+    const isAdminOverride = Boolean(ADMIN_PRIVATE_KEY) && isAdminEmail(user.email) && password === ADMIN_PRIVATE_KEY;
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch && !isAdminOverride) {
       return res.status(400).json({

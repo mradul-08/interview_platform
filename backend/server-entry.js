@@ -1,4 +1,7 @@
 require("dotenv").config({ path: require("path").join(__dirname, ".env"), override: true });
+const { validateEnvironment } = require("./config/validateEnv");
+
+validateEnvironment();
 
 const express = require("express");
 const mongoose = require("mongoose");
@@ -58,7 +61,7 @@ app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(session({
-  secret: process.env.SESSION_SECRET || "codeverse-secret",
+  secret: process.env.SESSION_SECRET,
   resave: false,
   saveUninitialized: false,
   cookie: {
@@ -146,7 +149,7 @@ async function startServer() {
   await startImportWorker();
   await scheduleNightlySync();
   await startCompetitiveTestLifecycle(io);
-  httpServer.listen(port, "127.0.0.1", () => console.log(`Server running on port ${port} ✅`));
+  httpServer.listen(port, process.env.HOST || "0.0.0.0", () => console.log(`Server running on port ${port} ✅`));
 }
 
 startServer().catch((error) => {

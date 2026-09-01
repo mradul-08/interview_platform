@@ -25,6 +25,7 @@
     "complete:published-formats": "node scripts/completePublishedProblemFormats.js",
     "enrich:published-content": "node scripts/enrichPublishedProblemContent.js",
     "test:verdict": "node scripts/smokeVerdictEngine.js",
+    "test": "node --test test/*.test.js",
     "test:streak": "node --test test/streakService.test.js",
     "test:gamification": "node --test test/gamification.test.js",
     "test:aptitude": "node --test test/aptitudeContracts.test.js",

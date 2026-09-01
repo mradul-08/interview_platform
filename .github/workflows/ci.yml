@@ -39,6 +39,4 @@ jobs:
           cache: npm
           cache-dependency-path: backend/package-lock.json
       - run: npm ci
-      - run: npm run test:streak
-      - run: npm run test:gamification
-      - run: npm run test:aptitude
+      - run: npm test
