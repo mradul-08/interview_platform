@@ -1,6 +1,8 @@
-# Contributing to CodeVerse
+# CodeVerse maintenance
 
-Thanks for helping improve CodeVerse. Keep changes focused, explain the user or engineering problem they solve, and avoid committing secrets, local `.env` files, logs, generated binaries, or database dumps.
+CodeVerse is currently a solo-maintained project. The repository owner is responsible for product decisions, implementation, reviews, and releases. This document records the project’s working standards and provides guidance for future feedback or outside contributions.
+
+Please keep changes focused, explain the user or engineering problem they solve, and avoid committing secrets, local `.env` files, logs, generated binaries, or database dumps.
 
 ## Development flow
 
@@ -12,6 +14,6 @@ Thanks for helping improve CodeVerse. Keep changes focused, explain the user or 
 6. Run the relevant backend tests in `backend`.
 7. Open a pull request with a summary, testing performed, configuration changes, and screenshots for UI changes.
 
-## Pull requests
+## Feedback and pull requests
 
-Pull requests should describe behavior changes clearly and call out migrations, new environment variables, Docker requirements, or third-party integrations. Do not include credentials or real user data in screenshots, fixtures, or logs.
+Issues and pull requests are welcome for clearly described bugs, security concerns, or useful improvements, but acceptance is not guaranteed because this is a solo-maintained project. Pull requests should describe behavior changes clearly and call out migrations, new environment variables, Docker requirements, or third-party integrations. Do not include credentials or real user data in screenshots, fixtures, or logs.
