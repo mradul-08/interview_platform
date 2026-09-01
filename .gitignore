@@ -3,3 +3,14 @@ frontend/node_modules
 
 backend/.env
 frontend/.env
+
+# Local runtime output and generated binaries
+*.log
+*.zip
+idxcheck.txt
+mountcheck.txt
+backend/solution
+
+# Local editor and OS files
+.DS_Store
+Thumbs.db
