@@ -14,3 +14,4 @@ backend/solution
 # Local editor and OS files
 .DS_Store
 Thumbs.db
+.vscode/
