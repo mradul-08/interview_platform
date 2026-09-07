@@ -52,10 +52,10 @@ router.get("/set-role", (req, res) => {
     return res.status(400).json({ message: "Invalid role" });
   }
   res.cookie("oauth_role", role, {
-    httpOnly: false,
+    httpOnly: true,
     maxAge: 10 * 60 * 1000,
     sameSite: "lax",
-    secure: false,
+    secure: process.env.NODE_ENV === "production",
   });
   res.json({ message: "Role set" });
 });
@@ -89,7 +89,10 @@ function issueTokenAndRedirect(req, res) {
 router.get("/google", passport.authenticate("google", { scope: ["profile", "email"], session: false }));
 router.get(
   "/google/callback",
-  passport.authenticate("google", { session: false, failureRedirect: "http://localhost:5173/login" }),
+  passport.authenticate("google", {
+    session: false,
+    failureRedirect: `${process.env.CLIENT_URL || "http://localhost:5173"}/login`,
+  }),
   issueTokenAndRedirect
 );
 

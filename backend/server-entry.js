@@ -8,6 +8,7 @@ const mongoose = require("mongoose");
 const cors = require("cors");
 const cookieParser = require("cookie-parser");
 const session = require("express-session");
+const { MongoStore } = require("connect-mongo");
 const helmet = require("helmet");
 const compression = require("compression");
 const http = require("http");
@@ -62,6 +63,12 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(session({
   secret: process.env.SESSION_SECRET,
+  store: MongoStore.create({
+    mongoUrl: process.env.MONGO_URI,
+    collectionName: "express_sessions",
+    ttl: 24 * 60 * 60,
+    touchAfter: 24 * 60 * 60,
+  }),
   resave: false,
   saveUninitialized: false,
   cookie: {

@@ -1,0 +1,6 @@
+[Unit]
+Description=CodeVerse production health check
+
+[Service]
+Type=oneshot
+ExecStart=/opt/codeverse/ops/codeverse-healthcheck.sh

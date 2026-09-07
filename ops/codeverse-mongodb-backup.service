@@ -1,0 +1,7 @@
+[Unit]
+Description=CodeVerse MongoDB backup
+
+[Service]
+Type=oneshot
+EnvironmentFile=/etc/codeverse/backup.env
+ExecStart=/opt/codeverse/ops/mongodb-backup.sh

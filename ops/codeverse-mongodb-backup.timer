@@ -1,0 +1,10 @@
+[Unit]
+Description=Daily CodeVerse MongoDB backup timer
+
+[Timer]
+OnCalendar=*-*-* 03:15:00 UTC
+Persistent=true
+Unit=codeverse-mongodb-backup.service
+
+[Install]
+WantedBy=timers.target

@@ -1,0 +1,11 @@
+[Unit]
+Description=Periodic CodeVerse production health check
+
+[Timer]
+OnBootSec=2min
+OnUnitActiveSec=5min
+Persistent=true
+Unit=codeverse-healthcheck.service
+
+[Install]
+WantedBy=timers.target
