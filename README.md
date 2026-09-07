@@ -7,7 +7,19 @@
 CodeVerse is live at **[interviewlattice.duckdns.org](https://interviewlattice.duckdns.org)**.
 The production API health endpoint is **[`/api/health`](https://interviewlattice.duckdns.org/api/health)**.
 
+**Author:** **[Mradul Garg](https://github.com/mradul-08)**
+
+**Email:** **[mradulgarg2005@gmail.com](mailto:mradulgarg2005@gmail.com)**
+
 CodeVerse is a full-stack interview-preparation platform for developers and students. It combines coding practice, aptitude preparation, mock interviews, study groups, messaging, progress tracking, and gamification in one application.
+
+## About the project
+
+CodeVerse was built as a practical, end-to-end learning platform rather than a collection of disconnected demo pages. The goal was to bring the daily interview-preparation journey into one place: solve problems, practise aptitude, track progress, join study groups, communicate with other learners, and prepare for real interviews.
+
+Building the application involved designing the user experience, creating the React frontend, developing the Express and MongoDB backend, connecting authentication and external services, and making the system work reliably in production. The platform also includes Docker-based code execution, real-time messaging, OAuth login, email flows, profile uploads, gamification, mock interviews, and operational safeguards for backups and health monitoring.
+
+The production work required more than making features appear on screen. It included handling authentication redirects, persistent sessions, database connectivity, service restarts, HTTPS routing, environment configuration, isolated code execution, error states, and deployment testing on an Ubuntu EC2 server. The project continues to evolve through testing, debugging, and improvements based on real usage.
 
 ## Features
 
