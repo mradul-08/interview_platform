@@ -279,7 +279,7 @@ export default function AuthPage() {
   }, [mode, setValue]);
 
   const pushToast = (type, message) => {
-    const id = crypto.randomUUID();
+    const id = globalThis.crypto?.randomUUID?.() || `toast-${Date.now()}-${Math.random().toString(36).slice(2)}`;
     setToasts((prev) => [...prev, { id, type, message }]);
     setTimeout(() => setToasts((prev) => prev.filter((t) => t.id !== id)), 4500);
   };
