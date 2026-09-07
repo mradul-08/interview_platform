@@ -2,6 +2,10 @@
 
 [![CI](https://github.com/mradul-08/interview_platform/actions/workflows/ci.yml/badge.svg)](https://github.com/mradul-08/interview_platform/actions/workflows/ci.yml)
 [![License: ISC](https://img.shields.io/badge/License-ISC-blue.svg)](LICENSE)
+[![Live demo](https://img.shields.io/badge/live-demo-CodeVerse-orange)](https://interviewlattice.duckdns.org)
+
+CodeVerse is live at **[interviewlattice.duckdns.org](https://interviewlattice.duckdns.org)**.
+The production API health endpoint is **[`/api/health`](https://interviewlattice.duckdns.org/api/health)**.
 
 CodeVerse is a full-stack interview-preparation platform for developers and students. It combines coding practice, aptitude preparation, mock interviews, study groups, messaging, progress tracking, and gamification in one application.
 
@@ -14,6 +18,21 @@ CodeVerse is a full-stack interview-preparation platform for developers and stud
 - Study groups with discussions, tasks, resources, sessions, leaderboards, and competitive tests
 - Direct messaging, notifications, profiles, company questions, and role-based admin/company areas
 - Optional Ollama AI generation and Redis/BullMQ background processing
+
+## Live production deployment
+
+- Frontend: [https://interviewlattice.duckdns.org](https://interviewlattice.duckdns.org)
+- API health: [https://interviewlattice.duckdns.org/api/health](https://interviewlattice.duckdns.org/api/health)
+- HTTPS termination and reverse proxy: Nginx on Ubuntu EC2
+- Application process: `systemd` with automatic restart and boot enablement
+- Sessions: MongoDB-backed `connect-mongo` store
+- Code execution: isolated Docker containers with language-specific images
+- Backups: daily compressed MongoDB archive with 14-day local retention
+- Health checks: systemd timer running every five minutes
+
+The production installation procedure and operational checks are documented in
+[`docs/production-deployment.md`](docs/production-deployment.md). Secrets and
+host-specific configuration remain outside GitHub in environment files.
 
 ## Tech stack
 
@@ -105,12 +124,26 @@ The non-secret templates are [`backend/.env.example`](backend/.env.example) and 
 
 Once the backend is running, check `GET http://localhost:5001/api/health`. The response reports API status, MongoDB state, uptime, and a timestamp.
 
+For the deployed environment, check `GET https://interviewlattice.duckdns.org/api/health`.
+The expected response includes `"success":true` and `"database":"connected"`.
+
+## Continuous integration
+
+Every push and pull request targeting `main` runs GitHub Actions for:
+
+- Frontend dependency installation, ESLint, and production build
+- Backend dependency installation and the complete Node test suite
+
+Keep pull requests focused, do not commit secrets or generated artifacts, and
+wait for the CI check to pass before merging.
+
 ## Current limitations and roadmap
 
-- No hosted demo is configured in this repository; local MongoDB and required optional services must be supplied by the developer.
 - Code execution requires Docker and the language images above.
 - OAuth, email, uploads, video rooms, background imports, and AI generation are configuration-dependent.
-- Planned improvements include a hosted demo, end-to-end browser coverage, and a public walkthrough with screenshots.
+- The current backup is local to the EC2 host; copy archives to S3 or another host for disaster recovery.
+- External uptime alerting is optional and should monitor the production health endpoint.
+- Planned improvements include end-to-end browser coverage, centralized log aggregation, and a public walkthrough with screenshots.
 
 ## Contributing and security
 
